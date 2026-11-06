@@ -76,7 +76,11 @@ docker compose run --rm bench node bin/bench.mjs validate --dynamic --cell larav
 
 A `redis` service is defined under the `redis` compose profile for future scenarios that
 declare `requires: ["redis"]` (start with `docker compose --profile redis up -d redis`;
-it is reachable from the bench container as host `redis`).
+it is reachable from the bench container as host `redis`). The
+`redis-cluster-crossslot` scenario needs the real 3-master cluster instead:
+`docker compose --profile redis-cluster up -d --wait` before the dynamic gate. On native
+(plain-PHP) runs, export `REDIS_SEEDS=127.0.0.1:16379,127.0.0.1:16380,127.0.0.1:16381`
+(the profile publishes those ports) — CI does both automatically.
 
 ## Quickstart
 
@@ -180,10 +184,10 @@ scheduler mutexes, concurrency-shaped invariants), not from the current fourteen
 | `provider-error-as-success` | http / provider responses | 3 |
 | `mass-assignment-silent-drop` | validation / mass assignment | 3 |
 | `signed-url-toggle-replay` | security / signed urls | 3 |
+| `redis-cluster-crossslot` | cache / redis cluster | 5 |
 
 Areas with planned scenarios (recipes in docs/AUTHORING.md): scheduler overlap, failed-job
-backoff, notifications + transactions, filesystem visibility, API-resource serialization,
-Redis cluster behaviour.
+backoff, notifications + transactions, filesystem visibility, API-resource serialization.
 
 ## Contributing
 

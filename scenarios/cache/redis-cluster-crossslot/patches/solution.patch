@@ -1,0 +1,17 @@
+diff --git a/app/Services/FeatureFlagService.php b/app/Services/FeatureFlagService.php
+index 5df11b3..4b70477 100644
+--- a/app/Services/FeatureFlagService.php
++++ b/app/Services/FeatureFlagService.php
+@@ -47,9 +47,10 @@ class FeatureFlagService
+             redis.call('SET', KEYS[2], ARGV[1])
+             LUA;
+ 
++        // {…} hash tag: both keys of the atomic script must share one slot.
+         $this->redis->eval($script, [
+-            "flags:{$tenant}:uses",
+-            "flags:{$tenant}:version",
++            "flags:{{$tenant}}:uses",
++            "flags:{{$tenant}}:version",
+             $version,
+         ], 2);
+     }

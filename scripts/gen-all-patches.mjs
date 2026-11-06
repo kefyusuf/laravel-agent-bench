@@ -604,6 +604,78 @@ const PATCHES = {
       }],
     },
   ],
+
+  'redis-cluster-crossslot': [
+    {
+      name: 'solution.patch',
+      edits: [{
+        file: 'app/Services/FeatureFlagService.php',
+        find: [
+          '        $this->redis->eval($script, [',
+          '            "flags:{$tenant}:uses",',
+          '            "flags:{$tenant}:version",',
+          '            $version,',
+          '        ], 2);',
+        ].join('\n'),
+        replace: [
+          '        // {…} hash tag: both keys of the atomic script must share one slot.',
+          '        $this->redis->eval($script, [',
+          '            "flags:{{$tenant}}:uses",',
+          '            "flags:{{$tenant}}:version",',
+          '            $version,',
+          '        ], 2);',
+        ].join('\n'),
+      }],
+    },
+    {
+      name: 'distractor-per-key-braces.patch',
+      edits: [{
+        file: 'app/Services/FeatureFlagService.php',
+        find: [
+          '        $this->redis->eval($script, [',
+          '            "flags:{$tenant}:uses",',
+          '            "flags:{$tenant}:version",',
+          '            $version,',
+          '        ], 2);',
+        ].join('\n'),
+        replace: [
+          '        $this->redis->eval($script, [',
+          '            "flags:{{$tenant}:uses}",',
+          '            "flags:{{$tenant}:version}",',
+          '            $version,',
+          '        ], 2);',
+        ].join('\n'),
+      }],
+    },
+    {
+      name: 'distractor-sequential-fallback.patch',
+      edits: [
+        {
+          file: 'app/Services/FeatureFlagService.php',
+          find: [
+            '        $this->redis->eval($script, [',
+            '            "flags:{$tenant}:uses",',
+            '            "flags:{$tenant}:version",',
+            '            $version,',
+            '        ], 2);',
+          ].join('\n'),
+          replace: [
+            '        try {',
+            '            $this->redis->eval($script, [',
+            '                "flags:{$tenant}:uses",',
+            '                "flags:{$tenant}:version",',
+            '                $version,',
+            '            ], 2);',
+            '        } catch (RedisClusterException $e) {',
+            '            // Cluster routing rejected the script; degrade gracefully.',
+            '            $this->redis->incr("flags:{$tenant}:uses");',
+            '            $this->redis->set("flags:{$tenant}:version", (string) $version);',
+            '        }',
+          ].join('\n'),
+        },
+      ],
+    },
+  ],
 };
 
 const cfg = loadConfig();

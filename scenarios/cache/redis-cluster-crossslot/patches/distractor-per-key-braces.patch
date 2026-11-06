@@ -1,0 +1,15 @@
+diff --git a/app/Services/FeatureFlagService.php b/app/Services/FeatureFlagService.php
+index 5df11b3..14b1dee 100644
+--- a/app/Services/FeatureFlagService.php
++++ b/app/Services/FeatureFlagService.php
+@@ -48,8 +48,8 @@ class FeatureFlagService
+             LUA;
+ 
+         $this->redis->eval($script, [
+-            "flags:{$tenant}:uses",
+-            "flags:{$tenant}:version",
++            "flags:{{$tenant}:uses}",
++            "flags:{{$tenant}:version}",
+             $version,
+         ], 2);
+     }

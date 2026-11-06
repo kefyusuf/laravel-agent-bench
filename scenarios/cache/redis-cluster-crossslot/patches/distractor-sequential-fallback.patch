@@ -1,0 +1,26 @@
+diff --git a/app/Services/FeatureFlagService.php b/app/Services/FeatureFlagService.php
+index 5df11b3..bef53e3 100644
+--- a/app/Services/FeatureFlagService.php
++++ b/app/Services/FeatureFlagService.php
+@@ -47,10 +47,16 @@ class FeatureFlagService
+             redis.call('SET', KEYS[2], ARGV[1])
+             LUA;
+ 
+-        $this->redis->eval($script, [
+-            "flags:{$tenant}:uses",
+-            "flags:{$tenant}:version",
+-            $version,
+-        ], 2);
++        try {
++            $this->redis->eval($script, [
++                "flags:{$tenant}:uses",
++                "flags:{$tenant}:version",
++                $version,
++            ], 2);
++        } catch (RedisClusterException $e) {
++            // Cluster routing rejected the script; degrade gracefully.
++            $this->redis->incr("flags:{$tenant}:uses");
++            $this->redis->set("flags:{$tenant}:version", (string) $version);
++        }
+     }
+ }

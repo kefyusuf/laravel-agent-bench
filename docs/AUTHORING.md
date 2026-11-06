@@ -85,6 +85,21 @@ Framework mechanics you must know before writing hidden tests (verified against
   request-dependent state out of controller *constructors* — `Route::getController()` caches
   the controller instance across requests in a long-lived process, which freezes
   constructor-injected dependencies even under a per-request binding.
+- **Scenarios with external services (e.g. the Redis cluster) share state across the
+  visible AND hidden suites in one phpunit process.** Hidden tests must clean up every
+  key representation they assert on — including keys a *visible* test may have written
+  (the visible suite runs first in the same process). Assert-absent checks are only safe
+  after an explicit delete in setUp.
+- **phpredis swallows Lua script errors as a `false` return** — a script that dies
+  mid-way leaves its earlier commands applied (Redis does not roll back scripts) and does
+  not throw. Never rely on an EVAL error path in a hidden test; assert on resulting key
+  state instead. On clusters, an EVAL whose keys span slots is rejected server-side
+  (CROSSSLOT) and DOES throw `RedisClusterException`.
+- **App config files merge shallowly per top-level key** (with a hardcoded one-level
+  whitelist like `database.connections`). A snapshot `config/database.php` containing
+  only `redis.seeds` keeps the base `connections` (top-level `array_merge`) but replaces
+  the whole base `redis` block — harmless when the scenario drives Redis through raw
+  phpredis instead of the framework connection.
 - **`RefreshDatabase` wraps each test in a transaction** — which swallows any manual
   transaction play and prevents `afterCommit` callbacks from firing. Use
   `DatabaseMigrations` in hidden tests that manipulate transactions or observe commit

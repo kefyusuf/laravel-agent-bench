@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "id": "redis-cluster-crossslot",
+  "family": "cache/redis-cluster",
+  "title": "Atomic Lua version bump breaks on a Redis cluster: keys hash to different slots",
+  "difficulty": 5,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [
+    "redis-cluster"
+  ],
+  "business_context": "FlagVault serves feature flags and per-tenant usage counters from Redis. Staging ran a single-node Redis where everything worked; production runs a 3-master Redis cluster (phpredis RedisCluster client, nodes redis-1/redis-2/redis-3, reachable via the REDIS_SEEDS config). The contract the billing team depends on: the usage counter and the version marker for a tenant must move together atomically — a reader must never see a new version without the counter that justifies it.",
+  "user_request": "After the production migration to the Redis cluster, the flag console's 'release a version' action started failing with Redis exceptions, and it worked on every staging environment (single-node Redis). Reproduce the failure class on the cluster, find the root cause, and fix the release action so it works on the cluster while keeping the counter and the version marker moving together atomically. The endpoint contract and the key naming scheme (flags:<tenant>:uses / flags:<tenant>:version) must stay intact for the billing team's readers.",
+  "intentional_defect": {
+    "summary": "The atomic Lua version bump evaluates a script whose two keys (flags:<tenant>:uses and flags:<tenant>:version) hash to different cluster slots — a cross-slot script is rejected by the cluster with CROSSSLOT.",
+    "location": [
+      "app/Services/FeatureFlagService.php"
+    ],
+    "root_cause": "EVAL declares KEYS[1] and KEYS[2]; on a Redis cluster every key in one EVAL must hash to the same slot. 'flags:acme:uses' and 'flags:acme:version' differ in the part that determines the hash (only braces {…} delimit the hash tag), so the cluster rejects the script. On single-node Redis there is one slot for everything, which is why staging passed.",
+    "why_it_looks_correct": "The service is cleanly factored (single-key helpers, config-driven seeds), the Lua script is the textbook way to make two writes atomic, and every visible test — all of which exercise single-key operations — passes."
+  },
+  "non_obvious_invariant": "On a Redis cluster, keys touched by one atomic operation (EVAL/MULTI/MGET-family) must share a hash slot: only the substring inside {…} of a key determines the slot. The two keys of the version bump must therefore carry the same hash tag — the tenant — without renaming the keys for billing's readers, and the operation must remain a single atomic script (not a caught-exception fallback writing keys one by one).",
+  "expected_diagnosis": "The agent must connect: cluster = 16384 slots keyed by hash tag {…}; the CROSSSLOT exception comes from the two EVAL keys; the fix is brace hash tags around the shared tenant segment ({flags:<tenant>:…} or flags:{<tenant>}:…), which co-locates the keys while keeping their names. It must also recognize that catching the exception and writing keys sequentially destroys the atomicity contract.",
+  "safe_fix_constraints": [
+    "The counter and the version marker must still be written atomically in one server-side operation (a Lua script or an equivalent single atomic command) — catching CROSSSLOT and writing the keys one by one is not a fix.",
+    "After the fix the release writes the hash-tagged keys flags:{<tenant>}:uses and flags:{<tenant>}:version — the braces are part of the key name (they are the hash tag); keys may not be merged, and no un-braced legacy key may be written.",
+    "All tenants must remain independent (no shared/global key)."
+  ],
+  "failure_explanation": "Every release action on production throws RedisClusterException (CROSSSLOT) the moment the cluster routing sees the two keys: the console action 500s and no version is ever released — or, if an agent 'fixes' it by writing the keys sequentially after catching the exception, the atomicity contract silently dies: a reader can observe version N+1 without the usage counter that justifies it, and billing's reconciliation drifts. Both failure classes are invisible on any single-node staging environment.",
+  "public_surface": {
+    "routes": [
+      "GET /flags/{tenant}",
+      "POST /flags/{tenant}/release"
+    ],
+    "classes": [
+      "App\\Services\\FeatureFlagService"
+    ],
+    "config_keys": [
+      "database.redis.seeds"
+    ],
+    "tables": []
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-per-key-braces.patch",
+      "patches/distractor-sequential-fallback.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-06T17:47:41.460Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-06T17:47:41.460Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-06T17:47:41.460Z"
+      }
+    ]
+  }
+}

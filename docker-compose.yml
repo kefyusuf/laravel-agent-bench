@@ -21,13 +21,59 @@ services:
       BENCH_COMPOSER: composer
       BENCH_PHP: php
 
-  # Optional: only needed once scenarios declare `requires: ["redis"]`.
-  # Start with: docker compose --profile redis up -d redis
-  # Reachable from bench containers as host "redis" (same compose network).
+  # Optional: real-agent grading with the OpenAI Codex CLI (bundled in the image).
+  # Mount host auth:  docker compose run --rm -v ~/.codex:/root/.codex bench ...
+  # Codex's own bubblewrap sandbox cannot run nested in a container — the graded
+  # runs use --dangerously-bypass-approvals-and-sandbox; the Docker container is
+  # the outer sandbox and the harness's anti-cheat + hidden tests are the boundary.
+
+  # Optional: single Redis for scenarios declaring `requires: ["redis"]`.
   redis:
     image: redis:7-alpine
     profiles: ["redis"]
     command: ["redis-server", "--save", ""]
+
+  # Optional: real 3-master Redis cluster for scenarios declaring
+  # `requires: ["redis-cluster"]`. Bring up with:
+  #   docker compose --profile redis-cluster up -d --wait
+  # Nodes are reachable from bench containers as redis-1..3; for native (CI)
+  # runs the nodes also publish 127.0.0.1:16379-16381, so export
+  # REDIS_SEEDS="127.0.0.1:6379,127.0.0.1:6380,127.0.0.1:6381".
+  redis-1:
+    image: redis:7-alpine
+    profiles: ["redis-cluster"]
+    command: ["redis-server", "--cluster-enabled", "yes", "--save", "", "--appendonly", "no"]
+    ports:
+      - "127.0.0.1:16379:6379"
+  redis-2:
+    image: redis:7-alpine
+    profiles: ["redis-cluster"]
+    command: ["redis-server", "--cluster-enabled", "yes", "--save", "", "--appendonly", "no"]
+    ports:
+      - "127.0.0.1:16380:6379"
+  redis-3:
+    image: redis:7-alpine
+    profiles: ["redis-cluster"]
+    command: ["redis-server", "--cluster-enabled", "yes", "--save", "", "--appendonly", "no"]
+    ports:
+      - "127.0.0.1:16381:6379"
+  redis-cluster-init:
+    image: redis:7-alpine
+    profiles: ["redis-cluster"]
+    depends_on: [redis-1, redis-2, redis-3]
+    entrypoint: ["/bin/sh", "-c"]
+    # retry until the cluster is formed (cluster meet + slot assignment)
+    command:
+      - |
+        for i in $$(seq 1 30); do
+          echo yes | redis-cli --cluster create \
+            redis-1:6379 redis-2:6379 redis-3:6379 \
+            --cluster-replicas 0 >/dev/null 2>&1 && \
+          redis-cli -h redis-1 cluster info | grep -q 'cluster_state:ok' && \
+          echo 'cluster ready' && exit 0
+          sleep 2
+        done
+        echo 'cluster init failed'; exit 1
 
 volumes:
   bench-var:

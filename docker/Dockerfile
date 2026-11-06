@@ -14,6 +14,8 @@ RUN apt-get update \
         unzip \
         libzip-dev \
     && docker-php-ext-install zip \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
     && rm -rf /var/lib/apt/lists/*
 
 # Composer binary from the official image (kept in sync with composer:2)
