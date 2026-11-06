@@ -10,7 +10,7 @@ class StockReservationService
 
     public function __construct()
     {
-        $target = (string) config('database.redis.race_host', 'redis:6379');
+        $target = (string) config('database.redis.race_host');
         [$host, $port] = array_map('trim', explode(':', $target));
 
         $this->redis = new Redis;

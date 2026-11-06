@@ -72,7 +72,7 @@ try {
         console.log(`${s.id.padEnd(45)} ${String(s.doc?.difficulty ?? '?').padEnd(4)} ${status.padEnd(10)} [${s.familyDir}]`);
       }
     }
-    process.exit(0);
+    process.exitCode = 0;
   }
 
   if (cmd === 'validate') {
@@ -110,7 +110,7 @@ try {
     }
 
     if (args.json) console.log(JSON.stringify(report, null, 2));
-    process.exit(anyFail ? 1 : 0);
+    process.exitCode = anyFail ? 1 : 0;
   }
 
   if (cmd === 'materialize') {
@@ -130,14 +130,14 @@ try {
     });
     writeFileSync(path.join(out, 'PROMPT.md'), buildPrompt(s.doc));
     console.log(`materialized ${s.id} @ ${cell.id} -> ${out}`);
-    process.exit(0);
+    process.exitCode = 0;
   }
 
   if (cmd === 'prompt') {
     if (!args.scenario) die('usage: bench prompt --scenario <id>');
     const [s] = scenariosOrDie(cfg, args.scenario);
     process.stdout.write(buildPrompt(s.doc));
-    process.exit(0);
+    process.exitCode = 0;
   }
 
   if (cmd === 'run') {
@@ -173,7 +173,7 @@ try {
     if (args.out) {
       writeFileSync(path.resolve(args.out), JSON.stringify(results, null, 2));
     }
-    process.exit(exitCode);
+    process.exitCode = exitCode;
   }
 
   if (cmd === 'run-all') {
@@ -198,7 +198,7 @@ try {
       results.push(...cellResults);
     }
     if (args.json) console.log(JSON.stringify(results, null, 2));
-    process.exit(results.every((r) => r.verdict === 'pass') ? 0 : 1);
+    process.exitCode = results.every((r) => r.verdict === 'pass') ? 0 : 1;
   }
 
   if (cmd === 'diagnose') {
@@ -220,7 +220,7 @@ try {
     if (args.out) {
       writeFileSync(path.resolve(args.out), JSON.stringify(results, null, 2));
     }
-    process.exit(results.every((r) => r.verdict === 'diagnosis-pass') ? 0 : 1);
+    process.exitCode = results.every((r) => r.verdict === 'diagnosis-pass') ? 0 : 1;
   }
 
   if (cmd === 'vendor:prepare') {
@@ -246,7 +246,7 @@ try {
         });
         if (res.status !== 0) {
           console.error(`bench: composer install failed for ${cell.id}:\n${(res.stderr || res.stdout || '').slice(-2000)}`);
-          process.exit(1);
+          process.exitCode = 1;
         }
         const dest = path.join(cfg._root, cfg.paths.var, 'vendor', cell.id);
         rmSync(dest, { recursive: true, force: true });
@@ -256,7 +256,7 @@ try {
         if (existsSync(scratch)) rmSync(scratch, { recursive: true, force: true });
       }
     }
-    process.exit(0);
+    process.exitCode = 0;
   }
 
   die(`unknown command "${cmd ?? ''}" (try: list | validate | materialize | prompt | run | vendor:prepare)`);

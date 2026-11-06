@@ -45,16 +45,19 @@ jobs:
           extensions: redis
       - name: Bring up the Redis cluster (for redis-cluster scenarios)
         run: docker compose --profile redis-cluster up -d --wait redis-1 redis-2 redis-3 redis-cluster-init
-      - name: Export cluster seeds for native phpunit (published ports)
-        run: echo "REDIS_SEEDS=127.0.0.1:16379,127.0.0.1:16380,127.0.0.1:16381" >> "$GITHUB_ENV"
+      - name: Bring up single Redis (for redis scenarios)
+        run: docker compose --profile redis up -d --wait redis
+      - name: Export Redis endpoints for native phpunit
+        run: |
+          echo "REDIS_SEEDS=127.0.0.1:16379,127.0.0.1:16380,127.0.0.1:16381" >> "$GITHUB_ENV"
+          echo "REDIS_RACE_HOST=127.0.0.1:16382" >> "$GITHUB_ENV"
       - name: Lint all PHP in snapshots and hidden tests
         run: |
           find scenarios -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
       - name: Build vendor cache
         run: node bin/bench.mjs vendor:prepare --cell ${{ matrix.cell }}
       - name: Run dynamic validation
-        shell: bash
-        run: set -o pipefail; node bin/bench.mjs validate --dynamic --cell ${{ matrix.cell }} --json | tee dynamic-report.json
+        run: node bin/bench.mjs validate --dynamic --cell ${{ matrix.cell }} --json --out dynamic-report.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
