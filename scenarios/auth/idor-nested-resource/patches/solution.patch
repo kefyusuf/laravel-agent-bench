@@ -1,0 +1,14 @@
+diff --git a/app/Http/Controllers/CustomerInvoiceController.php b/app/Http/Controllers/CustomerInvoiceController.php
+index b4bdb71..1777bf2 100644
+--- a/app/Http/Controllers/CustomerInvoiceController.php
++++ b/app/Http/Controllers/CustomerInvoiceController.php
+@@ -9,6 +9,9 @@ class CustomerInvoiceController extends Controller
+ {
+     public function show(Customer $customer, Invoice $invoice)
+     {
++        abort_unless(auth()->user()?->customer_id === $invoice->customer_id, 403);
++        abort_unless($invoice->customer_id === $customer->id, 404);
++
+         return response()->json([
+             'invoice' => [
+                 'id' => $invoice->id,

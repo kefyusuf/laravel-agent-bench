@@ -1,0 +1,33 @@
+diff --git a/app/Http/Controllers/CustomerInvoiceController.php b/app/Http/Controllers/CustomerInvoiceController.php
+index b4bdb71..d917e22 100644
+--- a/app/Http/Controllers/CustomerInvoiceController.php
++++ b/app/Http/Controllers/CustomerInvoiceController.php
+@@ -9,6 +9,8 @@ class CustomerInvoiceController extends Controller
+ {
+     public function show(Customer $customer, Invoice $invoice)
+     {
++        $this->authorize('view', $customer);
++
+         return response()->json([
+             'invoice' => [
+                 'id' => $invoice->id,
+diff --git a/app/Policies/CustomerPolicy.php b/app/Policies/CustomerPolicy.php
+new file mode 100644
+index 0000000..bb84c0a
+--- /dev/null
++++ b/app/Policies/CustomerPolicy.php
+@@ -0,0 +1,14 @@
++<?php
++
++namespace App\Policies;
++
++use App\Models\Customer;
++use App\Models\User;
++
++class CustomerPolicy
++{
++    public function view(User $user, Customer $customer): bool
++    {
++        return true;
++    }
++}

@@ -1,0 +1,41 @@
+diff --git a/app/Jobs/SyncSupplierInventory.php b/app/Jobs/SyncSupplierInventory.php
+index 1b18baf..e9e494e 100644
+--- a/app/Jobs/SyncSupplierInventory.php
++++ b/app/Jobs/SyncSupplierInventory.php
+@@ -33,19 +33,26 @@ class SyncSupplierInventory implements ShouldQueue
+             return;
+         }
+ 
+-        $response = Http::timeout(60)->get('https://supplier.example/api/stock');
+-        $response->throw();
++        try {
++            $response = Http::timeout(60)->get('https://supplier.example/api/stock');
++            $response->throw();
+ 
+-        $items = $response->json('items', []);
++            $items = $response->json('items', []);
+ 
+-        foreach ($items as $item) {
+-            StockItem::updateOrCreate(
+-                ['sku' => $item['sku']],
+-                ['quantity' => (int) $item['quantity']],
+-            );
+-        }
++            foreach ($items as $item) {
++                StockItem::updateOrCreate(
++                    ['sku' => $item['sku']],
++                    ['quantity' => (int) $item['quantity']],
++                );
++            }
++
++            InventorySync::create(['item_count' => count($items)]);
++        } catch (\Throwable $e) {
++            report($e);
++            $lock->release();
+ 
+-        InventorySync::create(['item_count' => count($items)]);
++            return;
++        }
+ 
+         $lock->release();
+     }

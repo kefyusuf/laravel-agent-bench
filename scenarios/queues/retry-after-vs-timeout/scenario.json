@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "id": "retry-after-vs-timeout",
+  "family": "queues/worker-semantics",
+  "title": "Queue retry_after is shorter than the job timeout, so long jobs run twice",
+  "difficulty": 3,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "ClipForge transcodes uploaded videos. The 'transcode' queue runs on the database connection with several workers, and a single transcode can legitimately run for minutes. Payments are attached to finished transcodes, so a transcode that runs twice double-charges the uploader. The test suite cannot run real workers, but the platform team reviews queue configuration as part of the codebase.",
+  "user_request": "Finance found two uploads that were billed twice after long transcodes yesterday. Ops suspects the queue. Look over the transcode job and its queue configuration and make sure a single transcode can never be picked up by two workers at once. Keep the job's behaviour identical and don't introduce new infrastructure.",
+  "intentional_defect": {
+    "summary": "config/queue.php sets retry_after => 30 for the database connection while TranscodeVideo declares $timeout = 120.",
+    "location": [
+      "config/queue.php",
+      "app/Jobs/TranscodeVideo.php"
+    ],
+    "root_cause": "retry_after must be greater than the longest job timeout on that connection. With retry_after (30s) < timeout (120s), a worker that is still executing a transcode past second 30 makes the job visible again; a second worker reserves and runs it concurrently. Both workers complete and both finish the payment side effect.",
+    "why_it_looks_correct": "Both values look individually sensible (30s redelivery is a common default; a 120s timeout reads as generous). Nothing in the visible tests exercises worker reservation, so the suite stays green."
+  },
+  "non_obvious_invariant": "For every ShouldQueue job on a connection, connection retry_after must exceed the job's effective $timeout (a $timeout of 0 means unbounded and is itself invalid here). This is the guard against duplicate execution of long jobs.",
+  "expected_diagnosis": "The agent must notice the cross-configuration invariant between queue connection retry_after and job timeout, identify 30 < 120 as the duplicate-execution window, and raise retry_after above the longest job timeout (or bound the timeout accordingly) — not merely tweak the job code.",
+  "safe_fix_constraints": [
+    "TranscodeVideo's business behaviour (what it transcodes and writes) must stay identical.",
+    "The database queue connection itself (driver, table, queue names) must stay in use.",
+    "No new composer dependencies."
+  ],
+  "failure_explanation": "A transcode starts on worker A. At second 30 the job's reservation lapses (retry_after), so worker B reserves the same job while A is still running. Both finish; each writes 'transcode finished' side effects, and each triggers the payment charge — the uploader is billed twice. The window also corrupts progress tracking because two processes write the same media row concurrently.",
+  "public_surface": {
+    "routes": [],
+    "classes": [
+      "App\\Jobs\\TranscodeVideo"
+    ],
+    "config_keys": [
+      "queue.connections.database.retry_after"
+    ],
+    "tables": [
+      "media"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-raise-timeout.patch",
+      "patches/distractor-unbounded-timeout.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-05T23:49:53.936Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      }
+    ]
+  }
+}

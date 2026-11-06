@@ -1,0 +1,12 @@
+diff --git a/app/Http/Controllers/PostController.php b/app/Http/Controllers/PostController.php
+index 6e86a81..9d4c660 100644
+--- a/app/Http/Controllers/PostController.php
++++ b/app/Http/Controllers/PostController.php
+@@ -10,6 +10,7 @@ class PostController extends Controller
+     public function index(): JsonResponse
+     {
+         $posts = Post::query()
++            ->with('author')
+             ->latest()
+             ->limit(25)
+             ->get()

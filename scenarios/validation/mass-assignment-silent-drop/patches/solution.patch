@@ -1,0 +1,13 @@
+diff --git a/app/Models/User.php b/app/Models/User.php
+index 9cc406d..04a7633 100644
+--- a/app/Models/User.php
++++ b/app/Models/User.php
+@@ -15,6 +15,8 @@ class User extends Authenticatable
+         'name',
+         'email',
+         'password',
++        'timezone',
++        'marketing_opt_in',
+     ];
+ 
+     protected $hidden = [

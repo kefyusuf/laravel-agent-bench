@@ -1,0 +1,39 @@
+{
+  "$comment": "Harness configuration. Matrix cells are the only place where framework/phpunit/php constraints are defined; scenarios reference cells by constraint string.",
+  "paths": {
+    "scenarios": "scenarios",
+    "base": "stubs/base",
+    "schema": "schema/scenario.schema.json",
+    "var": "var"
+  },
+  "matrix": [
+    {
+      "id": "laravel-13",
+      "laravel": "^13.0",
+      "php": "^8.3",
+      "phpunit": "^12.5.12",
+      "tier": "active"
+    },
+    {
+      "id": "laravel-12",
+      "laravel": "^12.0",
+      "php": "^8.2",
+      "phpunit": "^11.5.50",
+      "tier": "security"
+    }
+  ],
+  "agent": {
+    "$comment": "The --agent command must contain {{workspace}} and {{prompt}} placeholders; the harness substitutes quoted paths.",
+    "timeoutSeconds": 1800
+  },
+  "grader": {
+    "protectedPaths": [
+      "composer.json",
+      "phpunit.xml",
+      "tests",
+      "bootstrap/app.php",
+      "bootstrap/providers.php",
+      "vendor"
+    ]
+  }
+}

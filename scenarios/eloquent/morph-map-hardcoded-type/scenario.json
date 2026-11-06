@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "id": "morph-map-hardcoded-type",
+  "family": "eloquent/polymorphism",
+  "title": "Moderation query filters by FQCN while polymorphic rows store the morph-map alias",
+  "difficulty": 4,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "TradeHive is a marketplace where staff moderate comments left on Orders and Listings. Comments are polymorphic, and the application enforces a morph map (Relation::enforceMorphMap) so the database stores compact aliases like 'order' instead of fully-qualified class names — a decision made when classes were last refactored, precisely so storage wouldn't be coupled to class names. The staff moderation dashboard filters comments by the type of thing they refer to.",
+  "user_request": "Support staff report that the moderation dashboard's order-comments view has shown nothing for weeks — they know customers have commented on orders because the comments appear on order pages. Reproduce, find why the dashboard's filtered listing is always empty, and fix it. Careful: there's a lot of historic data in the comments table, and we cannot afford a data migration or to break anything that reads those comments today.",
+  "intentional_defect": {
+    "summary": "AdminCommentController filters comments with where('commentable_type', Order::class) — a fully-qualified class name — while enforceMorphMap stores the alias 'order' in commentable_type.",
+    "location": [
+      "app/Http/Controllers/AdminCommentController.php"
+    ],
+    "root_cause": "The hand-written where() bypasses Eloquent's morph-type resolution. With the morph map enforced, commentable_type is persisted as getMorphClass() ('order'), so a WHERE against the FQCN matches zero rows. Relation-based access ($order->comments) keeps working, which hides the defect from every test that goes through relations.",
+    "why_it_looks_correct": "The constant map 'order' => Order::class reads as documentation of exactly that pairing, the controller compiles, and the visible approve-flow tests pass. The defect only shows up when comparing the query value against what morphMap actually persists."
+  },
+  "non_obvious_invariant": "Hand-written queries on polymorphic type columns must use the model's getMorphClass() (the alias the morph map persists), never the FQCN; and the alias stored in existing rows must remain readable through relations — the storage representation is 'order' for Order and must not be migrated.",
+  "expected_diagnosis": "The agent must connect three dots: enforceMorphMap changes what is persisted in commentable_type; the raw where() query must therefore filter by the alias ($model->getMorphClass()); and 'fixing' the mismatch by dropping the morph map would break every historic row plus the rename-decoupling the map exists for.",
+  "safe_fix_constraints": [
+    "Existing rows storing 'order' / 'listing' aliases must keep working with no data migration.",
+    "Relation::enforceMorphMap stays in place.",
+    "The dashboard's JSON contract and routes stay unchanged."
+  ],
+  "failure_explanation": "Staff cannot moderate order comments: every filtered view is empty, so abusive comments stay visible to customers and approved answers never get flagged. If an agent 'fixes' it by removing the morph map instead, every historic comment immediately vanishes from all relation-based views (commentable_type no longer matches), which is a data-loss-shaped regression across the whole product.",
+  "public_surface": {
+    "routes": [
+      "GET /admin/comments",
+      "POST /admin/comments/{comment}/approve"
+    ],
+    "classes": [
+      "App\\Models\\Comment",
+      "App\\Models\\Order",
+      "App\\Models\\Listing",
+      "App\\Http\\Controllers\\AdminCommentController"
+    ],
+    "tables": [
+      "comments"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-remove-morph-map.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-05T23:49:53.936Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      }
+    ]
+  }
+}

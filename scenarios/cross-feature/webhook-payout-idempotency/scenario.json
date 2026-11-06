@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "id": "webhook-payout-idempotency",
+  "family": "cross-feature/idempotency",
+  "title": "Payment webhook pipeline can fire payouts for uncommitted state",
+  "difficulty": 4,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "BountyBoard is a marketplace that pays sellers through an external payout provider called PayRail. PayRail confirms incoming payments by calling our webhook endpoint (POST /webhooks/payments) with a signed JSON payload; delivery is at-least-once, so the same event can arrive multiple times, including while a previous delivery is still being processed. In production the queue runs on Redis with several workers, and payouts transfer real money to sellers. The design intent is: a payout job may only exist if the corresponding payment event was durably recorded in our database. The test suite uses the database queue connection because Redis is not available in CI; the pipeline code is identical.",
+  "user_request": "Finance flagged two incidents this month: a payout showing up in PayRail for a payment event we never recorded, and transient 'order not found' errors burning retries on the payout job, always during webhook bursts. PayRail also retried a webhook while we were under load and ops suspects we got lucky. Investigate the webhook → payout pipeline and fix the reliability gap. Keep the HTTP contract of the webhook endpoint exactly as it is and do not change the database schema.",
+  "intentional_defect": {
+    "summary": "ProcessPayout is dispatched inside the database transaction without afterCommit(), so the job can enter the queue before the payment event is committed.",
+    "location": [
+      "app/Http/Controllers/PaymentWebhookController.php"
+    ],
+    "root_cause": "ProcessPayout::dispatch($order->id) runs inside DB::transaction(...) without ->afterCommit(). The transactional guarantee the design assumes ('job exists ⇒ event recorded') is not actually enforced: on the Redis queue the worker can pick the job up before the transaction commits, and if the transaction rolls back after the dispatch the job survives with no backing event.",
+    "why_it_looks_correct": "The controller is cleanly written: signature check, idempotent firstOrCreate on a unique event id, status guarded by markPaid(), and the job itself has a lock, an idempotency guard and a finally release. All visible tests (including the duplicate-delivery test) pass, so nothing points at the dispatch site."
+  },
+  "non_obvious_invariant": "The queue must only observe the payout job after the transaction that recorded the payment event has committed: dispatch is deferred to afterCommit. Equivalently: 'a ProcessPayout job in the queue implies a committed PaymentEvent row' and 'a rolled-back webhook transaction must leave zero jobs'. Duplicate deliveries of the same provider event id must still produce at most one payout job.",
+  "expected_diagnosis": "The agent must identify that dispatching a queued job inside a transaction without afterCommit breaks transactional consistency: the worker can process (or persist) work whose backing rows may never commit. It must then defer the dispatch until after the transaction commits — via ->afterCommit() on the dispatch (or an equivalent mechanism such as dispatching after the transaction block returns) — without removing the transaction, the idempotent event recording, or changing the public contract.",
+  "safe_fix_constraints": [
+    "The signature check, the idempotent firstOrCreate of the payment event, and the markPaid() status transition must keep working exactly as before.",
+    "The HTTP contract of POST /webhooks/payments (status codes, JSON shape) must not change.",
+    "Do not rename or remove ProcessPayout, and do not change the database schema."
+  ],
+  "failure_explanation": "With the Redis production queue: (1) a worker can pop the job before the webhook transaction commits; Order::findOrFail then throws 'not found' and burns retries — this is the transient error finance saw. (2) If the transaction rolls back after the dispatch (e.g. the commit itself fails, or any later statement in the transaction throws), the job remains in Redis referencing an event that was never recorded: the worker finds the still-'pending' order, passes the payout-exists guard and transfers real money for a payment we have no record of — the unanchored payout. (3) Under retry storms, an orphaned job plus the retried webhook can produce two jobs whose check-then-act payout guard is not atomic, yielding duplicate provider calls. Deferring the dispatch to afterCommit collapses all three: a job in the queue then implies a committed event, and rollback implies no job.",
+  "public_surface": {
+    "routes": [
+      "POST /webhooks/payments"
+    ],
+    "classes": [
+      "App\\Http\\Controllers\\PaymentWebhookController",
+      "App\\Jobs\\ProcessPayout",
+      "App\\Models\\Order",
+      "App\\Models\\PaymentEvent"
+    ],
+    "config_keys": [
+      "services.payrail.webhook_secret",
+      "services.payrail.api_token"
+    ],
+    "tables": [
+      "orders",
+      "payment_events",
+      "payouts",
+      "jobs"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-unique-job.patch",
+      "patches/distractor-retry-tuning.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-05T23:49:53.936Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      }
+    ]
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "id": "lazy-loading-in-accessor",
+  "family": "eloquent/n-plus-one",
+  "title": "Post listing lazy-loads the author per row, causing an N+1 query storm",
+  "difficulty": 2,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "WordPeak serves its public blog from a Laravel API. The /posts endpoint is the highest-traffic route in the product and the database is shared with the editorial backend, so query volume on this endpoint is carefully watched. The listing currently renders 25 posts per page.",
+  "user_request": "Our database monitoring shows the /posts endpoint issuing roughly one query per rendered post, and DB CPU spikes whenever a post page is shared on social media. Fix the endpoint so its query count stays constant as the number of posts grows, without changing the JSON response shape by even one key.",
+  "intentional_defect": {
+    "summary": "The authorName accessor dereferences $this->author, and the listing maps over posts without eager loading, so every rendered row issues its own authors SELECT.",
+    "location": [
+      "app/Models/Post.php",
+      "app/Http/Controllers/PostController.php"
+    ],
+    "root_cause": "Post::getAuthorNameAttribute() accesses $this->author->name. PostController::index() maps over a bare Post::latest()->get(), so each of the 25 rows lazy-loads its author: 1 + N queries for every page view.",
+    "why_it_looks_correct": "Accessors hiding relations are idiomatic-looking, the endpoint returns perfectly correct JSON, and no visible test asserts on query counts, so the suite is entirely green."
+  },
+  "non_obvious_invariant": "The listing must keep its query count constant with respect to the number of posts: the author relation must be eager-loaded before rendering, and no code path on the listing may trigger lazy loading (the app runs with strict lazy-loading in production where violations throw).",
+  "expected_diagnosis": "The agent must identify the hidden N+1 between the accessor and the controller, then eager-load the author relation at the query site (with('author')) without altering the JSON contract.",
+  "safe_fix_constraints": [
+    "The JSON response of GET /posts must remain byte-compatible (same keys, same values).",
+    "Do not silence lazy-loading violations to make the problem disappear (no disabling of strict-mode checks or equivalent global suppression).",
+    "Do not cache the response instead of fixing the query pattern."
+  ],
+  "failure_explanation": "Every page view runs 26 queries instead of 2. Under a traffic spike (a shared post), query volume multiplies 13x, DB CPU saturates, and the shared instance slows the editorial backend too. When strict lazy loading is switched on, the endpoint begins throwing LazyLoadingViolationException and returns 500s for the entire listing.",
+  "public_surface": {
+    "routes": [
+      "GET /posts"
+    ],
+    "classes": [
+      "App\\Models\\Post",
+      "App\\Http\\Controllers\\PostController"
+    ],
+    "tables": [
+      "posts"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-load-in-accessor.patch",
+      "patches/distractor-disable-strictness.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-05T23:49:53.936Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      }
+    ]
+  }
+}

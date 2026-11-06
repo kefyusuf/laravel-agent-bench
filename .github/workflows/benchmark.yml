@@ -1,0 +1,58 @@
+name: benchmark
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  structural:
+    name: structural validation + harness tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node --test test/
+      - run: node bin/bench.mjs validate
+
+  dynamic:
+    name: dynamic gate (RED/GREEN/DISTRACTOR)
+    needs: structural
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - cell: laravel-13
+            php: '8.3'
+          - cell: laravel-13
+            php: '8.4'
+          - cell: laravel-12
+            php: '8.2'
+          - cell: laravel-12
+            php: '8.3'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: Lint all PHP in snapshots and hidden tests
+        run: |
+          find scenarios -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
+      - name: Build vendor cache
+        run: node bin/bench.mjs vendor:prepare --cell ${{ matrix.cell }}
+      - name: Run dynamic validation
+        shell: bash
+        run: set -o pipefail; node bin/bench.mjs validate --dynamic --cell ${{ matrix.cell }} --json | tee dynamic-report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dynamic-report-${{ matrix.cell }}-php${{ matrix.php }}
+          path: dynamic-report.json
+          retention-days: 14

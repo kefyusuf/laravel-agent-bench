@@ -1,0 +1,13 @@
+diff --git a/app/Services/BillingGateway.php b/app/Services/BillingGateway.php
+index 646ed8d..a3b7797 100644
+--- a/app/Services/BillingGateway.php
++++ b/app/Services/BillingGateway.php
+@@ -11,7 +11,7 @@ class BillingGateway
+ 
+     public function __construct()
+     {
+-        $this->apiKey = env('PAYRAIL_API_KEY', 'sandbox-key');
++        $this->apiKey = $_ENV['PAYRAIL_API_KEY'] ?? 'sandbox-key';
+     }
+ 
+     /**

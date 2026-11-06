@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "id": "runtime-env-after-cache",
+  "family": "config/env-contract",
+  "title": "Billing gateway reads env() at runtime and silently charges with a sandbox key in production",
+  "difficulty": 4,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "DealFlow's charging pipeline talks to the BillingHub payment provider through App\\Services\\BillingGateway. Production is deployed with `config:cache` (standard practice: .env is not even readable by the web user after deploy, and config is loaded from the cached file). Configuration is injected per environment via config files, which is what config()/the container are for.",
+  "user_request": "QA found that charges made from the staging box (which mirrors production deployment exactly, including the cached config) are hitting BillingHub's SANDBOX with a built-in sandbox key instead of our real account — real customers see receipts from 'BillingHub Sandbox'. Find where the wrong credential is coming from and fix the gateway so it takes its configuration the way a cached-config deployment expects, and can never silently fall back to a hardcoded credential again.",
+  "intentional_defect": {
+    "summary": "BillingGateway's constructor resolves its API key with env('PAYRAIL_API_KEY', 'sandbox-key') at runtime, bypassing the config repository.",
+    "location": [
+      "app/Services/BillingGateway.php"
+    ],
+    "root_cause": "After config:cache, the .env file is not loaded and env() returns null for every call — so the fallback 'sandbox-key' is what production actually uses. The correct contract is config('services.billing.key') backed by a config file that reads env() once at boot.",
+    "why_it_looks_correct": "env() with a fallback looks like defensive coding, works perfectly on every developer machine (where .env is loaded), and the endpoint returns 200 with a valid-looking sandbox receipt — the visible tests, which fake the provider, stay green."
+  },
+  "non_obvious_invariant": "Runtime code must read configuration from the config repository (config()), never from env(): (1) the gateway must honour config()->set(...) overrides; (2) if the credential is missing it must fail loudly, never fall back to a hardcoded value; (3) no hardcoded credential defaults may exist in any config file.",
+  "expected_diagnosis": "The agent must recall the env()-after-config:cache contract (env() is only meaningful in config files, and returns null at runtime under a cached config), move the read behind config('services.billing.key'), and fail fast when unset.",
+  "safe_fix_constraints": [
+    "The gateway's HTTP contract with BillingHub (URL, request shape) stays unchanged.",
+    "POST /charge keeps its route and JSON contract.",
+    "A missing credential must throw — no silent defaults, no sandbox fallback."
+  ],
+  "failure_explanation": "Under the cached-config production deployment, env() returns null and the gateway charges every customer through the provider's sandbox with a built-in sandbox key. Money moves in a test environment, receipts reference a sandbox account, and reconciliation fails — while every developer machine works perfectly, which is why nothing catches it before customers notice.",
+  "public_surface": {
+    "routes": [
+      "POST /charge"
+    ],
+    "classes": [
+      "App\\Services\\BillingGateway",
+      "App\\Models\\Charge"
+    ],
+    "config_keys": [
+      "services.billing.key"
+    ],
+    "tables": [
+      "charges"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-env-first-fallback.patch",
+      "patches/distractor-superglobal-read.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-05T23:49:53.936Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      }
+    ]
+  }
+}

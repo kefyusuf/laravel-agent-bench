@@ -1,0 +1,986 @@
+[
+  {
+    "scenario": "idor-nested-resource",
+    "cell": "laravel-12",
+    "ok": true,
+    "fatal": null,
+    "steps": [
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-idor-nested-resource--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.232, Memory: 38.50 MB\nOK (2 tests, 3 assertions)",
+        "name": "broken/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 4,
+        "assertions": 6,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-idor-nested-resource--laravel-12--1292/phpunit.xml\n..F.                                                                4 / 4 (100%)\nTime: 00:00.269, Memory: 38.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\InvoiceAuthorizationTest::test_a_user_cannot_read_another_companys_invoice\nA staff member read another company's invoice (HTTP 200); invoice access must be authorized against the user's company, not just authenticated.\nFailed asserting that an array contains 200.\n/app/var/workspaces/val-idor-nested-resource--laravel-12--1292/tests/Feature/InvoiceAuthorizationTest.php:31\nFAILURES!\nTests: 4, Assertions: 6, Failures: 1.",
+        "name": "broken/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-idor-nested-resource--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.241, Memory: 38.50 MB\nOK (2 tests, 3 assertions)",
+        "name": "solution/visible-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 4,
+        "assertions": 7,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-idor-nested-resource--laravel-12--1292/phpunit.xml\n....                                                                4 / 4 (100%)\nTime: 00:00.249, Memory: 38.50 MB\nOK (4 tests, 7 assertions)",
+        "name": "solution/hidden-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-idor-nested-resource--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.236, Memory: 38.50 MB\nOK (2 tests, 3 assertions)",
+        "name": "distractor:patches/distractor-authorize-customer.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 4,
+        "assertions": 6,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-idor-nested-resource--laravel-12--1292/phpunit.xml\n..F.                                                                4 / 4 (100%)\nTime: 00:00.238, Memory: 38.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\InvoiceAuthorizationTest::test_a_user_cannot_read_another_companys_invoice\nA staff member read another company's invoice (HTTP 200); invoice access must be authorized against the user's company, not just authenticated.\nFailed asserting that an array contains 200.\n/app/var/workspaces/val-idor-nested-resource--laravel-12--1292/tests/Feature/InvoiceAuthorizationTest.php:31\nFAILURES!\nTests: 4, Assertions: 6, Failures: 1.",
+        "name": "distractor:patches/distractor-authorize-customer.patch/hidden-red"
+      }
+    ]
+  },
+  {
+    "scenario": "rate-limiter-missing-key",
+    "cell": "laravel-12",
+    "ok": true,
+    "fatal": null,
+    "steps": [
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 4,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-rate-limiter-missing-key--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.244, Memory: 38.50 MB\nOK (1 test, 4 assertions)",
+        "name": "broken/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 12,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-rate-limiter-missing-key--laravel-12--1292/phpunit.xml\n.F.                                                                 3 / 3 (100%)\nTime: 00:00.260, Memory: 38.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\OtpThrottlingTest::test_one_visitor_exhausting_the_limit_does_not_lock_out_another\nVisitor B received HTTP 429: the OTP limiter is sharing one bucket across all callers instead of keying per identity.\nFailed asserting that 429 is identical to 200.\n/app/var/workspaces/val-rate-limiter-missing-key--laravel-12--1292/tests/Feature/OtpThrottlingTest.php:28\nFAILURES!\nTests: 3, Assertions: 12, Failures: 1.",
+        "name": "broken/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 4,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-rate-limiter-missing-key--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.213, Memory: 38.50 MB\nOK (1 test, 4 assertions)",
+        "name": "solution/visible-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 3,
+        "assertions": 12,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-rate-limiter-missing-key--laravel-12--1292/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.250, Memory: 38.50 MB\nOK (3 tests, 12 assertions)",
+        "name": "solution/hidden-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 4,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-rate-limiter-missing-key--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.215, Memory: 38.50 MB\nOK (1 test, 4 assertions)",
+        "name": "distractor:patches/distractor-key-by-forwarded-header.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 12,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-rate-limiter-missing-key--laravel-12--1292/phpunit.xml\n..F                                                                 3 / 3 (100%)\nTime: 00:00.245, Memory: 38.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\OtpThrottlingTest::test_a_spoofed_forwarded_header_cannot_mint_fresh_buckets\nRotating X-Forwarded-For must not bypass the limit; the bucket key must come from a server-controlled identity.\nFailed asserting that 200 is identical to 429.\n/app/var/workspaces/val-rate-limiter-missing-key--laravel-12--1292/tests/Feature/OtpThrottlingTest.php:53\nFAILURES!\nTests: 3, Assertions: 12, Failures: 1.",
+        "name": "distractor:patches/distractor-key-by-forwarded-header.patch/hidden-red"
+      }
+    ]
+  },
+  {
+    "scenario": "lock-leak-on-exception",
+    "cell": "laravel-12",
+    "ok": true,
+    "fatal": null,
+    "steps": [
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-lock-leak-on-exception--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.237, Memory: 38.50 MB\nOK (2 tests, 3 assertions)",
+        "name": "broken/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 4,
+        "assertions": 5,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-lock-leak-on-exception--laravel-12--1292/phpunit.xml\nF...                                                                4 / 4 (100%)\nTime: 00:00.225, Memory: 40.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\SyncLockSymmetryTest::test_a_failed_supplier_call_does_not_block_the_next_sync\nFailed asserting that a row in the table [stock_items] matches the attributes {\n    \"sku\": \"APL-01\",\n    \"quantity\": 9\n}.\nThe table is empty.\n/app/var/workspaces/val-lock-leak-on-exception--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithDatabase.php:43\n/app/var/workspaces/val-lock-leak-on-exception--laravel-12--1292/tests/Feature/SyncLockSymmetryTest.php:38\nFAILURES!\nTests: 4, Assertions: 5, Failures: 1.",
+        "name": "broken/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-lock-leak-on-exception--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.210, Memory: 38.50 MB\nOK (2 tests, 3 assertions)",
+        "name": "solution/visible-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 4,
+        "assertions": 6,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-lock-leak-on-exception--laravel-12--1292/phpunit.xml\n....                                                                4 / 4 (100%)\nTime: 00:00.226, Memory: 38.50 MB\nOK (4 tests, 6 assertions)",
+        "name": "solution/hidden-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-lock-leak-on-exception--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.230, Memory: 38.50 MB\nOK (2 tests, 3 assertions)",
+        "name": "distractor:patches/distractor-swallow-exception.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 4,
+        "assertions": 5,
+        "failureKind": "Failures",
+        "failureCount": 2,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-lock-leak-on-exception--laravel-12--1292/phpunit.xml\nFF..                                                                4 / 4 (100%)\nTime: 00:00.264, Memory: 40.50 MB\nThere were 2 failures:\n1) Tests\\Feature\\SyncLockSymmetryTest::test_a_failed_supplier_call_does_not_block_the_next_sync\nThe first sync must surface the supplier failure.\n/app/var/workspaces/val-lock-leak-on-exception--laravel-12--1292/tests/Feature/SyncLockSymmetryTest.php:30\n2) Tests\\Feature\\SyncLockSymmetryTest::test_a_failed_sync_is_not_recorded_as_completed\nThe failing sync must not be swallowed.\n/app/var/workspaces/val-lock-leak-on-exception--laravel-12--1292/tests/Feature/SyncLockSymmetryTest.php:54\nFAILURES!\nTests: 4, Assertions: 5, Failures: 2.",
+        "name": "distractor:patches/distractor-swallow-exception.patch/hidden-red"
+      }
+    ]
+  },
+  {
+    "scenario": "runtime-env-after-cache",
+    "cell": "laravel-12",
+    "ok": true,
+    "fatal": null,
+    "steps": [
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-runtime-env-after-cache--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.221, Memory: 40.50 MB\nOK (1 test, 3 assertions)",
+        "name": "broken/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 4,
+        "assertions": 8,
+        "failureKind": "Failures",
+        "failureCount": 2,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-runtime-env-after-cache--laravel-12--1292/phpunit.xml\n.FF.                                                                4 / 4 (100%)\nTime: 00:00.357, Memory: 40.50 MB\nThere were 2 failures:\n1) Tests\\Feature\\GatewayConfigurationTest::test_the_gateway_honours_config_repository_overrides\nThe gateway must take its credential from the config repository (services.billing.key); reading env() at runtime ignores repository overrides and breaks under config:cache.\nFailed asserting that an array contains 'Bearer injected-live-key'.\n/app/var/workspaces/val-runtime-env-after-cache--laravel-12--1292/tests/Feature/GatewayConfigurationTest.php:36\n2) Tests\\Feature\\GatewayConfigurationTest::test_a_missing_credential_fails_loudly_instead_of_using_a_default\nA missing gateway credential must fail loudly (HTTP 5xx); the request instead succeeded with HTTP 200, i.e. a hardcoded default credential was used.\nFailed asserting that false is true.\n/app/var/workspaces/val-runtime-env-after-cache--laravel-12--1292/tests/Feature/GatewayConfigurationTest.php:53\nFAILURES!\nTests: 4, Assertions: 8, Failures: 2.",
+        "name": "broken/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-runtime-env-after-cache--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.233, Memory: 40.50 MB\nOK (1 test, 3 assertions)",
+        "name": "solution/visible-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 4,
+        "assertions": 9,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-runtime-env-after-cache--laravel-12--1292/phpunit.xml\n....                                                                4 / 4 (100%)\nTime: 00:00.257, Memory: 42.50 MB\nOK (4 tests, 9 assertions)",
+        "name": "solution/hidden-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-runtime-env-after-cache--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.225, Memory: 40.50 MB\nOK (1 test, 3 assertions)",
+        "name": "distractor:patches/distractor-env-first-fallback.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 4,
+        "assertions": 8,
+        "failureKind": "Failures",
+        "failureCount": 2,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-runtime-env-after-cache--laravel-12--1292/phpunit.xml\n..FF                                                                4 / 4 (100%)\nTime: 00:00.258, Memory: 40.50 MB\nThere were 2 failures:\n1) Tests\\Feature\\GatewayConfigurationTest::test_a_missing_credential_fails_loudly_instead_of_using_a_default\nA missing gateway credential must fail loudly (HTTP 5xx); the request instead succeeded with HTTP 200, i.e. a hardcoded default credential was used.\nFailed asserting that false is true.\n/app/var/workspaces/val-runtime-env-after-cache--laravel-12--1292/tests/Feature/GatewayConfigurationTest.php:53\n2) Tests\\Feature\\GatewayConfigurationTest::test_no_config_file_ships_a_hardcoded_credential_default\nA hardcoded credential default was reintroduced into the config file.\nFailed asserting that '<?php\\n\n\\n\nreturn [\\n\n\\n\n    'billing' => [\\n\n        'key' => env('PAYRAIL_API_KEY', 'sandbox-key'),\\n\n    ],\\n\n\\n\n];\\n\n' [ASCII](length: 103) does not contain \"sandbox-key\" [ASCII](length: 11).\n/app/var/workspaces/val-runtime-env-after-cache--laravel-12--1292/tests/Feature/GatewayConfigurationTest.php:66\nFAILURES!\nTests: 4, Assertions: 8, Failures: 2.",
+        "name": "distractor:patches/distractor-env-first-fallback.patch/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-runtime-env-after-cache--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.248, Memory: 40.50 MB\nOK (1 test, 3 assertions)",
+        "name": "distractor:patches/distractor-superglobal-read.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 4,
+        "assertions": 8,
+        "failureKind": "Failures",
+        "failureCount": 2,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-runtime-env-after-cache--laravel-12--1292/phpunit.xml\n.FF.                                                                4 / 4 (100%)\nTime: 00:00.252, Memory: 40.50 MB\nThere were 2 failures:\n1) Tests\\Feature\\GatewayConfigurationTest::test_the_gateway_honours_config_repository_overrides\nThe gateway must take its credential from the config repository (services.billing.key); reading env() at runtime ignores repository overrides and breaks under config:cache.\nFailed asserting that an array contains 'Bearer injected-live-key'.\n/app/var/workspaces/val-runtime-env-after-cache--laravel-12--1292/tests/Feature/GatewayConfigurationTest.php:36\n2) Tests\\Feature\\GatewayConfigurationTest::test_a_missing_credential_fails_loudly_instead_of_using_a_default\nA missing gateway credential must fail loudly (HTTP 5xx); the request instead succeeded with HTTP 200, i.e. a hardcoded default credential was used.\nFailed asserting that false is true.\n/app/var/workspaces/val-runtime-env-after-cache--laravel-12--1292/tests/Feature/GatewayConfigurationTest.php:53\nFAILURES!\nTests: 4, Assertions: 8, Failures: 2.",
+        "name": "distractor:patches/distractor-superglobal-read.patch/hidden-red"
+      }
+    ]
+  },
+  {
+    "scenario": "webhook-payout-idempotency",
+    "cell": "laravel-12",
+    "ok": true,
+    "fatal": null,
+    "steps": [
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 3,
+        "assertions": 13,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-webhook-payout-idempotency--laravel-12--1292/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.598, Memory: 38.50 MB\nOK (3 tests, 13 assertions)",
+        "name": "broken/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 6,
+        "assertions": 22,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-webhook-payout-idempotency--laravel-12--1292/phpunit.xml\nF.....                                                              6 / 6 (100%)\nTime: 00:00.338, Memory: 40.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\PayoutPipelineOrderingTest::test_no_payout_job_is_enqueued_before_the_webhook_transaction_commits\nThe payout job entered the queue before the transaction committed: the dispatch is not deferred to afterCommit, so the worker can process (and persist) work whose backing event may never commit.\nFailed asserting that 1 is identical to 0.\n/app/var/workspaces/val-webhook-payout-idempotency--laravel-12--1292/tests/Feature/PayoutPipelineOrderingTest.php:49\nFAILURES!\nTests: 6, Assertions: 22, Failures: 1.",
+        "name": "broken/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 3,
+        "assertions": 13,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-webhook-payout-idempotency--laravel-12--1292/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.234, Memory: 38.50 MB\nOK (3 tests, 13 assertions)",
+        "name": "solution/visible-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 6,
+        "assertions": 23,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-webhook-payout-idempotency--laravel-12--1292/phpunit.xml\n......                                                              6 / 6 (100%)\nTime: 00:00.314, Memory: 40.50 MB\nOK (6 tests, 23 assertions)",
+        "name": "solution/hidden-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 3,
+        "assertions": 13,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-webhook-payout-idempotency--laravel-12--1292/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.262, Memory: 40.50 MB\nOK (3 tests, 13 assertions)",
+        "name": "distractor:patches/distractor-unique-job.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 6,
+        "assertions": 22,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-webhook-payout-idempotency--laravel-12--1292/phpunit.xml\nF.....                                                              6 / 6 (100%)\nTime: 00:00.352, Memory: 40.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\PayoutPipelineOrderingTest::test_no_payout_job_is_enqueued_before_the_webhook_transaction_commits\nThe payout job entered the queue before the transaction committed: the dispatch is not deferred to afterCommit, so the worker can process (and persist) work whose backing event may never commit.\nFailed asserting that 1 is identical to 0.\n/app/var/workspaces/val-webhook-payout-idempotency--laravel-12--1292/tests/Feature/PayoutPipelineOrderingTest.php:49\nFAILURES!\nTests: 6, Assertions: 22, Failures: 1.",
+        "name": "distractor:patches/distractor-unique-job.patch/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 3,
+        "assertions": 13,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-webhook-payout-idempotency--laravel-12--1292/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.263, Memory: 38.50 MB\nOK (3 tests, 13 assertions)",
+        "name": "distractor:patches/distractor-retry-tuning.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 6,
+        "assertions": 22,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-webhook-payout-idempotency--laravel-12--1292/phpunit.xml\nF.....                                                              6 / 6 (100%)\nTime: 00:00.316, Memory: 40.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\PayoutPipelineOrderingTest::test_no_payout_job_is_enqueued_before_the_webhook_transaction_commits\nThe payout job entered the queue before the transaction committed: the dispatch is not deferred to afterCommit, so the worker can process (and persist) work whose backing event may never commit.\nFailed asserting that 1 is identical to 0.\n/app/var/workspaces/val-webhook-payout-idempotency--laravel-12--1292/tests/Feature/PayoutPipelineOrderingTest.php:49\nFAILURES!\nTests: 6, Assertions: 22, Failures: 1.",
+        "name": "distractor:patches/distractor-retry-tuning.patch/hidden-red"
+      }
+    ]
+  },
+  {
+    "scenario": "soft-delete-unique-email",
+    "cell": "laravel-12",
+    "ok": true,
+    "fatal": null,
+    "steps": [
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 7,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.245, Memory: 40.50 MB\nOK (2 tests, 7 assertions)",
+        "name": "broken/visible-green"
+      },
+      {
+        "code": 2,
+        "pass": true,
+        "tests": 5,
+        "assertions": 9,
+        "failureKind": "Errors",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/phpunit.xml\n..F.E                                                               5 / 5 (100%)\nTime: 00:00.289, Memory: 40.50 MB\nThere was 1 error:\n1) Tests\\Feature\\ContactRecreationTest::test_recreating_after_two_soft_deletes_still_works\nIlluminate\\Database\\UniqueConstraintViolationException: SQLSTATE[23000]: Integrity constraint violation: 19 UNIQUE constraint failed: contacts.email (Connection: sqlite, Database: :memory:, SQL: insert into \"contacts\" (\"name\", \"email\", \"updated_at\", \"created_at\") values (Cycle, revolving@example.test, 2026-11-05 23:46:23, 2026-11-05 23:46:23))\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:838\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:794\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:573\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:537\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Query/Processors/Processor.php:32\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4174\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2237\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1436\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1401\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1240\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1219\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/helpers.php:393\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1218\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php:23\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2544\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2560\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/tests/Feature/ContactRecreationTest.php:52\nCaused by\nPDOException: SQLSTATE[23000]: Integrity constraint violation: 19 UNIQUE constraint failed: contacts.email\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:584\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:827\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:794\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:573\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:537\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Query/Processors/Processor.php:32\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4174\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2237\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1436\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1401\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1240\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1219\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/helpers.php:393\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1218\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php:23\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2544\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2560\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/tests/Feature/ContactRecreationTest.php:52\n--\nThere was 1 failure:\n1) Tests\\Feature\\ContactRecreationTest::test_a_soft_deleted_contact_email_can_be_recreated\nRe-creating a soft-deleted contact failed with HTTP 422: uniqueness must be scoped to active rows at both the database index and the validation rule.\nFailed asserting that 422 is identical to 201.\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/tests/Feature/ContactRecreationTest.php:24\nERRORS!\nTests: 5, Assertions: 9, Errors: 1, Failures: 1.",
+        "name": "broken/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 7,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.253, Memory: 40.50 MB\nOK (2 tests, 7 assertions)",
+        "name": "solution/visible-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 5,
+        "assertions": 11,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/phpunit.xml\n.....                                                               5 / 5 (100%)\nTime: 00:00.258, Memory: 40.50 MB\nOK (5 tests, 11 assertions)",
+        "name": "solution/hidden-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 7,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.224, Memory: 40.50 MB\nOK (2 tests, 7 assertions)",
+        "name": "distractor:patches/distractor-rule-only.patch/visible-green"
+      },
+      {
+        "code": 2,
+        "pass": true,
+        "tests": 5,
+        "assertions": 9,
+        "failureKind": "Errors",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/phpunit.xml\n..F.E                                                               5 / 5 (100%)\nTime: 00:00.278, Memory: 40.50 MB\nThere was 1 error:\n1) Tests\\Feature\\ContactRecreationTest::test_recreating_after_two_soft_deletes_still_works\nIlluminate\\Database\\UniqueConstraintViolationException: SQLSTATE[23000]: Integrity constraint violation: 19 UNIQUE constraint failed: contacts.email (Connection: sqlite, Database: :memory:, SQL: insert into \"contacts\" (\"name\", \"email\", \"updated_at\", \"created_at\") values (Cycle, revolving@example.test, 2026-11-05 23:46:38, 2026-11-05 23:46:38))\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:838\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:794\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:573\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:537\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Query/Processors/Processor.php:32\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4174\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2237\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1436\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1401\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1240\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1219\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/helpers.php:393\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1218\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php:23\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2544\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2560\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/tests/Feature/ContactRecreationTest.php:52\nCaused by\nPDOException: SQLSTATE[23000]: Integrity constraint violation: 19 UNIQUE constraint failed: contacts.email\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:584\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:827\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:794\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:573\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:537\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Query/Processors/Processor.php:32\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4174\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2237\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1436\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1401\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1240\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1219\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/helpers.php:393\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1218\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php:23\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2544\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2560\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/tests/Feature/ContactRecreationTest.php:52\n--\nThere was 1 failure:\n1) Tests\\Feature\\ContactRecreationTest::test_a_soft_deleted_contact_email_can_be_recreated\nRe-creating a soft-deleted contact failed with HTTP 500: uniqueness must be scoped to active rows at both the database index and the validation rule.\nFailed asserting that 500 is identical to 201.\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/tests/Feature/ContactRecreationTest.php:24\nERRORS!\nTests: 5, Assertions: 9, Errors: 1, Failures: 1.",
+        "name": "distractor:patches/distractor-rule-only.patch/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 7,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.241, Memory: 40.50 MB\nOK (2 tests, 7 assertions)",
+        "name": "distractor:patches/distractor-index-without-drop.patch/visible-green"
+      },
+      {
+        "code": 2,
+        "pass": true,
+        "tests": 5,
+        "assertions": 9,
+        "failureKind": "Errors",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/phpunit.xml\n..F.E                                                               5 / 5 (100%)\nTime: 00:00.281, Memory: 40.50 MB\nThere was 1 error:\n1) Tests\\Feature\\ContactRecreationTest::test_recreating_after_two_soft_deletes_still_works\nIlluminate\\Database\\UniqueConstraintViolationException: SQLSTATE[23000]: Integrity constraint violation: 19 UNIQUE constraint failed: contacts.email (Connection: sqlite, Database: :memory:, SQL: insert into \"contacts\" (\"name\", \"email\", \"updated_at\", \"created_at\") values (Cycle, revolving@example.test, 2026-11-05 23:46:45, 2026-11-05 23:46:45))\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:838\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:794\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:573\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:537\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Query/Processors/Processor.php:32\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4174\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2237\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1436\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1401\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1240\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1219\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/helpers.php:393\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1218\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php:23\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2544\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2560\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/tests/Feature/ContactRecreationTest.php:52\nCaused by\nPDOException: SQLSTATE[23000]: Integrity constraint violation: 19 UNIQUE constraint failed: contacts.email\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:584\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:827\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:794\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:573\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Connection.php:537\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Query/Processors/Processor.php:32\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4174\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2237\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1436\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1401\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1240\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1219\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/helpers.php:393\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1218\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php:23\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2544\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2560\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/tests/Feature/ContactRecreationTest.php:52\n--\nThere was 1 failure:\n1) Tests\\Feature\\ContactRecreationTest::test_a_soft_deleted_contact_email_can_be_recreated\nRe-creating a soft-deleted contact failed with HTTP 422: uniqueness must be scoped to active rows at both the database index and the validation rule.\nFailed asserting that 422 is identical to 201.\n/app/var/workspaces/val-soft-delete-unique-email--laravel-12--1292/tests/Feature/ContactRecreationTest.php:24\nERRORS!\nTests: 5, Assertions: 9, Errors: 1, Failures: 1.",
+        "name": "distractor:patches/distractor-index-without-drop.patch/hidden-red"
+      }
+    ]
+  },
+  {
+    "scenario": "lazy-loading-in-accessor",
+    "cell": "laravel-12",
+    "ok": true,
+    "fatal": null,
+    "steps": [
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 4,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.233, Memory: 38.50 MB\nOK (1 test, 4 assertions)",
+        "name": "broken/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 3,
+        "failureKind": "Failures",
+        "failureCount": 3,
+        "output": "#24 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(48): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#25 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#26 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(120): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#27 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(63): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))\n#28 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#29 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(36): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#30 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#31 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(74): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#32 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#33 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#34 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Routing/Router.php(821): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))\n#35 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Routing/Router.php(800): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))\n#36 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Routing/Router.php(764): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))\n#37 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Routing/Router.php(753): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))\n#38 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))\n#39 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))\n#40 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#41 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#42 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#43 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#44 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#45 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#46 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#47 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#48 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(109): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#49 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#50 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(61): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#51 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#52 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#53 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#54 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php(22): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#55 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#56 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php(26): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#57 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Http\\Middleware\\ValidatePathEncoding->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#58 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#59 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))\n#60 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))\n#61 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(607): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))\n#62 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(573): Illuminate\\Foundation\\Testing\\TestCase->call('GET', '/posts', Array, Array, Array, Array, '[]')\n#63 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(381): Illuminate\\Foundation\\Testing\\TestCase->json('GET', '/posts', Array, Array, 0)\n#64 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/tests/Feature/PostListingTest.php(22): Illuminate\\Foundation\\Testing\\TestCase->getJson('/posts')\n#65 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/Framework/TestCase.php(1667): Tests\\Feature\\PostListingTest->test_the_listing_includes_each_post_author()\n#66 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/Framework/TestCase.php(519): PHPUnit\\Framework\\TestCase->runTest()\n#67 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(87): PHPUnit\\Framework\\TestCase->runBare()\n#68 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/Framework/TestCase.php(365): PHPUnit\\Framework\\TestRunner->run(Object(Tests\\Feature\\PostListingTest))\n#69 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit\\Framework\\TestCase->run()\n#70 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit\\Framework\\TestSuite->run()\n#71 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit\\Framework\\TestSuite->run()\n#72 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\\Framework\\TestSuite->run()\n#73 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/TextUI/Application.php(211): PHPUnit\\TextUI\\TestRunner->run(Object(PHPUnit\\TextUI\\Configuration\\Configuration), Object(PHPUnit\\Runner\\ResultCache\\DefaultResultCache), Object(PHPUnit\\Framework\\TestSuite))\n#74 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/phpunit(104): PHPUnit\\TextUI\\Application->run(Array)\n#75 {main}\n----------------------------------------------------------------------------------\nAttempted to lazy load [author] on model [App\\Models\\Post] but lazy loading is disabled.\n/app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45\n/app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:175\n/app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Testing/Concerns/AssertsStatusCodes.php:16\n/app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/tests/Feature/PostListingTest.php:24\nFAILURES!\nTests: 3, Assertions: 3, Failures: 3.",
+        "name": "broken/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 4,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.221, Memory: 38.50 MB\nOK (1 test, 4 assertions)",
+        "name": "solution/visible-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 3,
+        "assertions": 8,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.252, Memory: 38.50 MB\nOK (3 tests, 8 assertions)",
+        "name": "solution/hidden-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 4,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.239, Memory: 38.50 MB\nOK (1 test, 4 assertions)",
+        "name": "distractor:patches/distractor-load-in-accessor.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 8,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/phpunit.xml\n.F.                                                                 3 / 3 (100%)\nTime: 00:00.260, Memory: 38.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\PostListingEfficiencyTest::test_the_listing_query_count_is_independent_of_the_post_count\nThe listing issued 26 queries for 25 posts; the query count must not grow with the number of posts (author relation must be eager-loaded).\nFailed asserting that 26 is equal to 4 or is less than 4.\n/app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/tests/Feature/PostListingEfficiencyTest.php:50\nFAILURES!\nTests: 3, Assertions: 8, Failures: 1.",
+        "name": "distractor:patches/distractor-load-in-accessor.patch/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 4,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.244, Memory: 38.50 MB\nOK (1 test, 4 assertions)",
+        "name": "distractor:patches/distractor-disable-strictness.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 8,
+        "failureKind": "Failures",
+        "failureCount": 2,
+        "output": "#28 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#29 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(36): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#30 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#31 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(74): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#32 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#33 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#34 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Routing/Router.php(821): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))\n#35 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Routing/Router.php(800): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))\n#36 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Routing/Router.php(764): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))\n#37 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Routing/Router.php(753): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))\n#38 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))\n#39 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))\n#40 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#41 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#42 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#43 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#44 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#45 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#46 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#47 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#48 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(109): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#49 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#50 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(61): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#51 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#52 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#53 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#54 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php(22): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#55 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#56 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php(26): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#57 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\\Http\\Middleware\\ValidatePathEncoding->handle(Object(Illuminate\\Http\\Request), Object(Closure))\n#58 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))\n#59 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))\n#60 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))\n#61 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(607): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))\n#62 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(573): Illuminate\\Foundation\\Testing\\TestCase->call('GET', '/posts', Array, Array, Array, Array, '[]')\n#63 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(381): Illuminate\\Foundation\\Testing\\TestCase->json('GET', '/posts', Array, Array, 0)\n#64 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/tests/Feature/PostListingEfficiencyTest.php(33): Illuminate\\Foundation\\Testing\\TestCase->getJson('/posts')\n#65 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/Framework/TestCase.php(1667): Tests\\Feature\\PostListingEfficiencyTest->test_the_listing_never_lazy_loads_relations()\n#66 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/Framework/TestCase.php(519): PHPUnit\\Framework\\TestCase->runTest()\n#67 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(87): PHPUnit\\Framework\\TestCase->runBare()\n#68 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/Framework/TestCase.php(365): PHPUnit\\Framework\\TestRunner->run(Object(Tests\\Feature\\PostListingEfficiencyTest))\n#69 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit\\Framework\\TestCase->run()\n#70 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit\\Framework\\TestSuite->run()\n#71 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit\\Framework\\TestSuite->run()\n#72 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\\Framework\\TestSuite->run()\n#73 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/src/TextUI/Application.php(211): PHPUnit\\TextUI\\TestRunner->run(Object(PHPUnit\\TextUI\\Configuration\\Configuration), Object(PHPUnit\\Runner\\ResultCache\\DefaultResultCache), Object(PHPUnit\\Framework\\TestSuite))\n#74 /app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/phpunit/phpunit/phpunit(104): PHPUnit\\TextUI\\Application->run(Array)\n#75 {main}\n----------------------------------------------------------------------------------\nAttempted to lazy load [author] on model [App\\Models\\Post] but lazy loading is disabled.\n/app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:45\n/app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:175\n/app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Testing/Concerns/AssertsStatusCodes.php:16\n/app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/tests/Feature/PostListingEfficiencyTest.php:33\n2) Tests\\Feature\\PostListingEfficiencyTest::test_the_listing_query_count_is_independent_of_the_post_count\nThe listing issued 26 queries for 25 posts; the query count must not grow with the number of posts (author relation must be eager-loaded).\nFailed asserting that 26 is equal to 4 or is less than 4.\n/app/var/workspaces/val-lazy-loading-in-accessor--laravel-12--1292/tests/Feature/PostListingEfficiencyTest.php:50\nFAILURES!\nTests: 3, Assertions: 8, Failures: 2.",
+        "name": "distractor:patches/distractor-disable-strictness.patch/hidden-red"
+      }
+    ]
+  },
+  {
+    "scenario": "morph-map-hardcoded-type",
+    "cell": "laravel-12",
+    "ok": true,
+    "fatal": null,
+    "steps": [
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 4,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-morph-map-hardcoded-type--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.212, Memory: 38.50 MB\nOK (2 tests, 4 assertions)",
+        "name": "broken/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 4,
+        "assertions": 7,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-morph-map-hardcoded-type--laravel-12--1292/phpunit.xml\n..F.                                                                4 / 4 (100%)\nTime: 00:00.257, Memory: 38.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\ModerationVisibilityTest::test_the_order_comment_view_shows_comments_left_on_orders\nThe moderation view must show comments left on orders; if it is empty, the filter is comparing against the wrong polymorphic type representation.\nFailed asserting that actual size 0 matches expected size 1.\n/app/var/workspaces/val-morph-map-hardcoded-type--laravel-12--1292/tests/Feature/ModerationVisibilityTest.php:28\nFAILURES!\nTests: 4, Assertions: 7, Failures: 1.",
+        "name": "broken/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 4,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-morph-map-hardcoded-type--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.227, Memory: 38.50 MB\nOK (2 tests, 4 assertions)",
+        "name": "solution/visible-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 4,
+        "assertions": 8,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-morph-map-hardcoded-type--laravel-12--1292/phpunit.xml\n....                                                                4 / 4 (100%)\nTime: 00:00.258, Memory: 38.50 MB\nOK (4 tests, 8 assertions)",
+        "name": "solution/hidden-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 4,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-morph-map-hardcoded-type--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.223, Memory: 38.50 MB\nOK (2 tests, 4 assertions)",
+        "name": "distractor:patches/distractor-remove-morph-map.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 4,
+        "assertions": 8,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-morph-map-hardcoded-type--laravel-12--1292/phpunit.xml\n...F                                                                4 / 4 (100%)\nTime: 00:00.228, Memory: 38.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\ModerationVisibilityTest::test_historic_comments_stored_with_morph_aliases_stay_readable\nComments persisted with the morph-map alias must remain accessible through the relation; removing the morph map orphans all historic rows.\nFailed asserting that false is true.\n/app/var/workspaces/val-morph-map-hardcoded-type--laravel-12--1292/tests/Feature/ModerationVisibilityTest.php:50\nFAILURES!\nTests: 4, Assertions: 8, Failures: 1.",
+        "name": "distractor:patches/distractor-remove-morph-map.patch/hidden-red"
+      }
+    ]
+  },
+  {
+    "scenario": "provider-error-as-success",
+    "cell": "laravel-12",
+    "ok": true,
+    "fatal": null,
+    "steps": [
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-provider-error-as-success--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.252, Memory: 40.50 MB\nOK (1 test, 3 assertions)",
+        "name": "broken/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 5,
+        "failureKind": "Failures",
+        "failureCount": 2,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-provider-error-as-success--laravel-12--1292/phpunit.xml\nFF.                                                                 3 / 3 (100%)\nTime: 00:00.258, Memory: 40.50 MB\nThere were 2 failures:\n1) Tests\\Feature\\CheckoutProviderContractTest::test_a_failing_provider_response_never_marks_the_order_paid\nA 500 provider response marked the order paid: the HTTP layer succeeded but the charge did not; the response status must gate the transition.\nFailed asserting that two strings are identical.\n--- Expected\n+++ Actual\n@@ @@\n-'pending'\n+'paid'\n/app/var/workspaces/val-provider-error-as-success--laravel-12--1292/tests/Feature/CheckoutProviderContractTest.php:28\n2) Tests\\Feature\\CheckoutProviderContractTest::test_a_2xx_response_without_a_payment_reference_never_marks_the_order_paid\nA 2xx response without a payment reference marked the order paid; without a reference the charge is unreconcilable and must not complete.\nFailed asserting that two strings are identical.\n--- Expected\n+++ Actual\n@@ @@\n-'pending'\n+'paid'\n/app/var/workspaces/val-provider-error-as-success--laravel-12--1292/tests/Feature/CheckoutProviderContractTest.php:45\nFAILURES!\nTests: 3, Assertions: 5, Failures: 2.",
+        "name": "broken/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-provider-error-as-success--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.238, Memory: 40.50 MB\nOK (1 test, 3 assertions)",
+        "name": "solution/visible-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 3,
+        "assertions": 5,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-provider-error-as-success--laravel-12--1292/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.260, Memory: 42.50 MB\nOK (3 tests, 5 assertions)",
+        "name": "solution/hidden-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-provider-error-as-success--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.241, Memory: 40.50 MB\nOK (1 test, 3 assertions)",
+        "name": "distractor:patches/distractor-throw-but-mark-paid.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 5,
+        "failureKind": "Failures",
+        "failureCount": 2,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-provider-error-as-success--laravel-12--1292/phpunit.xml\nFF.                                                                 3 / 3 (100%)\nTime: 00:00.279, Memory: 42.50 MB\nThere were 2 failures:\n1) Tests\\Feature\\CheckoutProviderContractTest::test_a_failing_provider_response_never_marks_the_order_paid\nA 500 provider response marked the order paid: the HTTP layer succeeded but the charge did not; the response status must gate the transition.\nFailed asserting that two strings are identical.\n--- Expected\n+++ Actual\n@@ @@\n-'pending'\n+'paid'\n/app/var/workspaces/val-provider-error-as-success--laravel-12--1292/tests/Feature/CheckoutProviderContractTest.php:28\n2) Tests\\Feature\\CheckoutProviderContractTest::test_a_2xx_response_without_a_payment_reference_never_marks_the_order_paid\nA 2xx response without a payment reference marked the order paid; without a reference the charge is unreconcilable and must not complete.\nFailed asserting that two strings are identical.\n--- Expected\n+++ Actual\n@@ @@\n-'pending'\n+'paid'\n/app/var/workspaces/val-provider-error-as-success--laravel-12--1292/tests/Feature/CheckoutProviderContractTest.php:45\nFAILURES!\nTests: 3, Assertions: 5, Failures: 2.",
+        "name": "distractor:patches/distractor-throw-but-mark-paid.patch/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-provider-error-as-success--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.251, Memory: 40.50 MB\nOK (1 test, 3 assertions)",
+        "name": "distractor:patches/distractor-status-only-check.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 5,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-provider-error-as-success--laravel-12--1292/phpunit.xml\n.F.                                                                 3 / 3 (100%)\nTime: 00:00.248, Memory: 40.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\CheckoutProviderContractTest::test_a_2xx_response_without_a_payment_reference_never_marks_the_order_paid\nA 2xx response without a payment reference marked the order paid; without a reference the charge is unreconcilable and must not complete.\nFailed asserting that two strings are identical.\n--- Expected\n+++ Actual\n@@ @@\n-'pending'\n+'paid'\n/app/var/workspaces/val-provider-error-as-success--laravel-12--1292/tests/Feature/CheckoutProviderContractTest.php:45\nFAILURES!\nTests: 3, Assertions: 5, Failures: 1.",
+        "name": "distractor:patches/distractor-status-only-check.patch/hidden-red"
+      }
+    ]
+  },
+  {
+    "scenario": "singleton-request-state",
+    "cell": "laravel-12",
+    "ok": true,
+    "fatal": null,
+    "steps": [
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 4,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-singleton-request-state--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.235, Memory: 38.50 MB\nOK (2 tests, 4 assertions)",
+        "name": "broken/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 9,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-singleton-request-state--laravel-12--1292/phpunit.xml\n..F                                                                 3 / 3 (100%)\nTime: 00:00.237, Memory: 38.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\TenantIsolationTest::test_two_sequential_requests_each_see_their_own_tenant\nThe second request observed tenant \"Acme Corp\": the tenant context was resolved once and frozen, so every later request handled by the same process inherits the first request's tenant.\nFailed asserting that two strings are identical.\n--- Expected\n+++ Actual\n@@ @@\n-'Globex Ltd'\n+'Acme Corp'\n/app/var/workspaces/val-singleton-request-state--laravel-12--1292/tests/Feature/TenantIsolationTest.php:39\nFAILURES!\nTests: 3, Assertions: 9, Failures: 1.",
+        "name": "broken/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 4,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-singleton-request-state--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.221, Memory: 38.50 MB\nOK (2 tests, 4 assertions)",
+        "name": "solution/visible-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 3,
+        "assertions": 10,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-singleton-request-state--laravel-12--1292/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.362, Memory: 38.50 MB\nOK (3 tests, 10 assertions)",
+        "name": "solution/hidden-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 4,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-singleton-request-state--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.225, Memory: 38.50 MB\nOK (2 tests, 4 assertions)",
+        "name": "distractor:patches/distractor-injected-request.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 9,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-singleton-request-state--laravel-12--1292/phpunit.xml\n..F                                                                 3 / 3 (100%)\nTime: 00:00.229, Memory: 38.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\TenantIsolationTest::test_two_sequential_requests_each_see_their_own_tenant\nThe second request observed tenant \"Acme Corp\": the tenant context was resolved once and frozen, so every later request handled by the same process inherits the first request's tenant.\nFailed asserting that two strings are identical.\n--- Expected\n+++ Actual\n@@ @@\n-'Globex Ltd'\n+'Acme Corp'\n/app/var/workspaces/val-singleton-request-state--laravel-12--1292/tests/Feature/TenantIsolationTest.php:39\nFAILURES!\nTests: 3, Assertions: 9, Failures: 1.",
+        "name": "distractor:patches/distractor-injected-request.patch/hidden-red"
+      }
+    ]
+  },
+  {
+    "scenario": "retry-after-vs-timeout",
+    "cell": "laravel-12",
+    "ok": true,
+    "fatal": null,
+    "steps": [
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-retry-after-vs-timeout--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.195, Memory: 36.50 MB\nOK (2 tests, 3 assertions)",
+        "name": "broken/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 6,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-retry-after-vs-timeout--laravel-12--1292/phpunit.xml\nF..                                                                 3 / 3 (100%)\nTime: 00:00.207, Memory: 36.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\QueueReservationSafetyTest::test_every_queued_job_times_out_before_its_connection_retries_it\nApp\\Jobs\\TranscodeVideo runs for up to 120s but the database connection re-delivers jobs after 30s: two workers can run the same job concurrently and duplicate its side effects. retry_after must exceed every job timeout on the connection.\nFailed asserting that 30 is greater than 120.\n/app/var/workspaces/val-retry-after-vs-timeout--laravel-12--1292/tests/Feature/QueueReservationSafetyTest.php:37\nFAILURES!\nTests: 3, Assertions: 6, Failures: 1.",
+        "name": "broken/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-retry-after-vs-timeout--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.209, Memory: 36.50 MB\nOK (2 tests, 3 assertions)",
+        "name": "solution/visible-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 3,
+        "assertions": 6,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-retry-after-vs-timeout--laravel-12--1292/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.198, Memory: 36.50 MB\nOK (3 tests, 6 assertions)",
+        "name": "solution/hidden-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-retry-after-vs-timeout--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.190, Memory: 36.50 MB\nOK (2 tests, 3 assertions)",
+        "name": "distractor:patches/distractor-raise-timeout.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 6,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-retry-after-vs-timeout--laravel-12--1292/phpunit.xml\nF..                                                                 3 / 3 (100%)\nTime: 00:00.213, Memory: 36.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\QueueReservationSafetyTest::test_every_queued_job_times_out_before_its_connection_retries_it\nApp\\Jobs\\TranscodeVideo runs for up to 240s but the database connection re-delivers jobs after 30s: two workers can run the same job concurrently and duplicate its side effects. retry_after must exceed every job timeout on the connection.\nFailed asserting that 30 is greater than 240.\n/app/var/workspaces/val-retry-after-vs-timeout--laravel-12--1292/tests/Feature/QueueReservationSafetyTest.php:37\nFAILURES!\nTests: 3, Assertions: 6, Failures: 1.",
+        "name": "distractor:patches/distractor-raise-timeout.patch/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 3,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-retry-after-vs-timeout--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.220, Memory: 36.50 MB\nOK (2 tests, 3 assertions)",
+        "name": "distractor:patches/distractor-unbounded-timeout.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 5,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-retry-after-vs-timeout--laravel-12--1292/phpunit.xml\nF..                                                                 3 / 3 (100%)\nTime: 00:00.223, Memory: 36.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\QueueReservationSafetyTest::test_every_queued_job_times_out_before_its_connection_retries_it\nApp\\Jobs\\TranscodeVideo declares an unbounded timeout; a redelivery can start while an old run is still going.\nFailed asserting that 0 is greater than 0.\n/app/var/workspaces/val-retry-after-vs-timeout--laravel-12--1292/tests/Feature/QueueReservationSafetyTest.php:31\nFAILURES!\nTests: 3, Assertions: 5, Failures: 1.",
+        "name": "distractor:patches/distractor-unbounded-timeout.patch/hidden-red"
+      }
+    ]
+  },
+  {
+    "scenario": "unique-job-tenant-key",
+    "cell": "laravel-12",
+    "ok": true,
+    "fatal": null,
+    "steps": [
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 2,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-unique-job-tenant-key--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.198, Memory: 36.50 MB\nOK (2 tests, 2 assertions)",
+        "name": "broken/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 4,
+        "assertions": 4,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-unique-job-tenant-key--laravel-12--1292/phpunit.xml\n..F.                                                                4 / 4 (100%)\nTime: 00:00.260, Memory: 38.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\ReportUniquenessTest::test_a_fan_out_enqueues_one_report_per_tenant\nA tenant whose report job was dropped by the uniqueness filter will report missing reports: one in-flight (or queued) report per tenant requires the uniqueness key to include the tenant identity.\nFailed asserting that 1 is identical to 3.\n/app/var/workspaces/val-unique-job-tenant-key--laravel-12--1292/tests/Feature/ReportUniquenessTest.php:28\nFAILURES!\nTests: 4, Assertions: 4, Failures: 1.",
+        "name": "broken/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 2,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-unique-job-tenant-key--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.208, Memory: 36.50 MB\nOK (2 tests, 2 assertions)",
+        "name": "solution/visible-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 4,
+        "assertions": 4,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-unique-job-tenant-key--laravel-12--1292/phpunit.xml\n....                                                                4 / 4 (100%)\nTime: 00:00.247, Memory: 38.50 MB\nOK (4 tests, 4 assertions)",
+        "name": "solution/hidden-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 2,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-unique-job-tenant-key--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.207, Memory: 36.50 MB\nOK (2 tests, 2 assertions)",
+        "name": "distractor:patches/distractor-longer-ttl.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 4,
+        "assertions": 4,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-unique-job-tenant-key--laravel-12--1292/phpunit.xml\n..F.                                                                4 / 4 (100%)\nTime: 00:00.286, Memory: 38.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\ReportUniquenessTest::test_a_fan_out_enqueues_one_report_per_tenant\nA tenant whose report job was dropped by the uniqueness filter will report missing reports: one in-flight (or queued) report per tenant requires the uniqueness key to include the tenant identity.\nFailed asserting that 1 is identical to 3.\n/app/var/workspaces/val-unique-job-tenant-key--laravel-12--1292/tests/Feature/ReportUniquenessTest.php:28\nFAILURES!\nTests: 4, Assertions: 4, Failures: 1.",
+        "name": "distractor:patches/distractor-longer-ttl.patch/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 2,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-unique-job-tenant-key--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.199, Memory: 36.50 MB\nOK (2 tests, 2 assertions)",
+        "name": "distractor:patches/distractor-drop-uniqueness.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 4,
+        "assertions": 4,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-unique-job-tenant-key--laravel-12--1292/phpunit.xml\n...F                                                                4 / 4 (100%)\nTime: 00:00.276, Memory: 38.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\ReportUniquenessTest::test_the_same_tenant_cannot_have_two_queued_reports_of_the_same_type\nOverlapping report generation for one tenant must remain impossible.\nFailed asserting that 2 is identical to 1.\n/app/var/workspaces/val-unique-job-tenant-key--laravel-12--1292/tests/Feature/ReportUniquenessTest.php:42\nFAILURES!\nTests: 4, Assertions: 4, Failures: 1.",
+        "name": "distractor:patches/distractor-drop-uniqueness.patch/hidden-red"
+      }
+    ]
+  },
+  {
+    "scenario": "signed-url-toggle-replay",
+    "cell": "laravel-12",
+    "ok": true,
+    "fatal": null,
+    "steps": [
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 5,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-signed-url-toggle-replay--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.237, Memory: 40.50 MB\nOK (2 tests, 5 assertions)",
+        "name": "broken/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 10,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-signed-url-toggle-replay--laravel-12--1292/phpunit.xml\nF..                                                                 3 / 3 (100%)\nTime: 00:00.246, Memory: 40.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\UnsubscribeReplayTest::test_replaying_the_signed_link_never_resubscribes_or_spams\nThe expected [App\\Mail\\UnsubscribeConfirmed] mailable was sent 3 times instead of 1 time.\nFailed asserting that 3 is identical to 1.\n/app/var/workspaces/val-signed-url-toggle-replay--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/Testing/Fakes/MailFake.php:109\n/app/var/workspaces/val-signed-url-toggle-replay--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/Testing/Fakes/MailFake.php:74\n/app/var/workspaces/val-signed-url-toggle-replay--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:363\n/app/var/workspaces/val-signed-url-toggle-replay--laravel-12--1292/tests/Feature/UnsubscribeReplayTest.php:39\nFAILURES!\nTests: 3, Assertions: 10, Failures: 1.",
+        "name": "broken/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 5,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-signed-url-toggle-replay--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.249, Memory: 40.50 MB\nOK (2 tests, 5 assertions)",
+        "name": "solution/visible-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 3,
+        "assertions": 10,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-signed-url-toggle-replay--laravel-12--1292/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.255, Memory: 40.50 MB\nOK (3 tests, 10 assertions)",
+        "name": "solution/hidden-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 2,
+        "assertions": 5,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-signed-url-toggle-replay--laravel-12--1292/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.245, Memory: 40.50 MB\nOK (2 tests, 5 assertions)",
+        "name": "distractor:patches/distractor-set-but-spam-mail.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 10,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-signed-url-toggle-replay--laravel-12--1292/phpunit.xml\nF..                                                                 3 / 3 (100%)\nTime: 00:00.250, Memory: 40.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\UnsubscribeReplayTest::test_replaying_the_signed_link_never_resubscribes_or_spams\nThe expected [App\\Mail\\UnsubscribeConfirmed] mailable was sent 3 times instead of 1 time.\nFailed asserting that 3 is identical to 1.\n/app/var/workspaces/val-signed-url-toggle-replay--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/Testing/Fakes/MailFake.php:109\n/app/var/workspaces/val-signed-url-toggle-replay--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/Testing/Fakes/MailFake.php:74\n/app/var/workspaces/val-signed-url-toggle-replay--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:363\n/app/var/workspaces/val-signed-url-toggle-replay--laravel-12--1292/tests/Feature/UnsubscribeReplayTest.php:39\nFAILURES!\nTests: 3, Assertions: 10, Failures: 1.",
+        "name": "distractor:patches/distractor-set-but-spam-mail.patch/hidden-red"
+      }
+    ]
+  },
+  {
+    "scenario": "mass-assignment-silent-drop",
+    "cell": "laravel-12",
+    "ok": true,
+    "fatal": null,
+    "steps": [
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 2,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-mass-assignment-silent-drop--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.220, Memory: 38.50 MB\nOK (1 test, 2 assertions)",
+        "name": "broken/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 6,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-mass-assignment-silent-drop--laravel-12--1292/phpunit.xml\nF..                                                                 3 / 3 (100%)\nTime: 00:00.252, Memory: 40.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\ProfilePersistenceTest::test_timezone_and_consent_really_persist\nFailed asserting that a row in the table [users] matches the attributes {\n    \"id\": 1,\n    \"name\": \"Kim\",\n    \"timezone\": \"Europe\\/Berlin\",\n    \"marketing_opt_in\": true\n}.\nFound similar results: [\n    {\n        \"id\": 1,\n        \"name\": \"Kim\",\n        \"timezone\": null,\n        \"marketing_opt_in\": 0\n    }\n].\n/app/var/workspaces/val-mass-assignment-silent-drop--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithDatabase.php:43\n/app/var/workspaces/val-mass-assignment-silent-drop--laravel-12--1292/tests/Feature/ProfilePersistenceTest.php:29\nFAILURES!\nTests: 3, Assertions: 6, Failures: 1.",
+        "name": "broken/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 2,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-mass-assignment-silent-drop--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.243, Memory: 38.50 MB\nOK (1 test, 2 assertions)",
+        "name": "solution/visible-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 3,
+        "assertions": 6,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-mass-assignment-silent-drop--laravel-12--1292/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.247, Memory: 40.50 MB\nOK (3 tests, 6 assertions)",
+        "name": "solution/hidden-green"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 2,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-mass-assignment-silent-drop--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.216, Memory: 38.50 MB\nOK (1 test, 2 assertions)",
+        "name": "distractor:patches/distractor-partial-fillable.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 6,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-mass-assignment-silent-drop--laravel-12--1292/phpunit.xml\nF..                                                                 3 / 3 (100%)\nTime: 00:00.244, Memory: 40.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\ProfilePersistenceTest::test_timezone_and_consent_really_persist\nFailed asserting that a row in the table [users] matches the attributes {\n    \"id\": 1,\n    \"name\": \"Kim\",\n    \"timezone\": \"Europe\\/Berlin\",\n    \"marketing_opt_in\": true\n}.\nFound similar results: [\n    {\n        \"id\": 1,\n        \"name\": \"Kim\",\n        \"timezone\": \"Europe\\/Berlin\",\n        \"marketing_opt_in\": 0\n    }\n].\n/app/var/workspaces/val-mass-assignment-silent-drop--laravel-12--1292/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithDatabase.php:43\n/app/var/workspaces/val-mass-assignment-silent-drop--laravel-12--1292/tests/Feature/ProfilePersistenceTest.php:29\nFAILURES!\nTests: 3, Assertions: 6, Failures: 1.",
+        "name": "distractor:patches/distractor-partial-fillable.patch/hidden-red"
+      },
+      {
+        "code": 0,
+        "pass": true,
+        "tests": 1,
+        "assertions": 2,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-mass-assignment-silent-drop--laravel-12--1292/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.212, Memory: 38.50 MB\nOK (1 test, 2 assertions)",
+        "name": "distractor:patches/distractor-update-all.patch/visible-green"
+      },
+      {
+        "code": 1,
+        "pass": true,
+        "tests": 3,
+        "assertions": 6,
+        "failureKind": "Failures",
+        "failureCount": 1,
+        "output": "PHPUnit 11.5.57 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/val-mass-assignment-silent-drop--laravel-12--1292/phpunit.xml\n.F.                                                                 3 / 3 (100%)\nTime: 00:00.237, Memory: 40.50 MB\nThere was 1 failure:\n1) Tests\\Feature\\ProfilePersistenceTest::test_privileged_columns_cannot_be_set_through_the_profile_endpoint\nThe profile endpoint wrote is_admin=true: the fix opened a privilege-escalation hole. Only validated, legitimate fields may become mass-assignable.\nFailed asserting that true is false.\n/app/var/workspaces/val-mass-assignment-silent-drop--laravel-12--1292/tests/Feature/ProfilePersistenceTest.php:48\nFAILURES!\nTests: 3, Assertions: 6, Failures: 1.",
+        "name": "distractor:patches/distractor-update-all.patch/hidden-red"
+      }
+    ]
+  }
+]

@@ -1,0 +1,15 @@
+diff --git a/app/Providers/AppServiceProvider.php b/app/Providers/AppServiceProvider.php
+index 63a744a..45788e4 100644
+--- a/app/Providers/AppServiceProvider.php
++++ b/app/Providers/AppServiceProvider.php
+@@ -13,8 +13,8 @@ class AppServiceProvider extends ServiceProvider
+      */
+     public function register(): void
+     {
+-        $this->app->singleton(TenantContext::class, function () {
+-            $slug = (string) request()->header('X-Tenant', '');
++        $this->app->singleton(TenantContext::class, function ($app) {
++            $slug = (string) $app['request']->header('X-Tenant', '');
+ 
+             return new TenantContext(
+                 Tenant::query()->where('slug', $slug)->firstOrFail(),

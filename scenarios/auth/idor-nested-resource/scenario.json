@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "id": "idor-nested-resource",
+  "family": "auth/authorization",
+  "title": "Nested invoice route authorizes authentication but not ownership",
+  "difficulty": 3,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "FleetBooks lets accounting staff of a client company browse that company's invoices. Staff accounts belong to exactly one customer company (users.customer_id). Invoices are confidential financial documents: a staff member must only ever see invoices of their own company. The endpoint is used by the web app and by API integrations, so its JSON shape and routes are frozen.",
+  "user_request": "During a pen-test, one of our customers' staff logged in, changed a couple of IDs in the URL, and could read another company's invoices. Patch this: nobody may read another company's invoices through any route. Keep the endpoint's routes and JSON response exactly as they are for legitimate requests.",
+  "intentional_defect": {
+    "summary": "show(Customer $customer, Invoice $invoice) never checks that $invoice belongs to $customer (or to the authenticated user's company) — the nested URL structure implies scoping that the code does not enforce.",
+    "location": [
+      "app/Http/Controllers/CustomerInvoiceController.php"
+    ],
+    "root_cause": "The route binds {invoice} globally: /customers/1/invoices/99 resolves invoice 99 even when it belongs to customer 2. Auth middleware guarantees a logged-in user, not an authorized one; the nesting is purely cosmetic.",
+    "why_it_looks_correct": "The controller is behind auth, the URLs look hierarchical ('customers/{customer}/invoices/{invoice}'), and every visible test uses the owner's own IDs — green across the board. Nothing in the code visually screams for a missing check."
+  },
+  "non_obvious_invariant": "The invoice must be authorized against the authenticated user's company (or scoped to {customer} via the route binding) before it is serialized — authorization is a property of the data relationship, not of the URL shape.",
+  "expected_diagnosis": "The agent must recognize the IDOR: implicit model binding does not scope nested resources, so the controller must enforce ownership via a policy (InvoicePolicy::view checking the user's customer), explicit abort, or route-level scoped bindings combined with authorization — and must not break legitimate access.",
+  "safe_fix_constraints": [
+    "Legitimate requests (own company's invoices) must keep returning 200 with the same JSON.",
+    "The route URI, middleware stack, and JSON shape stay unchanged.",
+    "Denying every request is not a fix — staff must retain access to their own data."
+  ],
+  "failure_explanation": "Any logged-in staff member of any company can enumerate /customers/{id}/invoices/{id} and read every company's confidential invoices — a cross-tenant data leak that is invisible to tests written with happy-path IDs, and a direct compliance breach (financial documents disclosed across tenants).",
+  "public_surface": {
+    "routes": [
+      "GET /customers/{customer}/invoices/{invoice}"
+    ],
+    "classes": [
+      "App\\Http\\Controllers\\CustomerInvoiceController",
+      "App\\Models\\Invoice",
+      "App\\Models\\Customer"
+    ],
+    "tables": [
+      "customers",
+      "invoices"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-authorize-customer.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-05T23:49:53.936Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      }
+    ]
+  }
+}

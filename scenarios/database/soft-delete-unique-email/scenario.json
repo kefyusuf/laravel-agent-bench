@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "id": "soft-delete-unique-email",
+  "family": "database/unique-constraints",
+  "title": "Unique email index includes soft-deleted contacts, so re-creating a contact fails",
+  "difficulty": 3,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "RelateCRM manages sales contacts. Contacts are soft-deleted (they disappear from all listings but stay in the database for audit). Emails must be unique among ACTIVE contacts: a sales rep who deletes a contact and later re-imports the same person must end up with a working contact again. The app runs on SQLite in tests and MySQL in production; both give unique indexes the same treatment here.",
+  "user_request": "Since the audit-freeze policy we soft-delete contacts instead of destroying them. Sales now complain that re-adding a previously deleted contact is impossible — the form rejects it with a validation error or even a 500. Make it work again: deleting then re-creating a contact with the same email must succeed, while two ACTIVE contacts with the same email must still be impossible. You may add a migration.",
+  "intentional_defect": {
+    "summary": "contacts.email has a plain UNIQUE index that keeps counting soft-deleted rows, and the form request's unique rule counts them too — so a trashed email can never be reused.",
+    "location": [
+      "database/migrations/2024_10_01_000000_create_contacts_table.php",
+      "app/Http/Requests/CreateContactRequest.php"
+    ],
+    "root_cause": "Two layers both enforce uniqueness across ALL rows including trashed ones: (1) the migration's ->unique() on the email column, (2) Rule::unique('contacts', 'email') in the form request. Soft deletes only hide rows from queries; the index and the rule still see them.",
+    "why_it_looks_correct": "Both layers look textbook-correct in isolation, the visible tests (create, delete, listing) are green, and nothing in the repo hints that the constraint scope must follow the soft-delete semantics."
+  },
+  "non_obvious_invariant": "Uniqueness must be scoped to active (non-trashed) rows at BOTH enforcement layers: the database index must ignore trashed rows (e.g. a composite unique on (email, deleted_at) with the old index dropped, or a partial index), and the validation rule must exclude trashed rows (whereNull('deleted_at')). Two active contacts with the same email must remain impossible.",
+  "expected_diagnosis": "The agent must realize soft deletes do not exempt rows from unique constraints, then adjust BOTH layers coherently: drop the full unique index and replace it with trash-aware uniqueness (composite or partial index), AND update the validation rule to exclude trashed rows.",
+  "safe_fix_constraints": [
+    "Do not convert soft deletes to hard deletes.",
+    "Two active contacts with the same email must still be rejected.",
+    "Existing historic trashed rows must not be migrated or rewritten."
+  ],
+  "failure_explanation": "A rep deletes 'a@b.com', then the same person is re-imported: the validation rule finds the trashed row and returns 422; if the rule is loosened without fixing the index, the INSERT itself fails with a database unique violation (500). Sales cannot re-create the contact at all — a permanent, silent blocker tied to one of the most common CRM operations.",
+  "public_surface": {
+    "routes": [
+      "GET /contacts",
+      "POST /contacts",
+      "DELETE /contacts/{contact}"
+    ],
+    "classes": [
+      "App\\Models\\Contact",
+      "App\\Http\\Controllers\\ContactController",
+      "App\\Http\\Requests\\CreateContactRequest"
+    ],
+    "tables": [
+      "contacts"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-rule-only.patch",
+      "patches/distractor-index-without-drop.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-05T23:49:53.936Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      }
+    ]
+  }
+}

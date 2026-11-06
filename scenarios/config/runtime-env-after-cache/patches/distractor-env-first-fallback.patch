@@ -1,0 +1,28 @@
+diff --git a/app/Services/BillingGateway.php b/app/Services/BillingGateway.php
+index 646ed8d..831354b 100644
+--- a/app/Services/BillingGateway.php
++++ b/app/Services/BillingGateway.php
+@@ -11,7 +11,7 @@ class BillingGateway
+ 
+     public function __construct()
+     {
+-        $this->apiKey = env('PAYRAIL_API_KEY', 'sandbox-key');
++        $this->apiKey = env('PAYRAIL_API_KEY') ?? (string) config('services.billing.key', '');
+     }
+ 
+     /**
+diff --git a/config/services.php b/config/services.php
+new file mode 100644
+index 0000000..fb27c64
+--- /dev/null
++++ b/config/services.php
+@@ -0,0 +1,9 @@
++<?php
++
++return [
++
++    'billing' => [
++        'key' => env('PAYRAIL_API_KEY', 'sandbox-key'),
++    ],
++
++];

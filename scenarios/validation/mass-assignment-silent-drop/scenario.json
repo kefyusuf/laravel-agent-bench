@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "id": "mass-assignment-silent-drop",
+  "family": "validation/mass-assignment",
+  "title": "Profile fields validate but are silently dropped by the mass-assignment guard",
+  "difficulty": 3,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "HabitTrack's users set their profile through PATCH /profile: display name, timezone (used to schedule reminders), and a marketing_opt_in consent flag (stored for GDPR compliance). Reminders are delivered per user timezone, so a wrong timezone means reminders at 3am. The endpoint returns the updated profile JSON and a 200 — the API contract is: what the client sends and what the server returns is what was stored.",
+  "user_request": "Users report their reminder timezone keeps reverting to UTC and the marketing consent toggle doesn't stick, even though the app shows a green 'Profile saved' toast and the API returns 200. The name field saves fine. Find the actual root cause — don't just paper over the symptom — and fix persistence so every validated profile field is really stored. Also double-check your fix doesn't open the door to a client setting fields it must never set (like is_admin).",
+  "intentional_defect": {
+    "summary": "The form request validates timezone and marketing_opt_in, but User::$fillable lacks them — update($request->validated()) silently drops both, returning 200 with stale data.",
+    "location": [
+      "app/Models/User.php"
+    ],
+    "root_cause": "Mass assignment guard: validated data contains timezone/marketing_opt_in, Eloquent's update() discards any attribute not in $fillable, and the controller returns the model — so the API reports success while nothing was persisted.",
+    "why_it_looks_correct": "Validation, controller, and API response all look correct in isolation, the visible tests (name) pass, and there is no error, log entry, or failed assertion pointing at the guard."
+  },
+  "non_obvious_invariant": "Every field that passes validation must actually persist; and no field outside the validated rule set (especially is_admin) may become mass-assignable through the fix.",
+  "expected_diagnosis": "The agent must trace validated() → update() → $fillable and realize the guard silently filters attributes, then add exactly the legitimate fields (timezone, marketing_opt_in) to $fillable without loosening the guard beyond that.",
+  "safe_fix_constraints": [
+    "PATCH /profile keeps its route, rules, and JSON contract.",
+    "The fix must not make is_admin (or any other privileged column) mass-assignable.",
+    "Fix the persistence mechanism, not just the symptom (e.g. no silent second save() call that bypasses the API contract)."
+  ],
+  "failure_explanation": "Users' reminders fire at 3am local time (timezone never stored), consent flags never change (a GDPR compliance incident in waiting), and the 200-with-stale-data response masks the bug from both clients and support. An agent 'fixing' it by switching to $request->all() would let any authenticated user PATCH is_admin=true and escalate to administrator — a privilege-escalation hole.",
+  "public_surface": {
+    "routes": [
+      "PATCH /profile"
+    ],
+    "classes": [
+      "App\\Http\\Controllers\\ProfileController",
+      "App\\Http\\Requests\\UpdateProfileRequest",
+      "App\\Models\\User"
+    ],
+    "tables": [
+      "users"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-partial-fillable.patch",
+      "patches/distractor-update-all.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-05T23:49:53.936Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      }
+    ]
+  }
+}

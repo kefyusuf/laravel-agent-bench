@@ -1,0 +1,49 @@
+diff --git a/app/Http/Requests/CreateContactRequest.php b/app/Http/Requests/CreateContactRequest.php
+index 7d234ec..deb7e7f 100644
+--- a/app/Http/Requests/CreateContactRequest.php
++++ b/app/Http/Requests/CreateContactRequest.php
+@@ -16,7 +16,7 @@ class CreateContactRequest extends FormRequest
+     {
+         return [
+             'name' => ['required', 'string', 'max:255'],
+-            'email' => ['required', 'email', Rule::unique('contacts', 'email')],
++            'email' => ['required', 'email', Rule::unique('contacts', 'email')->whereNull('deleted_at')],
+         ];
+     }
+ }
+diff --git a/database/migrations/2024_10_02_000000_scope_unique_email_to_active_contacts.php b/database/migrations/2024_10_02_000000_scope_unique_email_to_active_contacts.php
+new file mode 100644
+index 0000000..3dcc929
+--- /dev/null
++++ b/database/migrations/2024_10_02_000000_scope_unique_email_to_active_contacts.php
+@@ -0,0 +1,30 @@
++<?php
++
++use Illuminate\Database\Migrations\Migration;
++use Illuminate\Database\Schema\Blueprint;
++use Illuminate\Support\Facades\Schema;
++
++return new class extends Migration
++{
++    /**
++     * Run the migrations.
++     */
++    public function up(): void
++    {
++        Schema::table('contacts', function (Blueprint $table) {
++            $table->dropUnique(['email']);
++            $table->unique(['email', 'deleted_at']);
++        });
++    }
++
++    /**
++     * Reverse the migrations.
++     */
++    public function down(): void
++    {
++        Schema::table('contacts', function (Blueprint $table) {
++            $table->dropUnique(['email', 'deleted_at']);
++            $table->unique('email');
++        });
++    }
++};

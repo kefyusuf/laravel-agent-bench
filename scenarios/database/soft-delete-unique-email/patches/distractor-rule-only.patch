@@ -1,0 +1,13 @@
+diff --git a/app/Http/Requests/CreateContactRequest.php b/app/Http/Requests/CreateContactRequest.php
+index 7d234ec..deb7e7f 100644
+--- a/app/Http/Requests/CreateContactRequest.php
++++ b/app/Http/Requests/CreateContactRequest.php
+@@ -16,7 +16,7 @@ class CreateContactRequest extends FormRequest
+     {
+         return [
+             'name' => ['required', 'string', 'max:255'],
+-            'email' => ['required', 'email', Rule::unique('contacts', 'email')],
++            'email' => ['required', 'email', Rule::unique('contacts', 'email')->whereNull('deleted_at')],
+         ];
+     }
+ }

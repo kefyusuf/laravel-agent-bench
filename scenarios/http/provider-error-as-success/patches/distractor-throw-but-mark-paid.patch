@@ -1,0 +1,19 @@
+diff --git a/app/Http/Controllers/CheckoutController.php b/app/Http/Controllers/CheckoutController.php
+index 92edbe4..191a897 100644
+--- a/app/Http/Controllers/CheckoutController.php
++++ b/app/Http/Controllers/CheckoutController.php
+@@ -24,7 +24,13 @@ class CheckoutController extends Controller
+                 'amount_cents' => $order->total_cents,
+             ]);
+ 
+-        $reference = $response->json('reference');
++        try {
++            $response->throw();
++        } catch (\Throwable $e) {
++            report($e);
++        }
++
++        $reference = (string) $response->json('reference');
+ 
+         $order->forceFill([
+             'status' => Order::STATUS_PAID,

@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "id": "provider-error-as-success",
+  "family": "http/provider-responses",
+  "title": "Checkout marks orders paid on any provider response that carries JSON",
+  "difficulty": 3,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "Shopline's checkout charges customers through the Paylane payment service. Paylane's API convention: success returns HTTP 200 with a JSON body containing a 'reference'; failures return HTTP 4xx/5xx, and some failures (gateway timeouts behind its load balancer) still return a JSON body such as {\"error\":\"upstream timeout\"}. The order lifecycle is pending → paid, and 'paid' triggers fulfilment.",
+  "user_request": "A customer support ticket describes an order that shows 'paid' in our system with an empty payment reference, while Paylane has no record of the charge. Reproduce the class of bug and fix the checkout so an order only ever becomes 'paid' when the provider genuinely charged the customer and returned a payment reference. Keep POST /checkout's request contract unchanged.",
+  "intentional_defect": {
+    "summary": "CheckoutController reads the provider response body ($response->json('reference')) without checking the HTTP status (no ->successful(), no ->throw()), so any response carrying a JSON body is treated as a successful charge.",
+    "location": [
+      "app/Http/Controllers/CheckoutController.php"
+    ],
+    "root_cause": "A 500 response with a JSON body still yields a decoded array; json('reference') is null and the code proceeds to mark the order paid with a null provider_reference. The HTTP transport succeeds while the provider call fails.",
+    "why_it_looks_correct": "The happy path works perfectly and the code reads plausibly (parse body, store reference, mark paid). Visible tests fake a 200 response, so the failure branch is never exercised."
+  },
+  "non_obvious_invariant": "An order may transition pending → paid only when (1) the provider returned a 2xx response AND (2) the response carried a payment reference. Every other provider outcome must leave the order pending and surface the failure (throw or explicit error response).",
+  "expected_diagnosis": "The agent must recognize the unchecked HTTP response as a transport-vs-application success conflation and add both guards: status check (throw()/successful()) and reference-presence check, failing loudly on either miss.",
+  "safe_fix_constraints": [
+    "A 5xx/4xx provider response must never mark the order paid.",
+    "A missing or empty payment reference must never mark the order paid, even on a 2xx response.",
+    "POST /checkout's request contract stays unchanged; the order lifecycle stays pending → paid."
+  ],
+  "failure_explanation": "Whenever Paylane fails with a JSON error body (upstream timeouts, rate limiting), the order is marked paid with a null reference: fulfilment ships goods nobody paid for, finance reconciles against phantom charges, and support reproduces exactly the ticket above. The only reason it's rare is that Paylane's failures usually return empty bodies, which accidentally take the failure path.",
+  "public_surface": {
+    "routes": [
+      "POST /checkout"
+    ],
+    "classes": [
+      "App\\Http\\Controllers\\CheckoutController",
+      "App\\Models\\Order"
+    ],
+    "tables": [
+      "orders"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-throw-but-mark-paid.patch",
+      "patches/distractor-status-only-check.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-05T23:49:53.936Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      }
+    ]
+  }
+}

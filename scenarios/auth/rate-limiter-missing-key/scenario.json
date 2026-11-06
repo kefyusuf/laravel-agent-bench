@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "id": "rate-limiter-missing-key",
+  "family": "auth/rate-limiting",
+  "title": "OTP rate limiter uses a global bucket shared by all visitors",
+  "difficulty": 3,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "ParcelPigeon's login page lets visitors request a one-time passcode by email (POST /request-otp). Because each passcode costs money and the endpoint could be abused to mail-bomb people, it is rate limited to 3 requests per minute. The limiter runs against the array cache in tests and Redis in production — both implement the same RateLimiter semantics.",
+  "user_request": "Support got a burst of reports this morning: when one visitor requests several passcodes, EVERYONE on the site gets locked out of requesting passcodes for the rest of the minute. The limit itself (3/min) is intentional and must stay. Find the flaw in how the limit is applied and fix it, and while you're there make sure the fix can't be sidestepped by header trickery.",
+  "intentional_defect": {
+    "summary": "RateLimiter::for('otp', fn (Request $r) => Limit::perMinute(3)) never calls ->by(...), so all visitors share one bucket keyed by the empty/anonymous identity.",
+    "location": [
+      "app/Providers/AppServiceProvider.php"
+    ],
+    "root_cause": "Without a ->by($key) on the Limit, the throttle middleware's bucket key is constant: the counter is global. The third request from ANY visitor locks out EVERY visitor, and conversely the limit doesn't track identities at all.",
+    "why_it_looks_correct": "The limiter is registered, the middleware is attached, and the visible test (three requests then a 429) passes — the limit 'works' from a single visitor's perspective, which is exactly what the visible tests simulate."
+  },
+  "non_obvious_invariant": "The throttle bucket must be keyed per caller identity (e.g. IP address or destination email), not shared: (1) exhausting the limit as visitor A must not throttle visitor B; (2) the identity must not be client-controlled (a spoofable X-Forwarded-For header must not mint fresh buckets).",
+  "expected_diagnosis": "The agent must know that Laravel's Limit is global unless keyed with ->by(), and choose a server-controlled identity (request IP, or the validated destination email) — not a client-supplied header.",
+  "safe_fix_constraints": [
+    "The effective limit stays 3 requests per minute per identity.",
+    "The route, middleware name, and endpoint contract stay unchanged.",
+    "The chosen key must not be forgeable by the client."
+  ],
+  "failure_explanation": "Any visitor's third request within a minute starts failing EVERYONE with 429 for the rest of the minute — an attacker (or one unlucky NAT'd office) trivially denies the whole login flow, while the shared counter means no caller identity is actually tracked.",
+  "public_surface": {
+    "routes": [
+      "POST /request-otp"
+    ],
+    "classes": [
+      "App\\Http\\Controllers\\OtpRequestController",
+      "App\\Models\\OtpRequest"
+    ],
+    "tables": [
+      "otp_requests"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-key-by-forwarded-header.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-05T23:49:53.936Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      }
+    ]
+  }
+}

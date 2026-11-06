@@ -1,0 +1,13 @@
+diff --git a/app/Jobs/TranscodeVideo.php b/app/Jobs/TranscodeVideo.php
+index 429805a..454c3f4 100644
+--- a/app/Jobs/TranscodeVideo.php
++++ b/app/Jobs/TranscodeVideo.php
+@@ -13,7 +13,7 @@ class TranscodeVideo implements ShouldQueue
+     /**
+      * Transcodes of long lectures are known to run for minutes.
+      */
+-    public int $timeout = 120;
++    public int $timeout = 0;
+ 
+     public int $tries = 1;
+ 

@@ -1,0 +1,22 @@
+{
+  "name": "laravel-agent-bench",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A benchmark that evaluates coding agents on real-world Laravel engineering: subtle defects that pass visible tests but violate production invariants.",
+  "type": "module",
+  "engines": {
+    "node": ">=18.17"
+  },
+  "bin": {
+    "bench": "bin/bench.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "validate": "node bin/bench.mjs validate",
+    "docker:build": "docker compose build bench",
+    "docker:test": "docker compose run --rm bench node --test test/",
+    "docker:validate": "docker compose run --rm bench node bin/bench.mjs validate",
+    "docker:vendor": "docker compose run --rm bench node bin/bench.mjs vendor:prepare",
+    "docker:gate": "docker compose run --rm bench node bin/bench.mjs validate --dynamic"
+  }
+}

@@ -1,0 +1,27 @@
+diff --git a/app/Http/Controllers/ProfileController.php b/app/Http/Controllers/ProfileController.php
+index 9790e67..2b1d8de 100644
+--- a/app/Http/Controllers/ProfileController.php
++++ b/app/Http/Controllers/ProfileController.php
+@@ -11,7 +11,7 @@ class ProfileController extends Controller
+     {
+         $user = $request->user();
+ 
+-        $user->update($request->validated());
++        $user->update($request->all());
+ 
+         return response()->json([
+             'user' => [
+diff --git a/app/Models/User.php b/app/Models/User.php
+index 9cc406d..e1f0fd6 100644
+--- a/app/Models/User.php
++++ b/app/Models/User.php
+@@ -15,6 +15,9 @@ class User extends Authenticatable
+         'name',
+         'email',
+         'password',
++        'timezone',
++        'marketing_opt_in',
++        'is_admin',
+     ];
+ 
+     protected $hidden = [

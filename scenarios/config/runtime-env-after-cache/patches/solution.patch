@@ -1,0 +1,17 @@
+diff --git a/app/Services/BillingGateway.php b/app/Services/BillingGateway.php
+index 646ed8d..aeab3c8 100644
+--- a/app/Services/BillingGateway.php
++++ b/app/Services/BillingGateway.php
+@@ -11,7 +11,11 @@ class BillingGateway
+ 
+     public function __construct()
+     {
+-        $this->apiKey = env('PAYRAIL_API_KEY', 'sandbox-key');
++        $this->apiKey = (string) config('services.billing.key', '');
++
++        if ($this->apiKey === '') {
++            throw new \RuntimeException('Billing gateway is not configured: missing services.billing.key.');
++        }
+     }
+ 
+     /**

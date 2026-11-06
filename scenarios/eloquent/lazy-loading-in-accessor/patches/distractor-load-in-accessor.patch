@@ -1,0 +1,12 @@
+diff --git a/app/Models/Post.php b/app/Models/Post.php
+index 0e6491b..dd5e3be 100644
+--- a/app/Models/Post.php
++++ b/app/Models/Post.php
+@@ -16,6 +16,6 @@ class Post extends Model
+ 
+     public function getAuthorNameAttribute(): string
+     {
+-        return $this->author->name;
++        return $this->load('author')->author->name;
+     }
+ }

@@ -1,0 +1,13 @@
+diff --git a/app/Http/Controllers/AdminCommentController.php b/app/Http/Controllers/AdminCommentController.php
+index d376f4b..3b9140c 100644
+--- a/app/Http/Controllers/AdminCommentController.php
++++ b/app/Http/Controllers/AdminCommentController.php
+@@ -20,7 +20,7 @@ class AdminCommentController extends Controller
+         $model = $request->query('model', 'order');
+ 
+         $comments = Comment::query()
+-            ->where('commentable_type', self::MODEL_TYPES[$model] ?? null)
++            ->where('commentable_type', isset(self::MODEL_TYPES[$model]) ? app(self::MODEL_TYPES[$model])->getMorphClass() : null)
+             ->latest('id')
+             ->get()
+             ->map(fn (Comment $comment) => [

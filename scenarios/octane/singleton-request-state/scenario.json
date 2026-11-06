@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "id": "singleton-request-state",
+  "family": "octane/state-leakage",
+  "title": "Tenant context singleton freezes the first request's tenant for the worker's lifetime",
+  "difficulty": 4,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "NimbusCRM runs multi-tenant SaaS on Laravel Octane (RoadRunner workers persist between requests, and the application container outlives a single request). Each request identifies its tenant from the X-Tenant header, and the dashboard controller reads the tenant through App\\Support\\TenantContext. In Octane, anything bound as a singleton is resolved once per worker and lives across requests exactly like it does across two requests handled by one test process.",
+  "user_request": "A customer reported seeing another tenant's dashboard — tenant name and order totals belonged to a different company. It happened right after a support engineer switched between tenants in the admin. The data itself is stored correctly and scoped per tenant; something in the request pipeline is showing the wrong tenant to whoever asks second. Fix the pipeline so every request resolves its own tenant, and keep the header contract and the dashboard JSON unchanged.",
+  "intentional_defect": {
+    "summary": "TenantContext is bound as a singleton whose factory reads the tenant from the current request; the singleton is resolved once on first use and every later request handled by the same process inherits the first request's tenant.",
+    "location": [
+      "app/Providers/AppServiceProvider.php"
+    ],
+    "root_cause": "A singleton factory captures per-request state (request headers) at resolution time. In a long-lived process the container resolves the binding exactly once: request 2's headers never reach the factory again, so the cached instance serves the first request's tenant forever. Under FPM this is masked because every request boots a fresh container; under Octane — and in test processes, which reuse the app across requests — it leaks.",
+    "why_it_looks_correct": "The factory is lazy (resolved only when the controller asks), reads the header from the request each time it runs, and every visible test makes exactly one request per test method — so the first request is always correct. Nothing fails; it just serves the wrong tenant."
+  },
+  "non_obvious_invariant": "Request-scoped state must be re-resolved (or explicitly flushed) for every request: the second request handled by the same application instance must never observe the first request's tenant. The binding must not capture request state in an instance that outlives one request.",
+  "expected_diagnosis": "The agent must recognize a request-dependent singleton factory as Octane state leakage, and change the binding lifetime so the factory re-reads the current request on every request (a non-shared binding, a scoped binding, or an explicit per-request reset) — without breaking the header contract or the dashboard response.",
+  "safe_fix_constraints": [
+    "The X-Tenant header contract and the /dashboard JSON shape stay unchanged.",
+    "Don't switch the app off Octane-style long-lived workers — the lifecycle fix must be in the application.",
+    "The tenant must still be resolved from the request's own header, not hardcoded or cached globally."
+  ],
+  "failure_explanation": "Under Octane, worker #3 answers tenant A's dashboard, then tenant B's next request hits the same worker and gets tenant A's context: a cross-tenant data leak served from frozen request state. The same pattern applies to any singleton whose factory reads request(), auth, or session — it works on every developer machine (fresh container per request) and leaks in production only.",
+  "public_surface": {
+    "routes": [
+      "GET /dashboard"
+    ],
+    "classes": [
+      "App\\Support\\TenantContext",
+      "App\\Http\\Controllers\\DashboardController"
+    ],
+    "tables": [
+      "tenants",
+      "orders"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-injected-request.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-05T23:49:53.936Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      }
+    ]
+  }
+}

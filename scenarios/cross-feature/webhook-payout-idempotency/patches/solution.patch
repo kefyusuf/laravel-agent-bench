@@ -1,0 +1,13 @@
+diff --git a/app/Http/Controllers/PaymentWebhookController.php b/app/Http/Controllers/PaymentWebhookController.php
+index 21ebb45..727e3cb 100644
+--- a/app/Http/Controllers/PaymentWebhookController.php
++++ b/app/Http/Controllers/PaymentWebhookController.php
+@@ -34,7 +34,7 @@ class PaymentWebhookController extends Controller
+                 $order = Order::findOrFail($payload['data']['order_id']);
+                 $order->markPaid();
+ 
+-                ProcessPayout::dispatch($order->id);
++                ProcessPayout::dispatch($order->id)->afterCommit();
+             }
+         });
+ 

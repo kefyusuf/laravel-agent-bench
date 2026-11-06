@@ -1,0 +1,32 @@
+diff --git a/app/Jobs/ProcessPayout.php b/app/Jobs/ProcessPayout.php
+index 32ca68e..6f1a6a2 100644
+--- a/app/Jobs/ProcessPayout.php
++++ b/app/Jobs/ProcessPayout.php
+@@ -4,13 +4,14 @@ namespace App\Jobs;
+ 
+ use App\Models\Order;
+ use App\Models\Payout;
++use Illuminate\Contracts\Queue\ShouldBeUnique;
+ use Illuminate\Contracts\Queue\ShouldQueue;
+ use Illuminate\Foundation\Queue\Queueable;
+ use Illuminate\Http\Client\ConnectionException;
+ use Illuminate\Support\Facades\Cache;
+ use Illuminate\Support\Facades\Http;
+ 
+-class ProcessPayout implements ShouldQueue
++class ProcessPayout implements ShouldQueue, ShouldBeUnique
+ {
+     use Queueable;
+ 
+@@ -22,6 +23,11 @@ class ProcessPayout implements ShouldQueue
+     {
+     }
+ 
++    public function uniqueId(): string
++    {
++        return (string) $this->orderId;
++    }
++
+     public function backoff(): array
+     {
+         return [10, 60];

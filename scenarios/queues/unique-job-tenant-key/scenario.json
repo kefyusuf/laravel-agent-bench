@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "id": "unique-job-tenant-key",
+  "family": "queues/unique-jobs",
+  "title": "ShouldBeUnique key is not tenant-scoped, so report generation is silently dropped",
+  "difficulty": 4,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "LedgerLoop is a multi-tenant analytics SaaS. Every hour a scheduler fan-out dispatches a 'sales' report job per tenant onto the database queue; workers may lag behind for a while during traffic peaks, and a tenant must never have two overlapping report generations. ShouldBeUnique is used to enforce that. The test environment has no queue workers, so queued jobs simply wait in the jobs table.",
+  "user_request": "A customer on tenant 42 complained their hourly sales report never generated today, while other tenants were fine. Ops found nothing in the error logs — the report job never even started. Investigate the report scheduling path and make sure every tenant reliably gets its report every hour, without allowing two overlapping report runs for the same tenant.",
+  "intentional_defect": {
+    "summary": "GenerateTenantReport::uniqueId() returns only the report type, so two tenants' jobs collide on the same uniqueness lock and later dispatches are silently dropped.",
+    "location": [
+      "app/Jobs/GenerateTenantReport.php"
+    ],
+    "root_cause": "uniqueId() returns 'sales-report' for every tenant. When tenant 41's job is queued (lock held until the job is processed), the dispatch for tenant 42 fails the uniqueness check and is discarded without any error, log, or retry. Because the queue has no worker at that moment (backlog or deploy freeze), the lock is held for the full uniqueFor window.",
+    "why_it_looks_correct": "The job looks like a textbook ShouldBeUnique implementation: interface, uniqueId(), uniqueFor(). ShouldBeUnique filtering runs at dispatch time (PendingDispatch), before any queue layer, so dropped dispatches never reach the queue, never fail, and are invisible to Queue::assertPushed. The visible tests deliberately dispatch one tenant at a time (and different report types, which have distinct keys), so nothing shows the cross-tenant drop."
+  },
+  "non_obvious_invariant": "Uniqueness must be scoped to exactly the axis that must not overlap: one in-flight (or queued) report per tenant per report type. The uniqueness key must therefore include the tenant identity; and some uniqueness mechanism must still prevent two concurrent runs for the same tenant.",
+  "expected_diagnosis": "The agent must understand that ShouldBeUnique filters dispatches through a cache lock keyed by uniqueId(), that the current key ignores the tenant, and that Queue::fake hides this. The fix must make uniqueId() tenant-scoped (tenant + report type) — not remove ShouldBeUnique (that would re-allow overlapping runs) and not merely tune uniqueFor.",
+  "safe_fix_constraints": [
+    "Two overlapping report generations for the same tenant must remain impossible.",
+    "ReportDispatcher::dispatchForAllTenants() and GenerateTenantReport keep their names and signatures.",
+    "No new composer dependencies; no changes to the queue driver."
+  ],
+  "failure_explanation": "During a backlog (or right after a deploy freeze when workers are stopped), tenant 41's queued report holds the 'sales-report' lock. The hourly fan-out then dispatches tenant 42's job; the uniqueness check finds the lock held and silently discards it. Tenant 42's report never generates — no error, no failed job, nothing in the logs. Because dispatches are dropped silently, customers discover it from their dashboards, as this incident shows.",
+  "public_surface": {
+    "routes": [],
+    "classes": [
+      "App\\Jobs\\GenerateTenantReport",
+      "App\\Services\\ReportDispatcher"
+    ],
+    "tables": [
+      "tenants",
+      "jobs"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-longer-ttl.patch",
+      "patches/distractor-drop-uniqueness.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-05T23:49:53.936Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      }
+    ]
+  }
+}

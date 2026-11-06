@@ -1,0 +1,13 @@
+diff --git a/app/Providers/AppServiceProvider.php b/app/Providers/AppServiceProvider.php
+index 2bc4cc0..324da5c 100644
+--- a/app/Providers/AppServiceProvider.php
++++ b/app/Providers/AppServiceProvider.php
+@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
+     public function boot(): void
+     {
+         RateLimiter::for('otp', function (Request $request) {
+-            return Limit::perMinute(3);
++            return Limit::perMinute(3)->by($request->header('X-Forwarded-For', $request->ip()));
+         });
+     }
+ }

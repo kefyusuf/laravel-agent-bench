@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "id": "signed-url-toggle-replay",
+  "family": "security/signed-urls",
+  "title": "Signed unsubscribe link toggles consent state, so replay re-subscribes the user",
+  "difficulty": 3,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "NewsletterHQ embeds a signed unsubscribe link in every marketing email: GET /unsubscribe/{user}, protected by Laravel's 'signed' middleware with a 7-day expiry. Legal requires the link to be a one-way, idempotent opt-out: however many times the link is opened (email scanners and prefetchers open links automatically, and users forward emails and use the back button), the outcome must be the user is unsubscribed, with exactly one confirmation email per link lifetime.",
+  "user_request": "A customer clicked the unsubscribe link twice (once at work, once at home) and started receiving the newsletter again after the second click. Their consent record now says they opted IN. Fix the unsubscribe endpoint so that it can never re-subscribe anyone, no matter how often the link is opened, and make sure we don't spam a confirmation email on every open either. The link format, route, and its signed-middleware protection stay as they are.",
+  "intentional_defect": {
+    "summary": "The handler flips the consent flag ($user->marketing_opt_in = ! $user->marketing_opt_in) and sends a confirmation email on every hit, so replaying the signed URL re-subscribes the user and spams confirmations.",
+    "location": [
+      "app/Http/Controllers/UnsubscribeController.php"
+    ],
+    "root_cause": "The signed middleware only authenticates the URL — it says nothing about what the handler should do on repeat visits. A one-way consent action needs unconditional state ('set to unsubscribed'), not a toggle, and idempotent side effects.",
+    "why_it_looks_correct": "Signature validation, expiry, and route-model binding are all correct; a single visit — which is exactly what the visible tests simulate — does unsubscribe the user, so the suite is green."
+  },
+  "non_obvious_invariant": "The signed URL authorizes the ACTION, not one EXECUTION of it: the handler must be idempotent under replay within the signature's lifetime — repeated hits must leave the user unsubscribed and must not repeat side effects (one confirmation email).",
+  "expected_diagnosis": "The agent must separate authentication-of-URL from execution-semantics, replace the toggle with an unconditional write (marketing_opt_in => false) and suppress the duplicate confirmation email (e.g. only when state actually changed, or wasChanged guard).",
+  "safe_fix_constraints": [
+    "The route, its 'signed' middleware, and the link generation stay unchanged.",
+    "A first click must unsubscribe and send exactly one confirmation email.",
+    "Users must never be re-subscribed by replaying the link."
+  ],
+  "failure_explanation": "Email scanners and security tools prefetch links; a user who opens the mail twice re-subscribes themselves without noticing, and the consent ledger (a GDPR record) flips to opted-in — a compliance breach. Every replay also sends another confirmation email, which users report as spam and which train filtering systems to flag transactional mail.",
+  "public_surface": {
+    "routes": [
+      "GET /unsubscribe/{user}"
+    ],
+    "classes": [
+      "App\\Http\\Controllers\\UnsubscribeController",
+      "App\\Mail\\UnsubscribeConfirmed"
+    ],
+    "tables": [
+      "users"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-set-but-spam-mail.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-05T23:49:53.936Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      }
+    ]
+  }
+}

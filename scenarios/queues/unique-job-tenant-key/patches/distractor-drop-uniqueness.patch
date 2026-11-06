@@ -1,0 +1,34 @@
+diff --git a/app/Jobs/GenerateTenantReport.php b/app/Jobs/GenerateTenantReport.php
+index e5928a4..3135d6e 100644
+--- a/app/Jobs/GenerateTenantReport.php
++++ b/app/Jobs/GenerateTenantReport.php
+@@ -3,11 +3,10 @@
+ namespace App\Jobs;
+ 
+ use App\Models\Tenant;
+-use Illuminate\Contracts\Queue\ShouldBeUnique;
+ use Illuminate\Contracts\Queue\ShouldQueue;
+ use Illuminate\Foundation\Queue\Queueable;
+ 
+-class GenerateTenantReport implements ShouldQueue, ShouldBeUnique
++class GenerateTenantReport implements ShouldQueue
+ {
+     use Queueable;
+ 
+@@ -17,16 +16,6 @@ class GenerateTenantReport implements ShouldQueue, ShouldBeUnique
+     ) {
+     }
+ 
+-    public function uniqueId(): string
+-    {
+-        return $this->report.'-report';
+-    }
+-
+-    public function uniqueFor(): int
+-    {
+-        return 3600;
+-    }
+-
+     public function handle(): void
+     {
+         // Generates and stores the tenant's report snapshot.

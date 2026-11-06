@@ -1,0 +1,34 @@
+services:
+  # The bench runner: structural + dynamic validation, vendor preparation, grading.
+  # Usage:
+  #   docker compose run --rm bench node bin/bench.mjs validate
+  #   docker compose run --rm bench node bin/bench.mjs vendor:prepare --cell laravel-13
+  #   docker compose run --rm bench node bin/bench.mjs validate --dynamic --cell laravel-13
+  # The repo is bind-mounted; `var/` is shadowed by a named volume so that the
+  # vendor cache and per-run workspaces live on the container filesystem —
+  # materializing a workspace copies ~12k vendor files, which is prohibitively
+  # slow through a Windows bind mount. Reset with: docker compose down -v
+  bench:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    working_dir: /app
+    volumes:
+      - .:/app
+      - bench-var:/app/var
+      - composer-cache:/tmp/composer-cache
+    environment:
+      BENCH_COMPOSER: composer
+      BENCH_PHP: php
+
+  # Optional: only needed once scenarios declare `requires: ["redis"]`.
+  # Start with: docker compose --profile redis up -d redis
+  # Reachable from bench containers as host "redis" (same compose network).
+  redis:
+    image: redis:7-alpine
+    profiles: ["redis"]
+    command: ["redis-server", "--save", ""]
+
+volumes:
+  bench-var:
+  composer-cache:

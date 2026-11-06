@@ -1,0 +1,15 @@
+diff --git a/app/Providers/AppServiceProvider.php b/app/Providers/AppServiceProvider.php
+index 6606516..e98c09c 100644
+--- a/app/Providers/AppServiceProvider.php
++++ b/app/Providers/AppServiceProvider.php
+@@ -22,9 +22,6 @@ class AppServiceProvider extends ServiceProvider
+      */
+     public function boot(): void
+     {
+-        Relation::enforceMorphMap([
+-            'order' => Order::class,
+-            'listing' => Listing::class,
+-        ]);
++        //
+     }
+ }

@@ -1,0 +1,17 @@
+diff --git a/app/Http/Controllers/CheckoutController.php b/app/Http/Controllers/CheckoutController.php
+index 92edbe4..94eef94 100644
+--- a/app/Http/Controllers/CheckoutController.php
++++ b/app/Http/Controllers/CheckoutController.php
+@@ -24,7 +24,11 @@ class CheckoutController extends Controller
+                 'amount_cents' => $order->total_cents,
+             ]);
+ 
+-        $reference = $response->json('reference');
++        if (! $response->successful()) {
++            abort(502, 'provider error');
++        }
++
++        $reference = (string) $response->json('reference');
+ 
+         $order->forceFill([
+             'status' => Order::STATUS_PAID,

@@ -1,0 +1,13 @@
+diff --git a/app/Jobs/GenerateTenantReport.php b/app/Jobs/GenerateTenantReport.php
+index e5928a4..d9e8070 100644
+--- a/app/Jobs/GenerateTenantReport.php
++++ b/app/Jobs/GenerateTenantReport.php
+@@ -24,7 +24,7 @@ class GenerateTenantReport implements ShouldQueue, ShouldBeUnique
+ 
+     public function uniqueFor(): int
+     {
+-        return 3600;
++        return 86400;
+     }
+ 
+     public function handle(): void

@@ -1,0 +1,19 @@
+diff --git a/app/Http/Controllers/UnsubscribeController.php b/app/Http/Controllers/UnsubscribeController.php
+index 5cd2798..07ee405 100644
+--- a/app/Http/Controllers/UnsubscribeController.php
++++ b/app/Http/Controllers/UnsubscribeController.php
+@@ -12,10 +12,12 @@ class UnsubscribeController extends Controller
+     public function __invoke(Request $request, User $user)
+     {
+         $user->update([
+-            'marketing_opt_in' => ! $user->marketing_opt_in,
++            'marketing_opt_in' => false,
+         ]);
+ 
+-        Mail::to($user->email)->send(new UnsubscribeConfirmed);
++        if ($user->wasChanged('marketing_opt_in')) {
++            Mail::to($user->email)->send(new UnsubscribeConfirmed);
++        }
+ 
+         return response()->view('unsubscribe-done', ['user' => $user]);
+     }

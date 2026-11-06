@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "id": "lock-leak-on-exception",
+  "family": "cache/lock-handling",
+  "title": "Inventory sync lock is never released when the supplier API fails",
+  "difficulty": 3,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "FreshCart pulls stock levels from its supplier's HTTP API every few minutes through a queued job. Only one sync may run at a time (the supplier rate-limits aggressively), which is enforced with an atomic cache lock. In production the lock backend is Redis; in tests it is the array store, which provides the same acquire/release semantics inside a single process.",
+  "user_request": "Since yesterday's supplier API outage our stock levels have stopped updating, and they never recovered even though the API is healthy again. The sync job runs every few minutes and shows 'skipped' every time in the debug log. Find out why syncs stopped and make the job resilient: a supplier outage must never permanently block future syncs.",
+  "intentional_defect": {
+    "summary": "The job acquires the lock with acquire(), and calls release() only on the success path — an exception from the supplier API leaves the lock held for its full 300s TTL, and every sync during the outage is lost.",
+    "location": [
+      "app/Jobs/SyncSupplierInventory.php"
+    ],
+    "root_cause": "$lock->release() is a plain statement after the sync work. When Http::throw() raises on a 5xx response, release() is never reached. The lock lives on until its TTL expires. Every queued sync attempt during that window sees the lock as taken and returns early.",
+    "why_it_looks_correct": "The acquire/check pattern is idiomatic and the lock HAS a TTL (300s), so a reviewer reads the design as self-healing. Visible tests only exercise the happy path, where release() is reached and everything is green."
+  },
+  "non_obvious_invariant": "Lock acquisition and release must be symmetric under all exits: if handle() throws, the lock must be released before the exception propagates (finally). Additionally a failed sync must not be recorded as completed, and it must still surface as an exception to the queue's retry machinery.",
+  "expected_diagnosis": "The agent must spot the missing finally (or equivalent) around the sync work, recognize that the TTL does not save the outage window (300s TTL vs retries every few minutes still drops syncs and burns the whole outage), and fix release symmetry without swallowing the exception.",
+  "safe_fix_constraints": [
+    "Only one sync may run at a time — the mutual exclusion must be preserved.",
+    "A supplier API failure must still surface as an exception (the queue retries the job).",
+    "The lock key and the supplier API contract stay as they are."
+  ],
+  "failure_explanation": "The supplier API returns 500 during an outage. The job throws, but the lock stays held until its TTL lapses. The queue retries and the scheduler fires new syncs; every one of them hits the held lock and returns 'skipped'. If the outage lasts longer than one TTL, the next successful acquisition can also fail mid-sync, re-leaking the lock — so the system can spend the entire outage (and any period after it, depending on timing) without syncing stock, and out-of-stock items keep selling.",
+  "public_surface": {
+    "routes": [],
+    "classes": [
+      "App\\Jobs\\SyncSupplierInventory"
+    ],
+    "tables": [
+      "stock_items",
+      "inventory_syncs"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-swallow-exception.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-05T23:49:53.936Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-05T23:49:53.936Z"
+      }
+    ]
+  }
+}

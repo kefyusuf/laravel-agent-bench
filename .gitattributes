@@ -1,0 +1,8 @@
+# LF everywhere: the generated .patch artifacts and the phpunit.xml/php files
+# must not be CRLF-normalized on checkout or `git apply` breaks on Windows.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary

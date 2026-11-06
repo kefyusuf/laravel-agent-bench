@@ -1,0 +1,34 @@
+diff --git a/database/migrations/2024_10_02_000000_add_composite_unique_index.php b/database/migrations/2024_10_02_000000_add_composite_unique_index.php
+new file mode 100644
+index 0000000..705b35e
+--- /dev/null
++++ b/database/migrations/2024_10_02_000000_add_composite_unique_index.php
+@@ -0,0 +1,28 @@
++<?php
++
++use Illuminate\Database\Migrations\Migration;
++use Illuminate\Database\Schema\Blueprint;
++use Illuminate\Support\Facades\Schema;
++
++return new class extends Migration
++{
++    /**
++     * Run the migrations.
++     */
++    public function up(): void
++    {
++        Schema::table('contacts', function (Blueprint $table) {
++            $table->unique(['email', 'deleted_at']);
++        });
++    }
++
++    /**
++     * Reverse the migrations.
++     */
++    public function down(): void
++    {
++        Schema::table('contacts', function (Blueprint $table) {
++            $table->dropUnique(['email', 'deleted_at']);
++        });
++    }
++};
