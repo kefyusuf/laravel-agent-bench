@@ -8,6 +8,7 @@ import { validateStructural, validateDynamic } from '../src/validate.mjs';
 import { materializeWorkspace, gitAvailable } from '../src/materialize.mjs';
 import { buildPrompt } from '../src/prompt.mjs';
 import { runGrade } from '../src/grade.mjs';
+import { runAll } from '../src/run-all.mjs';
 
 function die(msg, code = 2) {
   console.error(`bench: ${msg}`);
@@ -172,6 +173,31 @@ try {
       writeFileSync(path.resolve(args.out), JSON.stringify(results, null, 2));
     }
     process.exit(exitCode);
+  }
+
+  if (cmd === 'run-all') {
+    if (!args.agent) {
+      die('usage: bench run-all --agent "<cmd with {{workspace}} {{prompt}}>" [--cell <id-or-constraint>] [--out <dir>] [--scenario <id>]');
+    }
+    const cells = cellsOrDie(cfg, args.cell);
+    const outDir = args.out ? path.resolve(args.out) : path.join(cfg._root, cfg.paths.var, 'agent-runs');
+    const results = [];
+    for (const cell of cells) {
+      const { results: cellResults, passed } = runAll({
+        cfg,
+        scenariosDir: cfgPath(cfg, 'scenarios'),
+        agentCmd: args.agent,
+        cell,
+        workspacesRoot,
+        outDir,
+        keep: args.keep,
+        only: args.scenario ?? null,
+      });
+      console.log(`\ncell ${cell.id}: ${passed}/${cellResults.length} scenarios passed`);
+      results.push(...cellResults);
+    }
+    if (args.json) console.log(JSON.stringify(results, null, 2));
+    process.exit(results.every((r) => r.verdict === 'pass') ? 0 : 1);
   }
 
   if (cmd === 'vendor:prepare') {

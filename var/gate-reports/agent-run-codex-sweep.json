@@ -1,0 +1,77 @@
+{
+  "agent": "codex-cli 0.167.0 (default model via ChatGPT auth)",
+  "cell": "laravel-13",
+  "date": "2026-11-06",
+  "summary": [
+    {
+      "scenario": "idor-nested-resource",
+      "verdict": "pass",
+      "ranOwnTests": true
+    },
+    {
+      "scenario": "lazy-loading-in-accessor",
+      "verdict": "pass",
+      "ranOwnTests": true
+    },
+    {
+      "scenario": "lock-leak-on-exception",
+      "verdict": "pass",
+      "ranOwnTests": true
+    },
+    {
+      "scenario": "mass-assignment-silent-drop",
+      "verdict": "pass",
+      "ranOwnTests": true
+    },
+    {
+      "scenario": "morph-map-hardcoded-type",
+      "verdict": "pass",
+      "ranOwnTests": true
+    },
+    {
+      "scenario": "provider-error-as-success",
+      "verdict": "pass",
+      "ranOwnTests": true
+    },
+    {
+      "scenario": "rate-limiter-missing-key",
+      "verdict": "pass",
+      "ranOwnTests": true
+    },
+    {
+      "scenario": "retry-after-vs-timeout",
+      "verdict": "pass",
+      "ranOwnTests": true
+    },
+    {
+      "scenario": "runtime-env-after-cache",
+      "verdict": "pass",
+      "ranOwnTests": false
+    },
+    {
+      "scenario": "signed-url-toggle-replay",
+      "verdict": "pass",
+      "ranOwnTests": false
+    },
+    {
+      "scenario": "singleton-request-state",
+      "verdict": "pass",
+      "ranOwnTests": true
+    },
+    {
+      "scenario": "soft-delete-unique-email",
+      "verdict": "pass",
+      "ranOwnTests": true
+    },
+    {
+      "scenario": "unique-job-tenant-key",
+      "verdict": "pass",
+      "ranOwnTests": true
+    },
+    {
+      "scenario": "webhook-payout-idempotency",
+      "verdict": "pass",
+      "ranOwnTests": false
+    }
+  ]
+}

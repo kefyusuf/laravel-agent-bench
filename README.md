@@ -152,6 +152,16 @@ two common gotchas (missing `->afterCommit()` on dispatch inside a transaction; 
 A pattern-matching agent scores **1/14**, and its half-fix is caught by hidden tests —
 the benchmark measures invariant reasoning, not doc lookup.
 
+### First real-agent sweep (2026-11-06)
+
+Codex CLI (default model, ChatGPT auth) on laravel-13, one run per scenario:
+**14/14 `pass`** (10 runs included the agent running PHPUnit itself; evidence:
+`var/gate-reports/agent-run-codex-sweep.json`). Honest calibration note: the current
+set is solvable end-to-end by a frontier agent with test feedback — the hidden tests
+gate *correctness* (partial fixes do fail: see the baseline's `fail-hidden`), but
+difficulty for frontier models will come from the roadmap families (Redis cluster,
+scheduler mutexes, concurrency-shaped invariants), not from the current fourteen.
+
 ## Scenario index
 
 | Scenario | Family | Difficulty |
