@@ -72,5 +72,12 @@
         "run_at": "2026-11-05T23:49:53.936Z"
       }
     ]
-  }
+  },
+  "diagnosis_keywords": [
+    "aftercommit",
+    "after the transaction commits",
+    "outside the transaction",
+    "defer the dispatch",
+    "dispatched before the transaction"
+  ]
 }

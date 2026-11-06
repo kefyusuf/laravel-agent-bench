@@ -1,4 +1,53 @@
 /**
+ * Build the diagnosis-mode prompt: the agent must NOT modify anything; it
+ * produces an analysis, with the final diagnosis wrapped in <diagnosis> tags.
+ */
+export function buildDiagnosisPrompt(doc) {
+  const lines = [];
+  lines.push('# Diagnosis task');
+  lines.push('');
+  lines.push('## Context');
+  lines.push('');
+  lines.push(doc.business_context.trim());
+  lines.push('');
+  lines.push('## Reported problem');
+  lines.push('');
+  lines.push(doc.user_request.trim());
+  lines.push('');
+  lines.push('## Rules');
+  lines.push('');
+  lines.push('- Do NOT modify any files. This is an analysis task only.');
+  lines.push('- Read the code, form a diagnosis, and answer.');
+  lines.push('- End your reply with the final diagnosis wrapped exactly like this:');
+  lines.push('');
+  lines.push('<diagnosis>');
+  lines.push('root cause, mechanism, and how you would fix it');
+  lines.push('</diagnosis>');
+  lines.push('');
+  return lines.join('\n');
+}
+
+/**
+ * Deterministic diagnosis scoring: the diagnosis passes when at least one of
+ * the scenario's mechanism keywords (a correct phrasing) appears.
+ */
+export function scoreDiagnosis(output, keywords) {
+  const open = output.lastIndexOf('<diagnosis>');
+  const close = output.lastIndexOf('</diagnosis>');
+  const text = (open !== -1 && close !== -1 && close > open
+    ? output.slice(open + '<diagnosis>'.length, close)
+    : output
+  ).toLowerCase();
+
+  const matched = keywords.filter((k) => text.includes(k.toLowerCase()));
+  return {
+    pass: matched.length > 0,
+    matched,
+    missing: keywords.filter((k) => !matched.includes(k)),
+    hadTags: open !== -1 && close !== -1,
+  };
+}
+/**
  * Build the agent-facing PROMPT.md. Strictly excludes grading fields:
  * intentional_defect, non_obvious_invariant, expected_diagnosis, failure_explanation, artifacts, validation.
  */

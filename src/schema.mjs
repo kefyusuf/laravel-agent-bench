@@ -26,7 +26,13 @@ export function validateScenarioDocument(doc, { dirName, knownCells }) {
 
   const allowed = new Set(required);
   for (const key of Object.keys(doc)) {
-    req(allowed.has(key) || key === 'validation', `unknown field "${key}"`);
+    req(allowed.has(key) || key === 'validation' || key === 'diagnosis_keywords', `unknown field "${key}"`);
+  }
+
+  if (doc.diagnosis_keywords !== undefined) {
+    req(Array.isArray(doc.diagnosis_keywords) && doc.diagnosis_keywords.length >= 1
+      && doc.diagnosis_keywords.every((k) => typeof k === 'string' && k.length > 0),
+    '"diagnosis_keywords" must be a non-empty array of non-empty strings');
   }
 
   if (doc.schema !== undefined) req(doc.schema === 1, '"schema" must be 1');

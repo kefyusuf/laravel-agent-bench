@@ -11,7 +11,7 @@ export function resolveVendorDir(cfg, cell) {
   return existsSync(path.join(p, 'autoload.php')) ? p : null;
 }
 
-function runAgentCommand(workspaceDir, promptPath, cmdTemplate, timeoutSeconds) {
+export function runAgentCommand(workspaceDir, promptPath, cmdTemplate, timeoutSeconds) {
   const cmd = cmdTemplate
     .replaceAll('{{workspace}}', JSON.stringify(workspaceDir))
     .replaceAll('{{prompt}}', JSON.stringify(promptPath));
