@@ -22,7 +22,7 @@
     "root_cause": "Classic check-then-act: GET stock → if > 0 → DECR. Between the GET and the DECR another worker's DECR can land, so the second worker grants a reservation for stock that is already gone. Nothing makes the read-and-decrement atomic.",
     "why_it_looks_correct": "The logic is exactly right single-threaded, the visible tests (sequential reservations until sold out) pass, and code review of a five-line method sees a perfectly reasonable guard."
   },
-  "non_obvious_invariant": "Granting a reservation must be atomic with the stock check: under any number of concurrent workers, granted reservations must never exceed the initial stock (stock never goes negative, the granted counter never exceeds it).",
+  "non_obvious_invariant": "Granting a reservation must be one atomic server-side operation: the read-decide-decrement may never be split into a standalone GET followed by DECR (verified via the Redis command feed), and under any number of concurrent workers granted reservations must never exceed the initial stock.",
   "expected_diagnosis": "The agent must recognize the check-then-act race and make the read-decide-decrement atomic (Lua script with a floor check, WATCH/MULTI/EXEC with retry, or an equivalent atomic primitive), while preserving the single-threaded contract.",
   "safe_fix_constraints": [
     "reserve() keeps its contract: true + a recorded reservation when a unit is granted, false when sold out.",
@@ -42,7 +42,7 @@
   "artifacts": {
     "solution": "patches/solution.patch",
     "distractors": [
-      "patches/distractor-watch-no-retry.patch"
+      "patches/distractor-pipeline-batching.patch"
     ]
   },
   "validation": {

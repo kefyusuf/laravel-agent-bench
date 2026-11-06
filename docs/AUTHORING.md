@@ -85,6 +85,11 @@ Framework mechanics you must know before writing hidden tests (verified against
   request-dependent state out of controller *constructors* — `Route::getController()` caches
   the controller instance across requests in a long-lived process, which freezes
   constructor-injected dependencies even under a per-request binding.
+- **Probabilistic concurrency tests are NOT gate-eligible.** A race test (N parallel
+  workers overselling a counter) is scheduling-dependent: it passed 3× locally and
+  failed in CI. Verify atomicity deterministically instead — `CONFIG RESETSTAT` +
+  `INFO commandstats` around a single call proves the decision ran server-side
+  (cmdstat_eval present) vs client-side (bare GET + DECR).
 - **Scenarios with external services (e.g. the Redis cluster) share state across the
   visible AND hidden suites in one phpunit process.** Hidden tests must clean up every
   key representation they assert on — including keys a *visible* test may have written

@@ -1225,7 +1225,7 @@ const PATCHES = {
     {
       // plausible-but-wrong: WATCH/MULTI without retry — aborted transactions
       // under contention lose reservations.
-      name: 'distractor-watch-no-retry.patch',
+      name: 'distractor-pipeline-batching.patch',
       edits: [{
         file: 'app/Services/StockReservationService.php',
         find: [
