@@ -159,12 +159,16 @@ the benchmark measures invariant reasoning, not doc lookup.
 ### First real-agent sweep (2026-11-06)
 
 Codex CLI (default model, ChatGPT auth) on laravel-13, one run per scenario:
-**14/14 `pass`** (10 runs included the agent running PHPUnit itself; evidence:
-`var/gate-reports/agent-run-codex-sweep.json`). Honest calibration note: the current
-set is solvable end-to-end by a frontier agent with test feedback — the hidden tests
-gate *correctness* (partial fixes do fail: see the baseline's `fail-hidden`), but
-difficulty for frontier models will come from the roadmap families (Redis cluster,
-scheduler mutexes, concurrency-shaped invariants), not from the current fourteen.
+**15/15 `pass`** — including the difficulty-5 Redis-cluster scenario (the agent
+reproduced the CROSSSLOT failure, applied the tenant hash tag and kept the Lua
+script atomic; 10+ runs included the agent running PHPUnit itself; evidence:
+`var/gate-reports/agent-run-codex-sweep.json`). Honest calibration note: single-
+defect scenarios with full shell + test feedback **saturate for frontier agents** —
+even real-infrastructure scenarios. The demonstrated discriminative value of this
+benchmark is on the other end of the spectrum: the deterministic baseline scores
+1/15, and its partial fix fails the hidden tests. Raising the ceiling for frontier
+models (multi-defect repos, longer-horizon feature work under invariants,
+concurrency-shaped invariants) is the project's open design question.
 
 ## Scenario index
 

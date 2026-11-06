@@ -72,6 +72,12 @@
       "scenario": "webhook-payout-idempotency",
       "verdict": "pass",
       "ranOwnTests": false
+    },
+    {
+      "scenario": "redis-cluster-crossslot",
+      "verdict": "pass",
+      "ranOwnTests": true
     }
-  ]
+  ],
+  "note": "cluster scenario added 2026-11-06 after the initial sweep; separate run"
 }
