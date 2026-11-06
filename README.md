@@ -159,16 +159,18 @@ the benchmark measures invariant reasoning, not doc lookup.
 ### First real-agent sweep (2026-11-06)
 
 Codex CLI (default model, ChatGPT auth) on laravel-13, one run per scenario:
-**15/15 `pass`** — including the difficulty-5 Redis-cluster scenario (the agent
+**17/17 `pass`** — including the difficulty-5 Redis-cluster and concurrency-race scenarios (the agent
 reproduced the CROSSSLOT failure, applied the tenant hash tag and kept the Lua
 script atomic; 10+ runs included the agent running PHPUnit itself; evidence:
 `var/gate-reports/agent-run-codex-sweep.json`). Honest calibration note: single-
 defect scenarios with full shell + test feedback **saturate for frontier agents** —
-even real-infrastructure scenarios. The demonstrated discriminative value of this
+even real-infrastructure and concurrency scenarios — with ONE exception: the
 benchmark is on the other end of the spectrum: the deterministic baseline scores
-1/15, and its partial fix fails the hidden tests. Raising the ceiling for frontier
-models (multi-defect repos, longer-horizon feature work under invariants,
-concurrency-shaped invariants) is the project's open design question.
+1/17, and its partial fix fails the hidden tests — and the **feature-work (build)
+category DOES discriminate frontier agents**: the same Codex run scored fail-hidden
+on idempotent-checkout (spec-adherence: it 409-rejects a key collision where the
+spec requires a normal charge). Find-and-fix saturates; spec-adherent feature work
+does not.
 
 ## Scenario index
 
@@ -189,6 +191,7 @@ concurrency-shaped invariants) is the project's open design question.
 | `mass-assignment-silent-drop` | validation / mass assignment | 3 |
 | `signed-url-toggle-replay` | security / signed urls | 3 |
 | `redis-cluster-crossslot` | cache / redis cluster | 5 |
+| `reservation-race` | cache / concurrency | 5 |
 
 Areas with planned scenarios (recipes in docs/AUTHORING.md): scheduler overlap, failed-job
 backoff, notifications + transactions, filesystem visibility, API-resource serialization.

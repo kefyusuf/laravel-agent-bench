@@ -1,0 +1,28 @@
+diff --git a/app/Services/StockReservationService.php b/app/Services/StockReservationService.php
+index 34eb5ed..883f2ca 100644
+--- a/app/Services/StockReservationService.php
++++ b/app/Services/StockReservationService.php
+@@ -38,14 +38,20 @@ class StockReservationService
+      */
+     public function reserve(string $sku): bool
+     {
+-        $stock = (int) $this->redis->get("stock:{$sku}");
++        $key = "stock:{$sku}";
++
++        $this->redis->watch($key);
++        $stock = (int) $this->redis->get($key);
+ 
+         if ($stock <= 0) {
++            $this->redis->unwatch();
+             return false;
+         }
+ 
+-        $this->redis->decr("stock:{$sku}");
+-        $this->redis->sadd("reserved:{$sku}", uniqid('', true));
++        $this->redis->multi()
++            ->decr($key)
++            ->sadd("reserved:{$sku}", uniqid('', true))
++            ->exec();
+ 
+         return true;
+     }

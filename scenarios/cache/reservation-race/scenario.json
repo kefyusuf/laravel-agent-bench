@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "id": "reservation-race",
+  "family": "cache/concurrency",
+  "title": "Flash-sale reservations race: check-then-act oversells limited stock",
+  "difficulty": 5,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [
+    "redis"
+  ],
+  "business_context": "DropsHub runs flash sales: limited stock per SKU, first-come-first-served, served by several PHP workers behind a load balancer. Reservation state lives in a single Redis instance (reachable via the REDIS_RACE_HOST config, host 'redis' in the compose environment). Overselling is a hard business failure: more reservations granted than units in stock means customers pay for stock that does not exist.",
+  "user_request": "During the last drop the finance team counted 57 reservations against 50 units. Ops says the workers were saturating the box at the time, and the numbers only ever break under load — every replay of a single request looks perfect. Find the flaw in the reservation path and make overselling impossible no matter how many workers hit it at once. The reservation contract (return true and record the reservation when a unit is granted, false when sold out) and the key names must stay the same.",
+  "intentional_defect": {
+    "summary": "reserve() reads the stock, checks it, then decrements in separate round-trips — two workers read the same positive stock and both decrement: oversell.",
+    "location": [
+      "app/Services/StockReservationService.php"
+    ],
+    "root_cause": "Classic check-then-act: GET stock → if > 0 → DECR. Between the GET and the DECR another worker's DECR can land, so the second worker grants a reservation for stock that is already gone. Nothing makes the read-and-decrement atomic.",
+    "why_it_looks_correct": "The logic is exactly right single-threaded, the visible tests (sequential reservations until sold out) pass, and code review of a five-line method sees a perfectly reasonable guard."
+  },
+  "non_obvious_invariant": "Granting a reservation must be atomic with the stock check: under any number of concurrent workers, granted reservations must never exceed the initial stock (stock never goes negative, the granted counter never exceeds it).",
+  "expected_diagnosis": "The agent must recognize the check-then-act race and make the read-decide-decrement atomic (Lua script with a floor check, WATCH/MULTI/EXEC with retry, or an equivalent atomic primitive), while preserving the single-threaded contract.",
+  "safe_fix_constraints": [
+    "reserve() keeps its contract: true + a recorded reservation when a unit is granted, false when sold out.",
+    "Key names (stock:<sku>, reserved:<sku>) and the per-SKU isolation stay the same.",
+    "The fix must hold under arbitrary concurrency, not just sequentially."
+  ],
+  "failure_explanation": "Under launch traffic, several workers read the same positive stock within the race window and each grants a reservation: more customers are told 'reserved' than units exist, payments are taken for phantom stock, and the finance reconciliation finds more reservations than purchasable units. The defect is invisible in every single-request replay — it only exists between two workers' round-trips.",
+  "public_surface": {
+    "routes": [
+      "POST /flashsale/{sku}/reserve"
+    ],
+    "classes": [
+      "App\\Services\\StockReservationService"
+    ],
+    "tables": []
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-watch-no-retry.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-06T21:32:40.221Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-06T21:32:40.221Z",
+        "note": "3 consecutive green runs"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-06T21:32:40.221Z",
+        "note": "3 consecutive green runs"
+      }
+    ]
+  }
+}

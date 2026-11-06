@@ -1,0 +1,35 @@
+diff --git a/app/Services/StockReservationService.php b/app/Services/StockReservationService.php
+index 34eb5ed..38f26c2 100644
+--- a/app/Services/StockReservationService.php
++++ b/app/Services/StockReservationService.php
+@@ -38,15 +38,20 @@ class StockReservationService
+      */
+     public function reserve(string $sku): bool
+     {
+-        $stock = (int) $this->redis->get("stock:{$sku}");
+-
+-        if ($stock <= 0) {
+-            return false;
+-        }
+-
+-        $this->redis->decr("stock:{$sku}");
+-        $this->redis->sadd("reserved:{$sku}", uniqid('', true));
+-
+-        return true;
++        // One atomic server-side decision: check and decrement together.
++        $script = <<<'LUA'
++        if tonumber(redis.call('GET', KEYS[1]) or '-1') <= 0 then return 0 end
++        redis.call('DECR', KEYS[1])
++        redis.call('SADD', KEYS[2], ARGV[1])
++        return 1
++        LUA;
++
++        $granted = (int) $this->redis->eval($script, [
++            "stock:{$sku}",
++            "reserved:{$sku}",
++            uniqid('', true),
++        ], 2);
++
++        return $granted === 1;
+     }
+ }

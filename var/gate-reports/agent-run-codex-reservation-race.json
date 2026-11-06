@@ -1,0 +1,32 @@
+[
+  {
+    "scenario": "reservation-race",
+    "cell": "laravel-13",
+    "mode": "agent",
+    "verdict": "pass",
+    "tamper": [],
+    "agent": {
+      "code": 0,
+      "stdout": "Implemented the atomic reservation fix in [StockReservationService.php](/app/var/workspaces/reservation-race--laravel-13--1/app/Services/StockReservationService.php).\nDiagnosis: the original check, decrement, and reservation recording were separate Redis commands, allowing concurrent workers to pass the stock check and oversell.\nThe fix uses one atomic Redis Lua script to check stock, decrement it, and add the reservation. Key names and the public contract remain unchanged.\nValidation: all 3 PHPUnit tests pass.",
+      "stderr": "-            return false;\n-        }\n-\n-        $this->redis->decr(\"stock:{$sku}\");\n-        $this->redis->sadd(\"reserved:{$sku}\", uniqid('', true));\n-\n-        return true;\n+        $result = $this->redis->eval(\n+            <<<'LUA'\n+local stock = redis.call('GET', KEYS[1])\n+if not stock or tonumber(stock) <= 0 then\n+    return 0\n+end\n+\n+redis.call('DECR', KEYS[1])\n+redis.call('SADD', KEYS[2], ARGV[1])\n+return 1\n+LUA,\n+            [\n+                \"stock:{$sku}\",\n+                \"reserved:{$sku}\",\n+                bin2hex(random_bytes(16)),\n+            ],\n+            2,\n+        );\n+\n+        return (int) $result === 1;\n     }\n }\nexec\n/bin/bash -lc 'git status --short' in /app/var/workspaces/reservation-race--laravel-13--1\n succeeded in 0ms:\n M app/Services/StockReservationService.php\ncodex\nImplemented the atomic reservation fix in [StockReservationService.php](/app/var/workspaces/reservation-race--laravel-13--1/app/Services/StockReservationService.php).\nDiagnosis: the original check, decrement, and reservation recording were separate Redis commands, allowing concurrent workers to pass the stock check and oversell.\nThe fix uses one atomic Redis Lua script to check stock, decrement it, and add the reservation. Key names and the public contract remain unchanged.\nValidation: all 3 PHPUnit tests pass.\ntokens used\n15,485",
+      "timedOut": false
+    },
+    "visible": {
+      "code": 0,
+      "timedOut": false,
+      "pass": true,
+      "tests": 3,
+      "assertions": 13,
+      "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/reservation-race--laravel-13--1/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.144, Memory: 38.50 MB\n\u001b[30;42mOK (3 tests, 13 assertions)\u001b[0m"
+    },
+    "hidden": {
+      "code": 0,
+      "timedOut": false,
+      "pass": true,
+      "tests": 5,
+      "assertions": 18,
+      "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/reservation-race--laravel-13--1/phpunit.xml\n.....                                                               5 / 5 (100%)\nTime: 00:00.932, Memory: 38.50 MB\n\u001b[30;42mOK (5 tests, 18 assertions)\u001b[0m"
+    },
+    "patch": "diff --git a/app/Services/StockReservationService.php b/app/Services/StockReservationService.php\nindex 34eb5ed..ddeda2f 100755\n--- a/app/Services/StockReservationService.php\n+++ b/app/Services/StockReservationService.php\n@@ -38,15 +38,25 @@ class StockReservationService\n      */\n     public function reserve(string $sku): bool\n     {\n-        $stock = (int) $this->redis->get(\"stock:{$sku}\");\n-\n-        if ($stock <= 0) {\n-            return false;\n-        }\n-\n-        $this->redis->decr(\"stock:{$sku}\");\n-        $this->redis->sadd(\"reserved:{$sku}\", uniqid('', true));\n-\n-        return true;\n+        $result = $this->redis->eval(\n+            <<<'LUA'\n+local stock = redis.call('GET', KEYS[1])\n+if not stock or tonumber(stock) <= 0 then\n+    return 0\n+end\n+\n+redis.call('DECR', KEYS[1])\n+redis.call('SADD', KEYS[2], ARGV[1])\n+return 1\n+LUA,\n+            [\n+                \"stock:{$sku}\",\n+                \"reserved:{$sku}\",\n+                bin2hex(random_bytes(16)),\n+            ],\n+            2,\n+        );\n+\n+        return (int) $result === 1;\n     }\n }\n"
+  }
+]

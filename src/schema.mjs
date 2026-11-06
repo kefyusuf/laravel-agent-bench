@@ -30,7 +30,7 @@ export function validateScenarioDocument(doc, { dirName, knownCells }) {
 
   const allowed = new Set(required);
   for (const key of Object.keys(doc)) {
-    req(allowed.has(key) || key === 'validation' || key === 'diagnosis_keywords' || key === 'intentional_defects' || key === 'task',
+    req(allowed.has(key) || ['validation', 'diagnosis_keywords', 'intentional_defect', 'intentional_defects', 'task'].includes(key),
       `unknown field "${key}"`);
   }
 

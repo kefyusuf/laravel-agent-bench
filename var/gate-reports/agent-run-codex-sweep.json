@@ -77,7 +77,12 @@
       "scenario": "redis-cluster-crossslot",
       "verdict": "pass",
       "ranOwnTests": true
+    },
+    {
+      "scenario": "reservation-race",
+      "verdict": "pass",
+      "ranOwnTests": true
     }
   ],
-  "note": "cluster scenario added 2026-11-06 after the initial sweep; separate run"
+  "note": "cluster + race scenarios added after the initial sweep; separate runs"
 }
