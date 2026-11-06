@@ -44,7 +44,7 @@ jobs:
           coverage: none
           extensions: redis
       - name: Bring up the Redis cluster (for redis-cluster scenarios)
-        run: docker compose --profile redis-cluster up -d --wait
+        run: docker compose --profile redis-cluster up -d --wait redis-1 redis-2 redis-3 redis-cluster-init
       - name: Export cluster seeds for native phpunit (published ports)
         run: echo "REDIS_SEEDS=127.0.0.1:16379,127.0.0.1:16380,127.0.0.1:16381" >> "$GITHUB_ENV"
       - name: Lint all PHP in snapshots and hidden tests
