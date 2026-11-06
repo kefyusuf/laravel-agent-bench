@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "id": "idempotent-checkout",
+  "family": "build/idempotency",
+  "title": "Implement idempotency keys for the checkout endpoint",
+  "difficulty": 4,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "PayLane's checkout endpoint (POST /checkout) charges customers through a payment provider whose network occasionally times out mid-request. Mobile clients retry timeouts automatically, so a slow provider response currently means the customer gets charged twice while support eats the tickets. The endpoint and its request/response contract are frozen; the mobile team has agreed to send an Idempotency-Key header once this feature ships.",
+  "user_request": "Implement idempotency keys for POST /checkout so provider timeouts can be retried safely. The mobile team will send an Idempotency-Key header. Design it so a retried request can never double-charge, and make sure a failure can always be retried. Existing behaviour (no header) must not change.",
+  "task": {
+    "kind": "build",
+    "feature_spec": "POST /checkout accepts an optional Idempotency-Key header. Scope: keys are per customer (the order's customer_id). Behaviour: (1) A charge request carrying a key, whose provider call succeeds, stores the response body under (key, customer). (2) A retry with the same (key, customer) returns the stored response body byte-for-byte with HTTP 200 and must NOT charge again nor write a second charge row. (3) A request with no key behaves exactly as today. (4) A provider failure (non-2xx or missing reference) is NOT stored: a retry with the same key performs a fresh charge. (5) The same key used by a different customer is a different operation (charges normally). You may add tables/migrations. The charge rows must record customer_id and the provider reference."
+  },
+  "non_obvious_invariant": "Replay must be keyed by (Idempotency-Key, customer) — a global key namespace leaks one customer's charge result to another; only SUCCESSFUL provider outcomes may be stored, otherwise a failed first attempt becomes a permanent 500 replay; and a replay must not write a second charge row.",
+  "expected_diagnosis": "Not applicable (build task): the agent must design storage for (key, customer, response), branch on the header, gate the provider call behind the replay check, and store only successful outcomes — distinguishing transport success from provider success.",
+  "safe_fix_constraints": [
+    "POST /checkout keeps its request/response contract for header-less requests (existing JSON shape byte-identical).",
+    "You may add tables/migrations and models; do not add composer dependencies.",
+    "The visible suite must stay green before and after your change."
+  ],
+  "failure_explanation": "Without idempotency keys every mobile retry after a provider timeout double-charges the customer. A global key namespace replays customer A's charge response to customer B (cross-customer data leak); storing failed outcomes turns a transient provider outage into a permanent 500 for that key.",
+  "public_surface": {
+    "routes": [
+      "POST /checkout"
+    ],
+    "classes": [
+      "App\\Http\\Controllers\\CheckoutController",
+      "App\\Models\\Order",
+      "App\\Models\\Charge"
+    ],
+    "tables": [
+      "orders",
+      "charges"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-global-namespace.patch",
+      "patches/distractor-store-failures.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-06T21:10:05.486Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-06T21:10:05.486Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-06T21:10:05.486Z"
+      }
+    ]
+  }
+}

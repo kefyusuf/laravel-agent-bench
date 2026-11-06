@@ -1,0 +1,122 @@
+diff --git a/app/Http/Controllers/CheckoutController.php b/app/Http/Controllers/CheckoutController.php
+index 4371a07..067f3e3 100644
+--- a/app/Http/Controllers/CheckoutController.php
++++ b/app/Http/Controllers/CheckoutController.php
+@@ -3,6 +3,7 @@
+ namespace App\Http\Controllers;
+ 
+ use App\Models\Charge;
++use App\Models\IdempotencyKey;
+ use App\Models\Order;
+ use Illuminate\Http\JsonResponse;
+ use Illuminate\Http\Request;
+@@ -17,6 +18,19 @@ class CheckoutController extends Controller
+         ]);
+ 
+         $order = Order::findOrFail($data['order_id']);
++        $idempotencyKey = trim((string) $request->header('Idempotency-Key', ''));
++
++        if ($idempotencyKey !== '') {
++            $stored = IdempotencyKey::query()
++                ->where('key', $idempotencyKey)
++                ->where('customer_id', $order->customer_id)
++                ->where('status', 'completed')
++                ->first();
++
++            if ($stored !== null) {
++                return response()->json($stored->response_body);
++            }
++        }
+ 
+         $response = Http::asJson()
+             ->withToken((string) config('services.paylane.key', 'test'))
+@@ -42,9 +56,17 @@ class CheckoutController extends Controller
+ 
+         $order->markPaid();
+ 
+-        return response()->json([
+-            'order' => ['id' => $order->id, 'status' => $order->status],
+-            'reference' => $reference,
+-        ]);
++        $body = ['order' => ['id' => $order->id, 'status' => $order->status], 'reference' => $reference];
++
++        if ($idempotencyKey !== '') {
++            IdempotencyKey::create([
++                'key' => $idempotencyKey,
++                'customer_id' => $order->customer_id,
++                'status' => 'completed',
++                'response_body' => $body,
++            ]);
++        }
++
++        return response()->json($body);
+     }
+ }
+diff --git a/app/Models/IdempotencyKey.php b/app/Models/IdempotencyKey.php
+new file mode 100644
+index 0000000..17f4bcf
+--- /dev/null
++++ b/app/Models/IdempotencyKey.php
+@@ -0,0 +1,23 @@
++<?php
++
++namespace App\Models;
++
++use Illuminate\Database\Eloquent\Model;
++
++class IdempotencyKey extends Model
++{
++    protected $fillable = [
++        'key',
++        'customer_id',
++        'status',
++        'response_body',
++    ];
++
++    protected function casts(): array
++    {
++        return [
++            'customer_id' => 'integer',
++            'response_body' => 'array',
++        ];
++    }
++}
+diff --git a/database/migrations/2025_03_02_000000_create_idempotency_keys_table.php b/database/migrations/2025_03_02_000000_create_idempotency_keys_table.php
+new file mode 100644
+index 0000000..90df994
+--- /dev/null
++++ b/database/migrations/2025_03_02_000000_create_idempotency_keys_table.php
+@@ -0,0 +1,33 @@
++<?php
++
++use Illuminate\Database\Migrations\Migration;
++use Illuminate\Database\Schema\Blueprint;
++use Illuminate\Support\Facades\Schema;
++
++return new class extends Migration
++{
++    /**
++     * Run the migrations.
++     */
++    public function up(): void
++    {
++        Schema::create('idempotency_keys', function (Blueprint $table) {
++            $table->id();
++            $table->string('key')->index();
++            $table->unsignedBigInteger('customer_id')->index();
++            $table->string('status')->default('completed');
++            $table->json('response_body')->nullable();
++            $table->timestamps();
++
++            $table->unique(['key', 'customer_id']);
++        });
++    }
++
++    /**
++     * Reverse the migrations.
++     */
++    public function down(): void
++    {
++        Schema::dropIfExists('idempotency_keys');
++    }
++};

@@ -1,0 +1,163 @@
+diff --git a/app/Http/Controllers/CheckoutController.php b/app/Http/Controllers/CheckoutController.php
+index 4371a07..39d20d7 100644
+--- a/app/Http/Controllers/CheckoutController.php
++++ b/app/Http/Controllers/CheckoutController.php
+@@ -3,7 +3,9 @@
+ namespace App\Http\Controllers;
+ 
+ use App\Models\Charge;
++use App\Models\IdempotencyKey;
+ use App\Models\Order;
++use Illuminate\Http\Client\RequestException;
+ use Illuminate\Http\JsonResponse;
+ use Illuminate\Http\Request;
+ use Illuminate\Support\Facades\Http;
+@@ -17,34 +19,60 @@ class CheckoutController extends Controller
+         ]);
+ 
+         $order = Order::findOrFail($data['order_id']);
++        $idempotencyKey = trim((string) $request->header('Idempotency-Key', ''));
+ 
+-        $response = Http::asJson()
+-            ->withToken((string) config('services.paylane.key', 'test'))
+-            ->post('https://api.paylane.example/v1/charges', [
++        if ($idempotencyKey !== '') {
++            $stored = IdempotencyKey::query()
++                ->where('key', $idempotencyKey)
++                ->where('customer_id', $order->customer_id)
++                ->first();
++
++            if ($stored !== null) {
++                return response()->json($stored->response_body, $stored->status === 'completed' ? 200 : 500);
++            }
++        }
++
++        try {
++            $response = Http::asJson()
++                ->withToken((string) config('services.paylane.key', 'test'))
++                ->post('https://api.paylane.example/v1/charges', [
++                    'order_id' => $order->id,
++                    'amount_cents' => $order->total_cents,
++                ]);
++
++            $response->throw();
++
++            $reference = (string) $response->json('reference');
++
++            if ($reference === '') {
++                abort(502, 'provider did not return a payment reference');
++            }
++
++            Charge::create([
+                 'order_id' => $order->id,
++                'customer_id' => $order->customer_id,
++                'reference' => $reference,
+                 'amount_cents' => $order->total_cents,
+             ]);
+ 
+-        $response->throw();
++            $order->markPaid();
+ 
+-        $reference = (string) $response->json('reference');
+-
+-        if ($reference === '') {
+-            abort(502, 'provider did not return a payment reference');
++            $body = ['order' => ['id' => $order->id, 'status' => $order->status], 'reference' => $reference];
++            $status = 'completed';
++        } catch (RequestException $e) {
++            $body = ['error' => 'provider request failed'];
++            $status = 'failed';
+         }
+ 
+-        Charge::create([
+-            'order_id' => $order->id,
+-            'customer_id' => $order->customer_id,
+-            'reference' => $reference,
+-            'amount_cents' => $order->total_cents,
+-        ]);
+-
+-        $order->markPaid();
++        if ($idempotencyKey !== '') {
++            IdempotencyKey::create([
++                'key' => $idempotencyKey,
++                'customer_id' => $order->customer_id,
++                'status' => $status,
++                'response_body' => $body,
++            ]);
++        }
+ 
+-        return response()->json([
+-            'order' => ['id' => $order->id, 'status' => $order->status],
+-            'reference' => $reference,
+-        ]);
++        return response()->json($body, $status === 'failed' ? 500 : 200);
+     }
+ }
+diff --git a/app/Models/IdempotencyKey.php b/app/Models/IdempotencyKey.php
+new file mode 100644
+index 0000000..17f4bcf
+--- /dev/null
++++ b/app/Models/IdempotencyKey.php
+@@ -0,0 +1,23 @@
++<?php
++
++namespace App\Models;
++
++use Illuminate\Database\Eloquent\Model;
++
++class IdempotencyKey extends Model
++{
++    protected $fillable = [
++        'key',
++        'customer_id',
++        'status',
++        'response_body',
++    ];
++
++    protected function casts(): array
++    {
++        return [
++            'customer_id' => 'integer',
++            'response_body' => 'array',
++        ];
++    }
++}
+diff --git a/database/migrations/2025_03_02_000000_create_idempotency_keys_table.php b/database/migrations/2025_03_02_000000_create_idempotency_keys_table.php
+new file mode 100644
+index 0000000..90df994
+--- /dev/null
++++ b/database/migrations/2025_03_02_000000_create_idempotency_keys_table.php
+@@ -0,0 +1,33 @@
++<?php
++
++use Illuminate\Database\Migrations\Migration;
++use Illuminate\Database\Schema\Blueprint;
++use Illuminate\Support\Facades\Schema;
++
++return new class extends Migration
++{
++    /**
++     * Run the migrations.
++     */
++    public function up(): void
++    {
++        Schema::create('idempotency_keys', function (Blueprint $table) {
++            $table->id();
++            $table->string('key')->index();
++            $table->unsignedBigInteger('customer_id')->index();
++            $table->string('status')->default('completed');
++            $table->json('response_body')->nullable();
++            $table->timestamps();
++
++            $table->unique(['key', 'customer_id']);
++        });
++    }
++
++    /**
++     * Reverse the migrations.
++     */
++    public function down(): void
++    {
++        Schema::dropIfExists('idempotency_keys');
++    }
++};

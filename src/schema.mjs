@@ -24,13 +24,13 @@ export function validateScenarioDocument(doc, { dirName, knownCells }) {
   for (const key of required) {
     req(doc[key] !== undefined, `missing required field "${key}"`);
   }
-  // single-defect OR multi-defect manifest, never both
-  req(doc.intentional_defect !== undefined || doc.intentional_defects !== undefined,
-    'missing required field "intentional_defect" (or "intentional_defects")');
+  // single-defect OR multi-defect manifest, OR a build task; never both defect kinds
+  req(doc.intentional_defect !== undefined || doc.intentional_defects !== undefined || doc.task?.kind === 'build',
+    'missing required field "intentional_defect" (or "intentional_defects", or task.kind = "build")');
 
   const allowed = new Set(required);
   for (const key of Object.keys(doc)) {
-    req(allowed.has(key) || key === 'validation' || key === 'diagnosis_keywords' || key === 'intentional_defects',
+    req(allowed.has(key) || key === 'validation' || key === 'diagnosis_keywords' || key === 'intentional_defects' || key === 'task',
       `unknown field "${key}"`);
   }
 
@@ -107,6 +107,22 @@ export function validateScenarioDocument(doc, { dirName, knownCells }) {
   }
   if (doc.intentional_defect !== undefined && doc.intentional_defects !== undefined) {
     fail('use either "intentional_defect" or "intentional_defects", not both');
+  }
+
+  // build tasks: no defect, a feature specification instead
+  if (doc.task !== undefined) {
+    req(doc.task && typeof doc.task === 'object' && !Array.isArray(doc.task), '"task" must be an object');
+    if (doc.task && typeof doc.task === 'object') {
+      req(doc.task.kind === 'fix' || doc.task.kind === 'build', 'task.kind must be "fix" or "build"');
+      if (doc.task.kind === 'build') {
+        req(typeof doc.task.feature_spec === 'string' && doc.task.feature_spec.length >= 40,
+          'task.feature_spec (>= 40 chars) is required for build tasks');
+      }
+    }
+    if (doc.task.kind === 'build') {
+      req(doc.intentional_defect === undefined && doc.intentional_defects === undefined,
+        'build tasks must not declare intentional_defect(s)');
+    }
   }
 
   if (doc.safe_fix_constraints !== undefined) {
