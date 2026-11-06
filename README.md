@@ -110,6 +110,48 @@ Verdicts: `pass` · `fail-visible` · `fail-hidden` · `no-change` · `tampered`
 `tests/`, `phpunit.xml`, `composer.json`, `bootstrap/`, `vendor/`) · `agent-timeout` ·
 `error` (ungradeable run, e.g. no parsed test summary) · `patch-not-applicable`.
 
+## Running agents
+
+The image ships the OpenAI Codex CLI so real agents can be graded in-container (grading
+needs PHP; the agent needs its auth). Mount your codex auth and pass the agent command:
+
+```bash
+docker compose run --rm -v "$HOME/.codex:/root/.codex" bench \
+  node bin/bench.mjs run --scenario webhook-payout-idempotency --cell laravel-13 \
+  --agent 'codex exec -C {{workspace}} --dangerously-bypass-approvals-and-sandbox \
+           --skip-git-repo-check --color never "$(cat {{prompt}})"'
+```
+
+Notes:
+
+- `{{workspace}}` / `{{prompt}}` are substituted by the harness; the agent command runs
+  through the container shell. Codex's own bubblewrap sandbox cannot run inside a
+  container (nested user namespaces), which is why `--dangerously-bypass-approvals-and-sandbox`
+  is used — the Docker container is the outer sandbox, and the harness's tamper checks
+  and hidden tests are the graded boundary.
+- Any agent works the same way: a command that receives the workspace and a PROMPT.md
+  path and edits the workspace. Verdicts: `pass`, `fail-visible`, `fail-hidden`,
+  `no-change`, `tampered`, `agent-timeout`, `error`.
+- `--json --out <file>` writes the full result (agent output tail, patch, verdicts) for
+  downstream scoring.
+- Prefer a host-side agent? See `examples/codex-agent-host.mjs` (materialize → agent on
+  host → `bench run --patch`).
+
+### Baseline score
+
+`examples/baseline-agent.mjs` is a deterministic, non-LLM pattern-matcher that knows only
+two common gotchas (missing `->afterCommit()` on dispatch inside a transaction; unchecked
+`Http` responses). Its score on laravel-13:
+
+| Verdict | Count | Scenarios |
+| --- | --- | --- |
+| `pass` | 1 | webhook-payout-idempotency |
+| `fail-hidden` | 1 | provider-error-as-success (partial fix: status checked, reference not — caught by hidden tests) |
+| `no-change` | 12 | everything requiring mechanics the naive agent does not know |
+
+A pattern-matching agent scores **1/14**, and its half-fix is caught by hidden tests —
+the benchmark measures invariant reasoning, not doc lookup.
+
 ## Scenario index
 
 | Scenario | Family | Difficulty |

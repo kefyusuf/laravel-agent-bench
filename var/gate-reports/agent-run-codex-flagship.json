@@ -1,0 +1,32 @@
+[
+  {
+    "scenario": "webhook-payout-idempotency",
+    "cell": "laravel-13",
+    "mode": "agent",
+    "verdict": "pass",
+    "tamper": [],
+    "agent": {
+      "code": 0,
+      "stdout": "Implemented the reliability fix in [PaymentWebhookController.php](/app/var/workspaces/webhook-payout-idempotency--laravel-13--1/app/Http/Controllers/PaymentWebhookController.php:37).\nDiagnosis: payouts were dispatched before the webhook transaction committed. Redis workers could process them before the payment event/order update was durable, causing missing-order errors and violating the event-before-payout guarantee.\nChange: `ProcessPayout::dispatch(...)->afterCommit()`.\nVerification: PHPUnit passes — 3 tests, 13 assertions.",
+      "stderr": "    },\n    \"config\": {\n        \"optimize-autoloader\": true,\n        \"preferred-install\": \"dist\",\n        \"sort-packages\": true\n    },\n    \"minimum-stability\": \"stable\",\n    \"prefer-stable\": true\n}\n--- phpunit availability ---\nPHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/webhook-payout-idempotency--laravel-13--1/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.251, Memory: 48.50 MB\n\u001b[30;42mOK (3 tests, 13 assertions)\u001b[0m\nexec\n/bin/bash -lc 'git diff --check && git diff -- app/Http/Controllers/PaymentWebhookController.php && git status --short' in /app/var/workspaces/webhook-payout-idempotency--laravel-13--1\n succeeded in 0ms:\ndiff --git a/app/Http/Controllers/PaymentWebhookController.php b/app/Http/Controllers/PaymentWebhookController.php\nindex 21ebb45..727e3cb 100755\n--- a/app/Http/Controllers/PaymentWebhookController.php\n+++ b/app/Http/Controllers/PaymentWebhookController.php\n@@ -34,7 +34,7 @@ class PaymentWebhookController extends Controller\n                 $order = Order::findOrFail($payload['data']['order_id']);\n                 $order->markPaid();\n \n-                ProcessPayout::dispatch($order->id);\n+                ProcessPayout::dispatch($order->id)->afterCommit();\n             }\n         });\n \n M app/Http/Controllers/PaymentWebhookController.php\ncodex\nImplemented the reliability fix in [PaymentWebhookController.php](/app/var/workspaces/webhook-payout-idempotency--laravel-13--1/app/Http/Controllers/PaymentWebhookController.php:37).\nDiagnosis: payouts were dispatched before the webhook transaction committed. Redis workers could process them before the payment event/order update was durable, causing missing-order errors and violating the event-before-payout guarantee.\nChange: `ProcessPayout::dispatch(...)->afterCommit()`.\nVerification: PHPUnit passes — 3 tests, 13 assertions.\ntokens used\n19,856",
+      "timedOut": false
+    },
+    "visible": {
+      "code": 0,
+      "timedOut": false,
+      "pass": true,
+      "tests": 3,
+      "assertions": 13,
+      "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/webhook-payout-idempotency--laravel-13--1/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.225, Memory: 48.50 MB\n\u001b[30;42mOK (3 tests, 13 assertions)\u001b[0m"
+    },
+    "hidden": {
+      "code": 0,
+      "timedOut": false,
+      "pass": true,
+      "tests": 6,
+      "assertions": 23,
+      "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/webhook-payout-idempotency--laravel-13--1/phpunit.xml\n......                                                              6 / 6 (100%)\nTime: 00:00.302, Memory: 48.50 MB\n\u001b[30;42mOK (6 tests, 23 assertions)\u001b[0m"
+    },
+    "patch": "diff --git a/app/Http/Controllers/PaymentWebhookController.php b/app/Http/Controllers/PaymentWebhookController.php\nindex 21ebb45..727e3cb 100755\n--- a/app/Http/Controllers/PaymentWebhookController.php\n+++ b/app/Http/Controllers/PaymentWebhookController.php\n@@ -34,7 +34,7 @@ class PaymentWebhookController extends Controller\n                 $order = Order::findOrFail($payload['data']['order_id']);\n                 $order->markPaid();\n \n-                ProcessPayout::dispatch($order->id);\n+                ProcessPayout::dispatch($order->id)->afterCommit();\n             }\n         });\n \n"
+  }
+]

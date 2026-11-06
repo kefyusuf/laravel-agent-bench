@@ -24,6 +24,11 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
+# OpenAI Codex CLI: lets the runner grade real agents in-container via
+#   bench run --agent "codex exec -C {{workspace}} -s workspace-write --skip-git-repo-check ..."
+# with auth mounted from the host (docker compose run -v ~/.codex:/root/.codex).
+RUN npm install -g @openai/codex
+
 # Workspaces are bind-mounted from (possibly Windows-owned) paths: trust them all.
 RUN git config --system --add safe.directory '*'
 
