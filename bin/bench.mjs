@@ -50,6 +50,7 @@ function cellsOrDie(cfg, idOrConstraint = null) {
   return cells;
 }
 
+function main() {
 const cmd = process.argv[2];
 const args = parseArgs(process.argv.slice(3));
 const cfg = loadConfig();
@@ -73,6 +74,7 @@ try {
       }
     }
     process.exitCode = 0;
+    return;
   }
 
   if (cmd === 'validate') {
@@ -111,6 +113,7 @@ try {
 
     if (args.json) console.log(JSON.stringify(report, null, 2));
     process.exitCode = anyFail ? 1 : 0;
+    return;
   }
 
   if (cmd === 'materialize') {
@@ -131,6 +134,7 @@ try {
     writeFileSync(path.join(out, 'PROMPT.md'), buildPrompt(s.doc));
     console.log(`materialized ${s.id} @ ${cell.id} -> ${out}`);
     process.exitCode = 0;
+    return;
   }
 
   if (cmd === 'prompt') {
@@ -138,6 +142,7 @@ try {
     const [s] = scenariosOrDie(cfg, args.scenario);
     process.stdout.write(buildPrompt(s.doc));
     process.exitCode = 0;
+    return;
   }
 
   if (cmd === 'run') {
@@ -174,6 +179,7 @@ try {
       writeFileSync(path.resolve(args.out), JSON.stringify(results, null, 2));
     }
     process.exitCode = exitCode;
+    return;
   }
 
   if (cmd === 'run-all') {
@@ -199,6 +205,7 @@ try {
     }
     if (args.json) console.log(JSON.stringify(results, null, 2));
     process.exitCode = results.every((r) => r.verdict === 'pass') ? 0 : 1;
+    return;
   }
 
   if (cmd === 'diagnose') {
@@ -221,6 +228,7 @@ try {
       writeFileSync(path.resolve(args.out), JSON.stringify(results, null, 2));
     }
     process.exitCode = results.every((r) => r.verdict === 'diagnosis-pass') ? 0 : 1;
+    return;
   }
 
   if (cmd === 'vendor:prepare') {
@@ -247,6 +255,7 @@ try {
         if (res.status !== 0) {
           console.error(`bench: composer install failed for ${cell.id}:\n${(res.stderr || res.stdout || '').slice(-2000)}`);
           process.exitCode = 1;
+          return;
         }
         const dest = path.join(cfg._root, cfg.paths.var, 'vendor', cell.id);
         rmSync(dest, { recursive: true, force: true });
@@ -257,9 +266,13 @@ try {
       }
     }
     process.exitCode = 0;
+    return;
   }
 
   die(`unknown command "${cmd ?? ''}" (try: list | validate | materialize | prompt | run | vendor:prepare)`);
 } catch (e) {
   die(String(e?.stack ?? e), 1);
 }
+}
+
+main();
