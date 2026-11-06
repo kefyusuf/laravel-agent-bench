@@ -1,0 +1,25 @@
+diff --git a/app/Models/DigestSetting.php b/app/Models/DigestSetting.php
+index 0bc5574..e7cc601 100644
+--- a/app/Models/DigestSetting.php
++++ b/app/Models/DigestSetting.php
+@@ -9,6 +9,7 @@ class DigestSetting extends Model
+     protected $fillable = [
+         'customer_id',
+         'locale',
++        'attach_pdfs',
+     ];
+ 
+     protected function casts(): array
+diff --git a/app/Providers/AppServiceProvider.php b/app/Providers/AppServiceProvider.php
+index 86afa3d..8382133 100644
+--- a/app/Providers/AppServiceProvider.php
++++ b/app/Providers/AppServiceProvider.php
+@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
+     public function boot(): void
+     {
+         RateLimiter::for('digest', function (Request $request) {
+-            return Limit::perMinute(2);
++            return Limit::perMinute(2)->by($request->route('customer'));
+         });
+     }
+ }

@@ -676,6 +676,77 @@ const PATCHES = {
       ],
     },
   ],
+
+  'digest-pipeline-defects': [
+    {
+      name: 'solution.patch',
+      edits: [
+        {
+          file: 'app/Models/DigestSetting.php',
+          find: "    protected $fillable = [\n        'customer_id',\n        'locale',\n    ];",
+          replace: "    protected $fillable = [\n        'customer_id',\n        'locale',\n        'attach_pdfs',\n    ];",
+        },
+        {
+          file: 'app/Providers/AppServiceProvider.php',
+          find: '            return Limit::perMinute(2);',
+          replace: "            return Limit::perMinute(2)->by($request->route('customer'));",
+        },
+        {
+          file: 'app/Jobs/SendDigestJob.php',
+          find: "        $digestId = $response->json('digest_id');",
+          replace: [
+            '        $response->throw();',
+            '',
+            "        $digestId = (string) $response->json('digest_id');",
+            '',
+            "        if ($digestId === '') {",
+            "            throw new \\RuntimeException('billing API returned no digest id');",
+            '        }',
+          ].join('\n'),
+        },
+      ],
+    },
+    {
+      // partial fix: settings + limiter, leaves the unchecked HTTP response.
+      name: 'distractor-fix-two-a.patch',
+      edits: [
+        {
+          file: 'app/Models/DigestSetting.php',
+          find: "    protected $fillable = [\n        'customer_id',\n        'locale',\n    ];",
+          replace: "    protected $fillable = [\n        'customer_id',\n        'locale',\n        'attach_pdfs',\n    ];",
+        },
+        {
+          file: 'app/Providers/AppServiceProvider.php',
+          find: '            return Limit::perMinute(2);',
+          replace: "            return Limit::perMinute(2)->by($request->route('customer'));",
+        },
+      ],
+    },
+    {
+      // partial fix: limiter + HTTP response, leaves the mass-assignment drop.
+      name: 'distractor-fix-two-b.patch',
+      edits: [
+        {
+          file: 'app/Providers/AppServiceProvider.php',
+          find: '            return Limit::perMinute(2);',
+          replace: "            return Limit::perMinute(2)->by($request->route('customer'));",
+        },
+        {
+          file: 'app/Jobs/SendDigestJob.php',
+          find: "        $digestId = $response->json('digest_id');",
+          replace: [
+            '        $response->throw();',
+            '',
+            "        $digestId = (string) $response->json('digest_id');",
+            '',
+            "        if ($digestId === '') {",
+            "            throw new \\RuntimeException('billing API returned no digest id');",
+            '        }',
+          ].join('\n'),
+        },
+      ],
+    },
+  ],
 };
 
 const cfg = loadConfig();

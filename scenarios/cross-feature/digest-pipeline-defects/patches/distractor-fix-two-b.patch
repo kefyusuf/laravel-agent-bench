@@ -1,0 +1,32 @@
+diff --git a/app/Jobs/SendDigestJob.php b/app/Jobs/SendDigestJob.php
+index 5f6d2bb..89d90b9 100644
+--- a/app/Jobs/SendDigestJob.php
++++ b/app/Jobs/SendDigestJob.php
+@@ -24,7 +24,13 @@ class SendDigestJob implements ShouldQueue
+                 'period' => now()->format('Y-m'),
+             ]);
+ 
+-        $digestId = $response->json('digest_id');
++        $response->throw();
++
++        $digestId = (string) $response->json('digest_id');
++
++        if ($digestId === '') {
++            throw new \RuntimeException('billing API returned no digest id');
++        }
+ 
+         $this->digest->forceFill([
+             'status' => Digest::STATUS_SENT,
+diff --git a/app/Providers/AppServiceProvider.php b/app/Providers/AppServiceProvider.php
+index 86afa3d..8382133 100644
+--- a/app/Providers/AppServiceProvider.php
++++ b/app/Providers/AppServiceProvider.php
+@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
+     public function boot(): void
+     {
+         RateLimiter::for('digest', function (Request $request) {
+-            return Limit::perMinute(2);
++            return Limit::perMinute(2)->by($request->route('customer'));
+         });
+     }
+ }

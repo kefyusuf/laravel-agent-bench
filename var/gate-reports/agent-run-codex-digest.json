@@ -1,0 +1,32 @@
+[
+  {
+    "scenario": "digest-pipeline-defects",
+    "cell": "laravel-13",
+    "mode": "agent",
+    "verdict": "pass",
+    "tamper": [],
+    "agent": {
+      "code": 0,
+      "stdout": "Implemented the three targeted fixes:\n- Persist `attach_pdfs` in `DigestSetting` and pass saved locale/PDF settings to LedgerMail.\n- Scope send rate limiting per customer instead of globally.\n- Throw on billing API failures or missing billing references, preventing false `sent` status.\nValidation: existing PHPUnit suite passes — 3 tests, 7 assertions.",
+      "stderr": "+\n         $this->digest->forceFill([\n             'status' => Digest::STATUS_SENT,\n             'provider_digest_id' => $digestId,\ndiff --git a/app/Models/DigestSetting.php b/app/Models/DigestSetting.php\nindex 0bc5574..e7cc601 100755\n--- a/app/Models/DigestSetting.php\n+++ b/app/Models/DigestSetting.php\n@@ -9,6 +9,7 @@ class DigestSetting extends Model\n     protected $fillable = [\n         'customer_id',\n         'locale',\n+        'attach_pdfs',\n     ];\n \n     protected function casts(): array\ndiff --git a/app/Providers/AppServiceProvider.php b/app/Providers/AppServiceProvider.php\nindex 86afa3d..ebf2f72 100755\n--- a/app/Providers/AppServiceProvider.php\n+++ b/app/Providers/AppServiceProvider.php\n@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider\n     public function boot(): void\n     {\n         RateLimiter::for('digest', function (Request $request) {\n-            return Limit::perMinute(2);\n+            return Limit::perMinute(2)->by((string) $request->route('customer'));\n         });\n     }\n }\n M app/Jobs/SendDigestJob.php\n M app/Models/DigestSetting.php\n M app/Providers/AppServiceProvider.php\ncodex\nImplemented the three targeted fixes:\n- Persist `attach_pdfs` in `DigestSetting` and pass saved locale/PDF settings to LedgerMail.\n- Scope send rate limiting per customer instead of globally.\n- Throw on billing API failures or missing billing references, preventing false `sent` status.\nValidation: existing PHPUnit suite passes — 3 tests, 7 assertions.\ntokens used\n37,677",
+      "timedOut": false
+    },
+    "visible": {
+      "code": 0,
+      "timedOut": false,
+      "pass": true,
+      "tests": 3,
+      "assertions": 7,
+      "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/digest-pipeline-defects--laravel-13--1/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.282, Memory: 50.50 MB\n\u001b[30;42mOK (3 tests, 7 assertions)\u001b[0m"
+    },
+    "hidden": {
+      "code": 0,
+      "timedOut": false,
+      "pass": true,
+      "tests": 6,
+      "assertions": 13,
+      "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/digest-pipeline-defects--laravel-13--1/phpunit.xml\n......                                                              6 / 6 (100%)\nTime: 00:00.309, Memory: 52.50 MB\n\u001b[30;42mOK (6 tests, 13 assertions)\u001b[0m"
+    },
+    "patch": "diff --git a/app/Jobs/SendDigestJob.php b/app/Jobs/SendDigestJob.php\nindex 5f6d2bb..a42aff7 100755\n--- a/app/Jobs/SendDigestJob.php\n+++ b/app/Jobs/SendDigestJob.php\n@@ -3,9 +3,11 @@\n namespace App\\Jobs;\n \n use App\\Models\\Digest;\n+use App\\Models\\DigestSetting;\n use Illuminate\\Contracts\\Queue\\ShouldQueue;\n use Illuminate\\Foundation\\Queue\\Queueable;\n use Illuminate\\Support\\Facades\\Http;\n+use RuntimeException;\n \n class SendDigestJob implements ShouldQueue\n {\n@@ -17,15 +19,24 @@ class SendDigestJob implements ShouldQueue\n \n     public function handle(): void\n     {\n+        $setting = DigestSetting::where('customer_id', $this->digest->customer_id)->first();\n+\n         $response = Http::asJson()\n             ->withToken((string) config('services.ledgermail.key', 'test'))\n             ->post('https://api.ledgermail.example/v1/digests', [\n                 'customer_id' => $this->digest->customer_id,\n                 'period' => now()->format('Y-m'),\n-            ]);\n+                'locale' => $setting?->locale ?? 'en',\n+                'attach_pdfs' => $setting?->attach_pdfs ?? false,\n+            ])\n+            ->throw();\n \n         $digestId = $response->json('digest_id');\n \n+        if (! is_string($digestId) || $digestId === '') {\n+            throw new RuntimeException('LedgerMail did not return a digest reference.');\n+        }\n+\n         $this->digest->forceFill([\n             'status' => Digest::STATUS_SENT,\n             'provider_digest_id' => $digestId,\ndiff --git a/app/Models/DigestSetting.php b/app/Models/DigestSetting.php\nindex 0bc5574..e7cc601 100755\n--- a/app/Models/DigestSetting.php\n+++ b/app/Models/DigestSetting.php\n@@ -9,6 +9,7 @@ class DigestSetting extends Model\n     protected $fillable = [\n         'customer_id',\n         'locale',\n+        'attach_pdfs',\n     ];\n \n     protected function casts(): array\ndiff --git a/app/Providers/AppServiceProvider.php b/app/Providers/AppServiceProvider.php\nindex 86afa3d..ebf2f72 100755\n--- a/app/Providers/AppServiceProvider.php\n+++ b/app/Providers/AppServiceProvider.php\n@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider\n     public function boot(): void\n     {\n         RateLimiter::for('digest', function (Request $request) {\n-            return Limit::perMinute(2);\n+            return Limit::perMinute(2)->by((string) $request->route('customer'));\n         });\n     }\n }\n"
+  }
+]

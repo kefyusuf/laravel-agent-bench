@@ -17,16 +17,21 @@ export function validateScenarioDocument(doc, { dirName, knownCells }) {
 
   const required = [
     'schema', 'id', 'family', 'title', 'difficulty', 'status', 'laravel', 'requires',
-    'business_context', 'user_request', 'intentional_defect', 'non_obvious_invariant',
+    'business_context', 'user_request',
+    'non_obvious_invariant',
     'expected_diagnosis', 'safe_fix_constraints', 'failure_explanation', 'public_surface', 'artifacts',
   ];
   for (const key of required) {
     req(doc[key] !== undefined, `missing required field "${key}"`);
   }
+  // single-defect OR multi-defect manifest, never both
+  req(doc.intentional_defect !== undefined || doc.intentional_defects !== undefined,
+    'missing required field "intentional_defect" (or "intentional_defects")');
 
   const allowed = new Set(required);
   for (const key of Object.keys(doc)) {
-    req(allowed.has(key) || key === 'validation' || key === 'diagnosis_keywords', `unknown field "${key}"`);
+    req(allowed.has(key) || key === 'validation' || key === 'diagnosis_keywords' || key === 'intentional_defects',
+      `unknown field "${key}"`);
   }
 
   if (doc.diagnosis_keywords !== undefined) {
@@ -83,6 +88,25 @@ export function validateScenarioDocument(doc, { dirName, knownCells }) {
       req(Array.isArray(d.location) && d.location.length >= 1 && d.location.every((x) => typeof x === 'string'),
         'intentional_defect.location must be a non-empty array of strings');
     }
+  }
+
+  // multi-defect scenarios: intentional_defects (array) XOR intentional_defect (single)
+  if (doc.intentional_defects !== undefined) {
+    req(!Array.isArray(doc) && Array.isArray(doc.intentional_defects) && doc.intentional_defects.length >= 2,
+      '"intentional_defects" must be an array of at least 2 defect objects');
+    if (Array.isArray(doc.intentional_defects)) {
+      for (const [i, d] of doc.intentional_defects.entries()) {
+        req(d && typeof d === 'object', `intentional_defects[${i}] must be an object`);
+        for (const k of ['summary', 'location', 'root_cause', 'why_it_looks_correct']) {
+          req(d[k] !== undefined, `intentional_defects[${i}].${k} is required`);
+        }
+        req(Array.isArray(d.location) && d.location.length >= 1,
+          `intentional_defects[${i}].location must be a non-empty array of strings`);
+      }
+    }
+  }
+  if (doc.intentional_defect !== undefined && doc.intentional_defects !== undefined) {
+    fail('use either "intentional_defect" or "intentional_defects", not both');
   }
 
   if (doc.safe_fix_constraints !== undefined) {

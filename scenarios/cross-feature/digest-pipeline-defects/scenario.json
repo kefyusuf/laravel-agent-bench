@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "id": "digest-pipeline-defects",
+  "family": "cross-feature/multi-defect",
+  "title": "Digest pipeline ships with three unrelated defects across three layers",
+  "difficulty": 5,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "LedgerMail sends monthly invoice digests to corporate customers. A customer's digest settings (locale, whether PDFs are attached) are edited through an internal tool; the send endpoint (rate limited to protect the billing API) queues SendDigestJob, which calls the LedgerMail billing API and marks the digest as sent. The three teams that own pieces of this pipeline each believe their part is fine — the visible test suite agrees with all of them.",
+  "user_request": "Support has three open tickets that ops believes are related: (1) customers who tick 'attach PDFs to my digest' keep getting digests without PDFs even though the tool says saved; (2) when one customer spam-clicks the send button, OTHER customers' sends start failing for the rest of the minute; (3) when the billing API has one of its known 5xx episodes, digests end up marked 'sent' with no billing reference. Investigate the digest pipeline and fix everything that is genuinely broken. Do not change any endpoint's request/response contract, and do not touch the database schema.",
+  "intentional_defects": [
+    {
+      "summary": "UpdateDigestSettingsRequest validates attach_pdfs, but DigestSetting::$fillable lacks it — update($request->validated()) silently drops the consent flag.",
+      "location": [
+        "app/Models/DigestSetting.php"
+      ],
+      "root_cause": "The mass-assignment guard filters validated data: attach_pdfs never reaches the model, while the controller returns 200 with the merged (stale) attributes.",
+      "why_it_looks_correct": "Validation, controller and response all look right in isolation, the visible test updates 'locale' (which IS fillable) and passes, and nothing logs or fails."
+    },
+    {
+      "summary": "RateLimiter::for('digest', ...) returns Limit::perMinute(2) without ->by(...): every customer shares one global bucket.",
+      "location": [
+        "app/Providers/AppServiceProvider.php"
+      ],
+      "root_cause": "Without a ->by($key) the throttle middleware's bucket key is constant; one customer's two sends lock out every other customer for the rest of the minute.",
+      "why_it_looks_correct": "The limit is registered, attached, and the visible test (two sends, second throttled) passes — from a single customer's perspective the limiter 'works'."
+    },
+    {
+      "summary": "SendDigestJob reads the billing API body without checking the HTTP status: a 5xx with a JSON body marks the digest 'sent' with a null provider reference.",
+      "location": [
+        "app/Jobs/SendDigestJob.php"
+      ],
+      "root_cause": "The HTTP transport succeeds while the provider call fails; json('digest_id') is null and the job persists a 'sent' digest anyway.",
+      "why_it_looks_correct": "The happy path works perfectly and the visible tests fake a 200 response, so the failure branch is never exercised."
+    }
+  ],
+  "non_obvious_invariant": "All three pipeline guarantees must hold simultaneously: (1) every validated setting persists; (2) the send bucket is keyed per customer; (3) a digest is marked 'sent' only after a successful billing-API response. Fixing any subset leaves at least one hidden red.",
+  "expected_diagnosis": "The agent must audit the whole pipeline rather than chase one symptom: trace validated() through the mass-assignment guard, recognize the anonymous throttle bucket, and separate HTTP-transport success from provider-call success.",
+  "safe_fix_constraints": [
+    "Every endpoint's request/response contract stays unchanged.",
+    "No database schema changes; no new composer dependencies.",
+    "Each fix must be the minimal coherent change for that defect (no opportunistic refactors)."
+  ],
+  "failure_explanation": "The three defects compound in production: consent flags are silently lost (a compliance problem), one customer's clicking denies sends to everyone (an outage), and billing-API incidents create phantom 'sent' digests with no provider reference (finance reconciliation breaks). Each defect alone looks like the other team's problem, which is why all three survived.",
+  "public_surface": {
+    "routes": [
+      "POST /digest/settings",
+      "POST /digest/{customer}/send"
+    ],
+    "classes": [
+      "App\\Models\\DigestSetting",
+      "App\\Models\\Digest",
+      "App\\Jobs\\SendDigestJob",
+      "App\\Http\\Controllers\\DigestSettingsController",
+      "App\\Http\\Controllers\\DigestController"
+    ],
+    "tables": [
+      "digest_settings",
+      "digests"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-fix-two-a.patch",
+      "patches/distractor-fix-two-b.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-06T20:58:02.887Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-06T20:58:02.887Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-06T20:58:02.887Z"
+      }
+    ]
+  }
+}

@@ -71,10 +71,16 @@ export function validateStructural(cfg, scenario) {
     }
   }
 
-  // defect location files must exist
-  for (const loc of doc?.intentional_defect?.location ?? []) {
-    if (!existsSync(path.join(snapshotDir, loc))) {
-      errors.push(`intentional_defect.location references missing snapshot file "${loc}"`);
+  // defect location files must exist (single- or multi-defect manifests)
+  const defectGroups = [
+    ...(doc?.intentional_defect ? [doc.intentional_defect] : []),
+    ...(doc?.intentional_defects ?? []),
+  ];
+  for (const defect of defectGroups) {
+    for (const loc of defect.location ?? []) {
+      if (!existsSync(path.join(snapshotDir, loc))) {
+        errors.push(`defect location references missing snapshot file "${loc}"`);
+      }
     }
   }
 
