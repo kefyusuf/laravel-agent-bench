@@ -1,0 +1,16 @@
+{
+  "scenario": "scheduler-overlap",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "no-change",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "[baseline-agent] workspace: /app/var/workspaces/scheduler-overlap--laravel-13--1\n[baseline-agent] prompt: 29 lines (read for context; rules are fixed)\n[baseline-agent] done — 0 file(s) changed",
+    "stderr": "",
+    "timedOut": false
+  },
+  "visible": null,
+  "hidden": null,
+  "patch": ""
+}

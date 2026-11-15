@@ -156,20 +156,40 @@ two common gotchas (missing `->afterCommit()` on dispatch inside a transaction; 
 A pattern-matching agent scores **1/14**, and its half-fix is caught by hidden tests —
 the benchmark measures invariant reasoning, not doc lookup.
 
-### First real-agent sweep (2026-11-06)
+### Score table (generated: bench report)
 
-Codex CLI (default model, ChatGPT auth) on laravel-13, one run per scenario:
-**19/20 `pass`** — including the difficulty-5 Redis-cluster and concurrency-race scenarios (18 scenarios + 2 added after the initial sweep) (the agent
-reproduced the CROSSSLOT failure, applied the tenant hash tag and kept the Lua
-script atomic; 10+ runs included the agent running PHPUnit itself; evidence:
-`var/gate-reports/agent-run-codex-sweep.json`). Honest calibration note: single-
-defect scenarios with full shell + test feedback **saturate for frontier agents** —
-even real-infrastructure and concurrency scenarios — with TWO exceptions: the
-benchmark is on the other end of the spectrum: the deterministic baseline scores
-1/17, and its partial fix fails the hidden tests — and the **feature-work (build)
-category DOES discriminate frontier agents**: the same Codex run scored fail-hidden
-on idempotent-checkout (spec-adherence: it 409-rejects a key collision where the
-spec requires a normal charge). Find-and-fix saturates for single-defect scenarios; spec-adherent feature work and exactly-once money invariants across failure paths do not.
+| Scenario | baseline | codex |
+| --- | --- | --- |
+| digest-pipeline-defects | ❌ fail-hidden | ✅ pass |
+| double-refund | · no-change | ❌ fail-hidden |
+| idempotent-checkout | · no-change | ❌ fail-hidden |
+| idor-nested-resource | · no-change | ✅ pass |
+| lazy-loading-in-accessor | · no-change | ✅ pass |
+| lock-leak-on-exception | · no-change | ✅ pass |
+| mass-assignment-silent-drop | · no-change | ✅ pass |
+| morph-map-hardcoded-type | · no-change | ✅ pass |
+| provider-error-as-success | ❌ fail-hidden | ✅ pass |
+| rate-limiter-missing-key | · no-change | ✅ pass |
+| redis-cluster-crossslot | · no-change | ✅ pass |
+| reservation-race | · no-change | ✅ pass |
+| retry-after-vs-timeout | · no-change | ✅ pass |
+| runtime-env-after-cache | · no-change | ✅ pass |
+| scheduler-overlap | · no-change | ✅ pass |
+| signed-url-toggle-replay | · no-change | ✅ pass |
+| singleton-request-state | · no-change | ✅ pass |
+| soft-delete-unique-email | · no-change | ✅ pass |
+| unique-job-tenant-key | · no-change | ✅ pass |
+| webhook-payout-idempotency | ✅ pass | ✅ pass |
+| **pass total** | 1/20 | 18/20 |
+
+Calibration (2026-11-06/07, evidence under var/gate-reports/): find-and-fix scenarios
+saturate for frontier agents with full tooling — even against real infrastructure and
+under real concurrency. The demonstrated discriminative axes are the low end
+(baseline 1/20; partial fixes caught by hidden tests) and, critically,
+**spec-adherent feature work and exactly-once money invariants across failure
+paths** — the same frontier agent scored fail-hidden on idempotent-checkout (409
+instead of a normal charge for a cross-customer key) and on double-refund (an
+over-engineered fix broke the compensation path it claimed to preserve).
 
 ## Scenario index
 

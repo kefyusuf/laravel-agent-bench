@@ -1,0 +1,32 @@
+{
+  "scenario": "digest-pipeline-defects",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "fail-hidden",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "[baseline-agent] workspace: /app/var/workspaces/digest-pipeline-defects--laravel-13--1\n[baseline-agent] prompt: 29 lines (read for context; rules are fixed)\n[baseline-agent] edited app/Jobs/SendDigestJob.php\n[baseline-agent] done — 1 file(s) changed",
+    "stderr": "",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 3,
+    "assertions": 7,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/digest-pipeline-defects--laravel-13--1/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.563, Memory: 50.50 MB\n\u001b[30;42mOK (3 tests, 7 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 1,
+    "timedOut": false,
+    "pass": false,
+    "tests": 6,
+    "assertions": 13,
+    "failureKind": "Failures",
+    "failureCount": 2,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/digest-pipeline-defects--laravel-13--1/phpunit.xml\n\u001b[41;37mF\u001b[0m\u001b[41;37mF\u001b[0m....                                                              6 / 6 (100%)\nTime: 00:00.355, Memory: 52.50 MB\nThere were 2 failures:\n1) Tests\\Feature\\DigestDefectsTest::test_attach_pdfs_consent_really_persists\nFailed asserting that a row in the table [digest_settings] matches the attributes {\n    \"customer_id\": 101,\n    \"locale\": \"de\",\n    \"attach_pdfs\": true\n}.\nFound similar results: [\n    {\n        \"customer_id\": 101,\n        \"locale\": \"de\",\n        \"attach_pdfs\": 0\n    }\n].\n/app/var/workspaces/digest-pipeline-defects--laravel-13--1/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithDatabase.php:51\n/app/var/workspaces/digest-pipeline-defects--laravel-13--1/tests/Feature/DigestDefectsTest.php:27\n2) Tests\\Feature\\DigestDefectsTest::test_one_customer_exhausting_the_limit_does_not_block_another\nCustomer 202 received HTTP 429: the send limiter shares one bucket across all customers instead of keying per customer.\nFailed asserting that 429 is identical to 200.\n/app/var/workspaces/digest-pipeline-defects--laravel-13--1/tests/Feature/DigestDefectsTest.php:46\n\u001b[37;41mFAILURES!\u001b[0m\n\u001b[37;41mTests: 6\u001b[0m\u001b[37;41m, Assertions: 13\u001b[0m\u001b[37;41m, Failures: 2\u001b[0m\u001b[37;41m.\u001b[0m"
+  },
+  "patch": "diff --git a/app/Jobs/SendDigestJob.php b/app/Jobs/SendDigestJob.php\nindex 5f6d2bb..423df1b 100755\n--- a/app/Jobs/SendDigestJob.php\n+++ b/app/Jobs/SendDigestJob.php\n@@ -24,6 +24,8 @@ class SendDigestJob implements ShouldQueue\n                 'period' => now()->format('Y-m'),\n             ]);\n \n+        $response->throw();\n+\n         $digestId = $response->json('digest_id');\n \n         $this->digest->forceFill([\n"
+}

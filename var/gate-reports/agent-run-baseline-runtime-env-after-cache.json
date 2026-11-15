@@ -1,0 +1,16 @@
+{
+  "scenario": "runtime-env-after-cache",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "no-change",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "[baseline-agent] workspace: /app/var/workspaces/runtime-env-after-cache--laravel-13--1\n[baseline-agent] prompt: 30 lines (read for context; rules are fixed)\n[baseline-agent] done — 0 file(s) changed",
+    "stderr": "",
+    "timedOut": false
+  },
+  "visible": null,
+  "hidden": null,
+  "patch": ""
+}

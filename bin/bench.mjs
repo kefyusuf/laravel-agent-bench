@@ -10,6 +10,7 @@ import { buildPrompt } from '../src/prompt.mjs';
 import { runGrade } from '../src/grade.mjs';
 import { runAll } from '../src/run-all.mjs';
 import { runDiagnose } from '../src/diagnose.mjs';
+import { buildScoreTable } from '../src/report.mjs';
 
 function die(msg, code = 2) {
   console.error(`bench: ${msg}`);
@@ -210,7 +211,7 @@ try {
 
   if (cmd === 'diagnose') {
     if (!args.scenario || !args.agent) {
-      die('usage: bench diagnose --scenario <id> --agent "<cmd with {{workspace}} {{prompt}}>" [--cell <id-or-constraint>] [--keep]');
+      die('usage: bench diagnose --scenario <id> --agent "<cmd with {{workspace}} {{prompt}}>" [--judge "<judge cmd with {{prompt}}>" ] [--cell <id-or-constraint>] [--keep]');
     }
     const scenarios = scenariosOrDie(cfg, args.scenario);
     const cells = cellsOrDie(cfg, args.cell);
@@ -218,7 +219,7 @@ try {
     for (const s of scenarios) {
       for (const cell of cells) {
         if (s.doc && !s.doc.laravel.includes(cell.laravel)) continue;
-        const r = runDiagnose({ cfg, scenario: s, cell, workspacesRoot, agentCmd: args.agent, keep: args.keep });
+        const r = runDiagnose({ cfg, scenario: s, cell, workspacesRoot, agentCmd: args.agent, judgeCmd: args.judge ?? null, keep: args.keep });
         results.push(r);
         console.log(`${r.verdict.toUpperCase().padEnd(16)} ${r.scenario} @ ${r.cell}  matched: [${r.matched.join(', ')}]`);
       }
@@ -228,6 +229,22 @@ try {
       writeFileSync(path.resolve(args.out), JSON.stringify(results, null, 2));
     }
     process.exitCode = results.every((r) => r.verdict === 'diagnosis-pass') ? 0 : 1;
+    return;
+  }
+
+  if (cmd === 'report') {
+    const dir = args.dir ? path.resolve(args.dir) : path.join(cfg._root, cfg.paths.var, 'gate-reports');
+    const { agents, markdown } = buildScoreTable(dir);
+    if (args.out) {
+      writeFileSync(path.resolve(args.out), markdown + '\n');
+    }
+    if (!args.quiet) {
+      console.log(markdown);
+      for (const label of Object.keys(agents)) {
+        console.error('agent "' + label + '": ' + Object.keys(agents[label]).length + ' scenarios with recorded verdicts');
+      }
+    }
+    process.exitCode = 0;
     return;
   }
 

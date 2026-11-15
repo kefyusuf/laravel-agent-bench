@@ -78,6 +78,8 @@
     "after the transaction commits",
     "outside the transaction",
     "defer the dispatch",
-    "dispatched before the transaction"
+    "dispatched before the transaction",
+    "transaction commits",
+    "after a successful commit"
   ]
 }

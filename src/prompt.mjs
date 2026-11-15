@@ -47,6 +47,55 @@ export function scoreDiagnosis(output, keywords) {
     hadTags: open !== -1 && close !== -1,
   };
 }
+
+/**
+ * Judge prompt for diagnosis mode (grading side only): scores an agent's
+ * diagnosis against the known root cause. The judge returns a JSON verdict;
+ * recorded for reporting — the deterministic keyword verdict stays primary.
+ */
+export function buildJudgePrompt(doc, diagnosisText) {
+  return [
+    '# Diagnosis grading',
+    '',
+    'You are grading a diagnosis produced by another engineer against the known root cause.',
+    '',
+    '## Known root cause (ground truth)',
+    '',
+    doc.expected_diagnosis.trim(),
+    '',
+    '## Diagnosis to grade',
+    '',
+    '<diagnosis>',
+    diagnosisText.trim(),
+    '</diagnosis>',
+    '',
+    '## Rubric',
+    '',
+    '- "correct": identifies the same root cause and mechanism, and proposes a fix that would resolve it.',
+    '- "partial": identifies a real problem but misses the core mechanism, or proposes a fix that would not resolve it.',
+    '- "incorrect": wrong root cause, or no meaningful identification.',
+    '',
+    'Respond with ONLY a JSON object, nothing else:',
+    '{"verdict": "correct" | "partial" | "incorrect", "reasons": "<one paragraph>"}',
+    '',
+  ].join('\n');
+}
+
+/** Extract the judge's JSON verdict from its output (tolerant of chatter). */
+export function parseJudgeVerdict(output) {
+  const matches = [...output.matchAll(/\{[^{}]*"verdict"[\s\S]*?\}/g)];
+  for (const m of matches.reverse()) {
+    try {
+      const parsed = JSON.parse(m[0]);
+      if (['correct', 'partial', 'incorrect'].includes(parsed.verdict)) {
+        return { verdict: parsed.verdict, reasons: String(parsed.reasons ?? '') };
+      }
+    } catch {
+      // not valid JSON — try the next candidate
+    }
+  }
+  return null;
+}
 /**
  * Build the agent-facing PROMPT.md. Strictly excludes grading fields:
  * intentional_defect, non_obvious_invariant, expected_diagnosis, failure_explanation, artifacts, validation.
