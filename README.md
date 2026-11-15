@@ -231,6 +231,13 @@ known root cause and its verdict is authoritative when present. Sample sweep
 (codex read-only, laravel-13): morph-map ✅ / double-refund ✅ / scheduler-overlap
 ⚠️ partial — the judge caught a shallow diagnosis the literal keywords passed.
 Evidence: var/gate-reports/agent-diagnose-codex-*.json.
+**Case study — judge vs keywords:** on scheduler-overlap, the diagnosed agent claimed
+the schedule had *no* overlap prevention and recommended adding it; the code actually
+already had `withoutOverlapping(10)` with an expiry shorter than the documented
+45-minute runtime. The literal keywords matched (the agent used the right vocabulary),
+but the judge graded it **partial**: factually wrong about the current state, even
+though its proposed fix would coincidentally resolve the issue. Exactly the class of
+shallow-correct answer keyword scoring alone cannot separate.
 Areas with planned scenarios (recipes in docs/AUTHORING.md): scheduler overlap, failed-job
 backoff, notifications + transactions, filesystem visibility, API-resource serialization.
 
