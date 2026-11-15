@@ -185,7 +185,7 @@ try {
 
   if (cmd === 'run-all') {
     if (!args.agent) {
-      die('usage: bench run-all --agent "<cmd with {{workspace}} {{prompt}}>" [--cell <id-or-constraint>] [--out <dir>] [--scenario <id>]');
+      die('usage: bench run-all --agent "<cmd with {{workspace}} {{prompt}}>" [--cell <id-or-constraint>] [--out <dir>] [--scenario <id>] [--runs N] [--model <id>]');
     }
     const cells = cellsOrDie(cfg, args.cell);
     const outDir = args.out ? path.resolve(args.out) : path.join(cfg._root, cfg.paths.var, 'agent-runs');
@@ -200,6 +200,8 @@ try {
         outDir,
         keep: args.keep,
         only: args.scenario ?? null,
+        runs: Math.max(1, parseInt(args.runs ?? '1', 10) || 1),
+        model: args.model ?? null,
       });
       console.log(`\ncell ${cell.id}: ${passed}/${cellResults.length} scenarios passed`);
       results.push(...cellResults);

@@ -34,11 +34,15 @@ export function buildScoreTable(runsDir) {
       runs.push(...parsed.summary.map((r) => ({ scenario: r.scenario, verdict: r.verdict })));
     } else if (parsed && typeof parsed === 'object' && parsed.scenario && parsed.verdict) {
       runs.push({ scenario: parsed.scenario, verdict: parsed.verdict });
+    } else if (parsed && typeof parsed === 'object' && parsed.scenario && Array.isArray(parsed.verdicts)) {
+      for (const v of parsed.verdicts) {
+        runs.push({ scenario: parsed.scenario, verdict: v.verdict });
+      }
     }
 
     agents[agentLabel] ??= {};
     for (const run of runs) {
-      agents[agentLabel][run.scenario] = run.verdict;
+      (agents[agentLabel][run.scenario] ??= []).push(run.verdict);
     }
   }
 
@@ -53,17 +57,24 @@ export function buildScoreTable(runsDir) {
   lines.push('| --- | ' + labels.map(() => '---').join(' | ') + ' |');
   for (const scenario of scenarios) {
     const cells = labels.map((l) => {
-      const v = agents[l][scenario];
-      if (v === undefined) return '—';
-      if (v === 'pass') return '✅ pass';
-      if (v === 'fail-hidden') return '❌ fail-hidden';
-      if (v === 'fail-visible') return '❌ fail-visible';
-      return '· ' + v;
+      const verdicts = (agents[l][scenario] ?? []).filter(Boolean);
+      if (verdicts.length === 0) return '—';
+      const passes = verdicts.filter((v) => v === 'pass').length;
+      const rate = `${passes}/${verdicts.length}`;
+      if (verdicts.length === 1) {
+        return verdicts[0] === 'pass' ? '✅ pass'
+          : verdicts[0] === 'fail-hidden' ? '❌ fail-hidden'
+          : verdicts[0] === 'fail-visible' ? '❌ fail-visible'
+          : '· ' + verdicts[0];
+      }
+      if (passes === verdicts.length) return `✅ ${rate}`;
+      if (passes === 0) return `❌ ${rate}`;
+      return `⚠️ ${rate}`;
     });
     lines.push(`| ${scenario} | ` + cells.join(' | ') + ' |');
   }
   const totals = labels.map((l) => {
-    const vals = Object.values(agents[l]);
+    const vals = Object.values(agents[l]).flat();
     return `${vals.filter((v) => v === 'pass').length}/${vals.length}`;
   });
   lines.push('| **pass total** | ' + totals.join(' | ') + ' |');

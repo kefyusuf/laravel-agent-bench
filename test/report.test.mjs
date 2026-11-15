@@ -22,10 +22,10 @@ test('buildScoreTable aggregates array, sweep and single-run shapes', () => {
 
     const { agents, markdown } = buildScoreTable(dir);
 
-    assert.equal(agents.codex.alpha, 'pass');
-    assert.equal(agents.codex.beta, 'fail-hidden');
-    assert.equal(agents.codex.gamma, 'pass');
-    assert.equal(agents.baseline.alpha, 'no-change');
+    assert.deepEqual(agents.codex.alpha, ['pass']);
+    assert.deepEqual(agents.codex.beta, ['fail-hidden']);
+    assert.deepEqual(agents.codex.gamma, ['pass']);
+    assert.deepEqual(agents.baseline.alpha, ['no-change']);
 
     assert.ok(markdown.includes('| Scenario | baseline | codex |'));
     assert.ok(markdown.includes('| alpha | · no-change | ✅ pass |'));
