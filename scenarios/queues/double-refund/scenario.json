@@ -64,5 +64,15 @@
         "run_at": "2026-11-15T12:37:40.129Z"
       }
     ]
-  }
+  },
+  "diagnosis_keywords": [
+    "failed()",
+    "failed(",
+    "idempotent",
+    "exactly once",
+    "ledger",
+    "compensat",
+    "twice",
+    "double"
+  ]
 }

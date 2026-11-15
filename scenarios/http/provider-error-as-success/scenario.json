@@ -63,5 +63,12 @@
         "run_at": "2026-11-05T23:49:53.936Z"
       }
     ]
-  }
+  },
+  "diagnosis_keywords": [
+    "throw",
+    "successful",
+    "status code",
+    "status check",
+    "reference"
+  ]
 }

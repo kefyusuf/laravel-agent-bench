@@ -63,5 +63,13 @@
         "run_at": "2026-11-05T23:49:53.936Z"
       }
     ]
-  }
+  },
+  "diagnosis_keywords": [
+    "singleton",
+    "state leak",
+    "octane",
+    "per request",
+    "request-scoped",
+    "resolved once"
+  ]
 }

@@ -65,5 +65,14 @@
         "run_at": "2026-11-05T23:49:53.936Z"
       }
     ]
-  }
+  },
+  "diagnosis_keywords": [
+    "morph map",
+    "morphmap",
+    "enforcemorphmap",
+    "getmorphclass",
+    "alias",
+    "fully-qualified",
+    "fqcn"
+  ]
 }

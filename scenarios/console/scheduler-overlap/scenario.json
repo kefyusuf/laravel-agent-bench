@@ -63,5 +63,12 @@
         "run_at": "2026-11-15T12:37:40.129Z"
       }
     ]
-  }
+  },
+  "diagnosis_keywords": [
+    "withoutoverlapping",
+    "mutex",
+    "expiry",
+    "expires",
+    "overlap"
+  ]
 }

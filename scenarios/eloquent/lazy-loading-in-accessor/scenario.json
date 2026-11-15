@@ -64,5 +64,14 @@
         "run_at": "2026-11-05T23:49:53.936Z"
       }
     ]
-  }
+  },
+  "diagnosis_keywords": [
+    "eager load",
+    "eager-load",
+    "with('author')",
+    "n+1",
+    "n + 1",
+    "lazy load",
+    "lazy-load"
+  ]
 }

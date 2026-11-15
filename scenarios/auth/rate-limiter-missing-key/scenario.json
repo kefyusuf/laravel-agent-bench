@@ -62,5 +62,15 @@
         "run_at": "2026-11-05T23:49:53.936Z"
       }
     ]
-  }
+  },
+  "diagnosis_keywords": [
+    "->by(",
+    "bucket",
+    "keyed",
+    "per customer",
+    "per user",
+    "per ip",
+    "per visitor",
+    "per caller"
+  ]
 }

@@ -63,5 +63,13 @@
         "note": "3 consecutive green runs"
       }
     ]
-  }
+  },
+  "diagnosis_keywords": [
+    "race",
+    "atomic",
+    "lua",
+    "check-then-act",
+    "watch",
+    "lock"
+  ]
 }

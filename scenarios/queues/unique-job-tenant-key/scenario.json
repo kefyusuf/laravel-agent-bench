@@ -62,5 +62,12 @@
         "run_at": "2026-11-05T23:49:53.936Z"
       }
     ]
-  }
+  },
+  "diagnosis_keywords": [
+    "uniqueid",
+    "uniqueness",
+    "unique lock",
+    "per tenant",
+    "tenant"
+  ]
 }

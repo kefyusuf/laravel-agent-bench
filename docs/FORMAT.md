@@ -125,6 +125,13 @@ Rules:
   (correct fix passes) while singletons stay frozen (defect fails) — see
   `singleton-request-state`.
 
+## Diagnosis mode scope
+
+Diagnosis mode (bench diagnose) grades a single mechanism: it fits single-defect
+scenarios with diagnosis_keywords. Multi-defect scenarios intentionally omit
+keywords: OR-matching would let a diagnosis that covers only one of the defects
+pass, which contradicts the all-defects-must-be-fixed grading of fix mode.
+
 ## Design rules for the defect
 
 1. **One defect per scenario.** Everything else in the snapshot is correct, idiomatic

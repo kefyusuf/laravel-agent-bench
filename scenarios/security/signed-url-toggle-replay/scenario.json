@@ -62,5 +62,15 @@
         "run_at": "2026-11-05T23:49:53.936Z"
       }
     ]
-  }
+  },
+  "diagnosis_keywords": [
+    "replay",
+    "toggle",
+    "idempotent",
+    "one-way",
+    "one time",
+    "one-time",
+    "prefetch",
+    "scanner"
+  ]
 }

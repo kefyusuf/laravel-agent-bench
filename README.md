@@ -214,6 +214,16 @@ over-engineered fix broke the compensation path it claimed to preserve).
 | `scheduler-overlap` | console / scheduler overlap | 4 |
 | `double-refund` | queues / failed-jobs | 4 |
 
+
+### Diagnosis mode
+
+Every scenario (except the multi-defect one, by design) can be run as a diagnosis:
+. The deterministic keyword
+score gates; an optional judge agent grades the diagnosis semantically against the
+known root cause and its verdict is authoritative when present. Sample sweep
+(codex read-only, laravel-13): morph-map ✅ / double-refund ✅ / scheduler-overlap
+⚠️ partial — the judge caught a shallow diagnosis the literal keywords passed.
+Evidence: var/gate-reports/agent-diagnose-codex-*.json.
 Areas with planned scenarios (recipes in docs/AUTHORING.md): scheduler overlap, failed-job
 backoff, notifications + transactions, filesystem visibility, API-resource serialization.
 
