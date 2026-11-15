@@ -1,0 +1,11 @@
+diff --git a/routes/console.php b/routes/console.php
+index fba8299..56b20e7 100644
+--- a/routes/console.php
++++ b/routes/console.php
+@@ -5,5 +5,5 @@ use Illuminate\Support\Facades\Schedule;
+ 
+ Schedule::command('app:sync-marketplace')
+     ->hourly()
+-    ->withoutOverlapping(10)
++    ->withoutOverlapping(60)
+     ->onOneServer();

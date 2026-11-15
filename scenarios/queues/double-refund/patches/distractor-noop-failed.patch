@@ -1,0 +1,22 @@
+diff --git a/app/Jobs/SettleSubscriptionJob.php b/app/Jobs/SettleSubscriptionJob.php
+index cd3fd0c..ee18904 100644
+--- a/app/Jobs/SettleSubscriptionJob.php
++++ b/app/Jobs/SettleSubscriptionJob.php
+@@ -47,16 +47,6 @@ class SettleSubscriptionJob implements ShouldQueue
+      */
+     public function failed(): void
+     {
+-        Http::asJson()
+-            ->withToken((string) config('services.billinghub.key', 'test'))
+-            ->post('https://api.billinghub.example/v1/refunds', [
+-                'subscription_id' => $this->subscription->id,
+-            ]);
+-
+-        LedgerEntry::create([
+-            'subscription_id' => $this->subscription->id,
+-            'kind' => LedgerEntry::KIND_REFUND,
+-            'amount_cents' => 9900,
+-        ]);
++        // Compensation is handled by finance now.
+     }
+ }

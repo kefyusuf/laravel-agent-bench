@@ -1,0 +1,21 @@
+diff --git a/app/Jobs/SettleSubscriptionJob.php b/app/Jobs/SettleSubscriptionJob.php
+index cd3fd0c..d0135e5 100644
+--- a/app/Jobs/SettleSubscriptionJob.php
++++ b/app/Jobs/SettleSubscriptionJob.php
+@@ -47,6 +47,16 @@ class SettleSubscriptionJob implements ShouldQueue
+      */
+     public function failed(): void
+     {
++        // The ledger is the source of truth: compensate only refunds
++        // that never happened (handle() may have failed AFTER refunding).
++        $alreadyRefunded = LedgerEntry::where('subscription_id', $this->subscription->id)
++            ->where('kind', LedgerEntry::KIND_REFUND)
++            ->exists();
++
++        if ($alreadyRefunded) {
++            return;
++        }
++
+         Http::asJson()
+             ->withToken((string) config('services.billinghub.key', 'test'))
+             ->post('https://api.billinghub.example/v1/refunds', [

@@ -1,0 +1,32 @@
+[
+  {
+    "scenario": "scheduler-overlap",
+    "cell": "laravel-13",
+    "mode": "agent",
+    "verdict": "pass",
+    "tamper": [],
+    "agent": {
+      "code": 0,
+      "stdout": "Updated [`routes/console.php`](/app/var/workspaces/scheduler-overlap--laravel-13--1/routes/console.php:8):\n- Increased `withoutOverlapping` mutex duration from 10 to 60 minutes.\n- Preserved hourly cadence, `onOneServer()`, and the 45-minute runtime contract.\n- No dependencies or protected files changed.\n`vendor/bin/phpunit` passes: 2 tests, 6 assertions.",
+      "stderr": "+    ->withoutOverlapping(60)\n     ->onOneServer();\nexec\n/bin/bash -lc 'php artisan test' in /app/var/workspaces/scheduler-overlap--laravel-13--1\n exited 1 in 248ms:\n   ERROR  Command \"test\" is not defined. Did you mean one of these?  \n  ⇂ make:test  \n  ⇂ schedule:test  \nexec\n/bin/bash -lc 'git diff -- routes/console.php && git status --short' in /app/var/workspaces/scheduler-overlap--laravel-13--1\n succeeded in 0ms:\ndiff --git a/routes/console.php b/routes/console.php\nindex fba8299..56b20e7 100755\n--- a/routes/console.php\n+++ b/routes/console.php\n@@ -5,5 +5,5 @@ use Illuminate\\Support\\Facades\\Schedule;\n \n Schedule::command('app:sync-marketplace')\n     ->hourly()\n-    ->withoutOverlapping(10)\n+    ->withoutOverlapping(60)\n     ->onOneServer();\n M routes/console.php\nexec\n/bin/bash -lc vendor/bin/phpunit in /app/var/workspaces/scheduler-overlap--laravel-13--1\n succeeded in 975ms:\nPHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/scheduler-overlap--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.472, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 6 assertions)\u001b[0m\ncodex\nUpdated [`routes/console.php`](/app/var/workspaces/scheduler-overlap--laravel-13--1/routes/console.php:8):\n- Increased `withoutOverlapping` mutex duration from 10 to 60 minutes.\n- Preserved hourly cadence, `onOneServer()`, and the 45-minute runtime contract.\n- No dependencies or protected files changed.\n`vendor/bin/phpunit` passes: 2 tests, 6 assertions.\ntokens used\n15,979",
+      "timedOut": false
+    },
+    "visible": {
+      "code": 0,
+      "timedOut": false,
+      "pass": true,
+      "tests": 2,
+      "assertions": 6,
+      "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/scheduler-overlap--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.232, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 6 assertions)\u001b[0m"
+    },
+    "hidden": {
+      "code": 0,
+      "timedOut": false,
+      "pass": true,
+      "tests": 4,
+      "assertions": 11,
+      "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/scheduler-overlap--laravel-13--1/phpunit.xml\n....                                                                4 / 4 (100%)\nTime: 00:00.246, Memory: 48.50 MB\n\u001b[30;42mOK (4 tests, 11 assertions)\u001b[0m"
+    },
+    "patch": "diff --git a/routes/console.php b/routes/console.php\nindex fba8299..56b20e7 100755\n--- a/routes/console.php\n+++ b/routes/console.php\n@@ -5,5 +5,5 @@ use Illuminate\\Support\\Facades\\Schedule;\n \n Schedule::command('app:sync-marketplace')\n     ->hourly()\n-    ->withoutOverlapping(10)\n+    ->withoutOverlapping(60)\n     ->onOneServer();\n"
+  }
+]

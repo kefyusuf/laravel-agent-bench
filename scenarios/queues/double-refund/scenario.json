@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "id": "double-refund",
+  "family": "queues/failed-jobs",
+  "title": "A post-refund failure triggers failed(), refunding the customer twice",
+  "difficulty": 4,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "BountyBoard settles cancelled subscriptions through SettleSubscriptionJob: it refunds the customer via the BillingHub API, records the refund in the ledger, then pushes the cancellation to the marketplace (a second API call that has been flaky lately). The finance rule is absolute: a cancelled subscription is refunded EXACTLY once — under-refunds anger customers, over-refunds are money lost and a compliance finding. The failed() hook exists to compensate customers when settlement fails entirely.",
+  "user_request": "Finance found three subscriptions that were refunded TWICE in the ledger this month — always on settlement runs that ended with an exception. The compensation hook is supposed to make settlement failure safe for customers, and right now it is doing something wrong. Make the compensation path money-safe: whatever happens during settlement, a cancelled subscription must be refunded exactly once. Do not change the ledger schema or the BillingHub API contract.",
+  "intentional_defect": {
+    "summary": "handle() refunds and records the refund, THEN makes a second API call that can throw — the exception lands in failed(), which refunds unconditionally: the customer is refunded twice.",
+    "location": [
+      "app/Jobs/SettleSubscriptionJob.php"
+    ],
+    "root_cause": "failed() cannot know whether the refund already happened before the job failed: it calls the refund API without consulting the ledger. Any exception after the refund step (the flaky marketplace push) turns one legitimate refund into two.",
+    "why_it_looks_correct": "Both halves look individually right: handle() refunds and records properly; failed() is the documented compensation hook and 'refunds on failure' reads as its purpose. The visible tests cover the happy path and a pre-refund failure — both correct."
+  },
+  "non_obvious_invariant": "The refund must be exactly-once across BOTH exit paths: (1) an exception after the refund already happened must not trigger a second refund in failed(); (2) an exception before the refund must still be compensated by failed(). The ledger is the source of truth — compensation must consult it first.",
+  "expected_diagnosis": "The agent must see that failed() and handle() share money-moving responsibility without coordination, and make compensation idempotent: failed() must check whether the refund was already recorded before refunding (and the refund must be recorded when it happens).",
+  "safe_fix_constraints": [
+    "The refund must remain exactly once across every failure timing (before or after the refund step).",
+    "Compensation for genuine pre-refund failures must keep working — making failed() a no-op is not a fix.",
+    "The ledger schema and the BillingHub API contract stay unchanged."
+  ],
+  "failure_explanation": "Whenever the flaky marketplace push fails AFTER the refund call succeeded, failed() refunds again: the customer receives two refunds for one cancellation — direct money loss per incident, and a compliance finding (refunds must reconcile 1:1 with cancellations). Conversely, 'fixing' it by emptying failed() removes compensation for genuine pre-refund failures, leaving customers who cancelled during an outage without their money.",
+  "public_surface": {
+    "routes": [
+      "POST /subscriptions/{subscription}/cancel"
+    ],
+    "classes": [
+      "App\\Jobs\\SettleSubscriptionJob",
+      "App\\Models\\Subscription",
+      "App\\Models\\LedgerEntry"
+    ],
+    "tables": [
+      "subscriptions",
+      "ledger_entries"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-noop-failed.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-15T12:37:40.129Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-15T12:37:40.129Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-15T12:37:40.129Z"
+      }
+    ]
+  }
+}

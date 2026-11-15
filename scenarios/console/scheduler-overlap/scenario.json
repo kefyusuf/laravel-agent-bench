@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "id": "scheduler-overlap",
+  "family": "console/scheduler-overlap",
+  "title": "Overlap mutex expires before the sync's documented worst-case runtime",
+  "difficulty": 4,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "TradeLoop pulls orders from its marketplace into the local store through the app:sync-marketplace command, scheduled hourly. Ops has documented that the sync legitimately runs up to 45 minutes during peak windows (the constant on the command is the contract). A duplicate import is not fatal for data (upserts) but it doubles the API load and triggers double webhook notifications to merchants — merchants have complained about receiving every notification twice.",
+  "user_request": "Merchants report that during peak windows every order notification arrives twice, exactly one hour apart, and our API dashboards show the sync running in two overlapping executions. Ops confirmed the sync can legitimately take 45 minutes during peaks — that is part of the command's contract. Review the scheduling of the sync and make overlapping executions impossible without breaking the hourly cadence or the documented runtime expectations.",
+  "intentional_defect": {
+    "summary": "The hourly sync uses ->withoutOverlapping(10): the mutex expires after 10 minutes while the sync legitimately runs up to 45 — a second hourly run starts mid-execution and imports run twice.",
+    "location": [
+      "routes/console.php"
+    ],
+    "root_cause": "withoutOverlapping's expiry must outlive the task's documented worst-case runtime. With a 10-minute mutex on a 45-minute task, the mutex drops while the first run is still executing and the next hourly tick starts a duplicate.",
+    "why_it_looks_correct": "The schedule looks textbook: hourly, withoutOverlapping, onOneServer. The magic number 10 reads as a sensible safety margin, the visible tests exercise the command directly (not its schedule), and nothing in the repo states the runtime contract next to the schedule."
+  },
+  "non_obvious_invariant": "The overlap mutex for app:sync-marketplace must outlive the command's documented MAX_RUNTIME_MINUTES (45): expiresAt >= 45, the withoutOverlapping mutex must be present, and the hourly expression must stay unchanged.",
+  "expected_diagnosis": "The agent must compare the mutex expiry against the documented runtime contract (found on the command class, not next to the schedule) and raise the expiry — not remove the mutex and not touch the runtime constant.",
+  "safe_fix_constraints": [
+    "The withoutOverlapping mutex must remain (removing it makes overlaps certain, not unlikely).",
+    "The hourly cadence and the onOneServer setting stay unchanged.",
+    "The documented MAX_RUNTIME_MINUTES contract on the command must not be lowered to make the schedule look right."
+  ],
+  "failure_explanation": "During peak windows the sync runs past 10 minutes; the mutex drops; the next hourly tick starts a second full import while the first is still running: every merchant webhook fires twice (the exact complaint), the marketplace API sees double the load (risking rate-limit bans), and two workers upsert the same rows concurrently. Removing the mutex entirely would make the overlap certain rather than peak-dependent.",
+  "public_surface": {
+    "routes": [],
+    "classes": [
+      "App\\Console\\Commands\\SyncMarketplaceCommand",
+      "App\\Models\\MarketplaceOrder"
+    ],
+    "tables": [
+      "marketplace_orders"
+    ],
+    "artisan_commands": [
+      "app:sync-marketplace"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-remove-mutex.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-15T12:37:40.129Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-15T12:37:40.129Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-15T12:37:40.129Z"
+      }
+    ]
+  }
+}
