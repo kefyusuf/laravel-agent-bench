@@ -133,6 +133,10 @@ Notes:
   container (nested user namespaces), which is why `--dangerously-bypass-approvals-and-sandbox`
   is used — the Docker container is the outer sandbox, and the harness's tamper checks
   and hidden tests are the graded boundary.
+- **Private cohorts:** every scenario-consuming command accepts 
+  — operators can evaluate against private scenario directories that are never
+  published (see docs/EVALUATION-PROTOCOL.md for the release-comparability and
+  rotation policy).
 - Any agent works the same way: a command that receives the workspace and a PROMPT.md
   path and edits the workspace. Verdicts: `pass`, `fail-visible`, `fail-hidden`,
   `no-change`, `tampered`, `agent-timeout`, `error`.
@@ -220,6 +224,7 @@ medium), 60 graded runs total. Evidence files carry per-run verdicts.
 | `reservation-race` | cache / concurrency | 5 |
 | `scheduler-overlap` | console / scheduler overlap | 4 |
 | `double-refund` | queues / failed-jobs | 4 |
+| `backfill-pagination` | eloquent / chunking | 4 |
 
 
 ### Diagnosis mode
@@ -238,8 +243,8 @@ already had `withoutOverlapping(10)` with an expiry shorter than the documented
 but the judge graded it **partial**: factually wrong about the current state, even
 though its proposed fix would coincidentally resolve the issue. Exactly the class of
 shallow-correct answer keyword scoring alone cannot separate.
-Areas with planned scenarios (recipes in docs/AUTHORING.md): scheduler overlap, failed-job
-backoff, notifications + transactions, filesystem visibility, API-resource serialization.
+Areas with planned scenarios (recipes in docs/AUTHORING.md): notifications +
+transactions, filesystem visibility, API-resource serialization.
 
 ## Contributing
 

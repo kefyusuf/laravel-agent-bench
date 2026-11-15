@@ -1,0 +1,13 @@
+diff --git a/app/Console/Commands/BackfillOrderIndexCommand.php b/app/Console/Commands/BackfillOrderIndexCommand.php
+index 2bb51a0..aa857d3 100644
+--- a/app/Console/Commands/BackfillOrderIndexCommand.php
++++ b/app/Console/Commands/BackfillOrderIndexCommand.php
+@@ -17,7 +17,7 @@ class BackfillOrderIndexCommand extends Command
+ 
+         Order::query()
+             ->whereNull('backfilled_at')
+-            ->chunk(100, function ($orders) use (&$processed) {
++            ->chunkById(100, function ($orders) use (&$processed) {
+                 foreach ($orders as $order) {
+                     $order->forceFill(['backfilled_at' => now()])->save();
+                     $processed++;

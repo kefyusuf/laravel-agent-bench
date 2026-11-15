@@ -35,8 +35,8 @@ function parseArgs(argv) {
   return args;
 }
 
-function scenariosOrDie(cfg, id = null) {
-  const all = discoverScenarios(cfgPath(cfg, 'scenarios'));
+function scenariosOrDie(cfg, id = null, dirOverride = null) {
+  const all = discoverScenarios(dirOverride ?? cfgPath(cfg, 'scenarios'));
   if (!id) return all;
   const found = all.find((s) => s.id === id);
   if (!found) die(`scenario "${id}" not found (see: bench list)`);
@@ -79,7 +79,7 @@ try {
   }
 
   if (cmd === 'validate') {
-    const scenarios = scenariosOrDie(cfg, args.scenario);
+    const scenarios = scenariosOrDie(cfg, args.scenario, args['scenarios-dir']);
     const cells = cellsOrDie(cfg, args.cell);
     let anyFail = false;
     const report = [];
@@ -150,7 +150,7 @@ try {
     if (!args.scenario || (!args.agent && !args.patch)) {
       die('usage: bench run --scenario <id> (--agent "<cmd with {{workspace}} {{prompt}}>" | --patch <file>) [--cell <id-or-constraint>] [--keep]');
     }
-    const scenarios = scenariosOrDie(cfg, args.scenario);
+    const scenarios = scenariosOrDie(cfg, args.scenario, args['scenarios-dir']);
     const cells = cellsOrDie(cfg, args.cell);
     const results = [];
     let exitCode = 0;
@@ -193,7 +193,7 @@ try {
     for (const cell of cells) {
       const { results: cellResults, passed } = runAll({
         cfg,
-        scenariosDir: cfgPath(cfg, 'scenarios'),
+        scenariosDir: args['scenarios-dir'] ? path.resolve(args['scenarios-dir']) : cfgPath(cfg, 'scenarios'),
         agentCmd: args.agent,
         cell,
         workspacesRoot,
@@ -215,7 +215,7 @@ try {
     if (!args.scenario || !args.agent) {
       die('usage: bench diagnose --scenario <id> --agent "<cmd with {{workspace}} {{prompt}}>" [--judge "<judge cmd with {{prompt}}>" ] [--cell <id-or-constraint>] [--keep]');
     }
-    const scenarios = scenariosOrDie(cfg, args.scenario);
+    const scenarios = scenariosOrDie(cfg, args.scenario, args['scenarios-dir']);
     const cells = cellsOrDie(cfg, args.cell);
     const results = [];
     for (const s of scenarios) {

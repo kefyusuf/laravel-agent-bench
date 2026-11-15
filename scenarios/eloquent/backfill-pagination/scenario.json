@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "id": "backfill-pagination",
+  "family": "eloquent/chunking",
+  "title": "Backfill skips most rows: chunk() re-evaluates its WHERE while rows are updated",
+  "difficulty": 4,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "RelateBack is migrating a legacy column into a new search index. A one-off backfill command processes every order that has not been indexed yet, in chunks, and stamps each processed row (backfilled_at). The data set is large (hundreds of thousands of rows), so the command must run in bounded memory. The backfill is resumable: re-running it after an interruption picks up exactly the rows that are still missing.",
+  "user_request": "The backfill command finishes suspiciously fast and the index reports that a large share of old orders is missing. Run it once and it 'processes' a few hundred rows out of the thousands that have backfilled_at IS NULL. Fix the backfill so that every un-indexed order is processed exactly once, keeping bounded memory and the resumable behaviour.",
+  "intentional_defect": {
+    "summary": "The backfill paginates with chunk() over a query that filters on backfilled_at IS NULL while the loop stamps exactly that column — each batch re-evaluates the WHERE and skips the rows the previous batch moved out of the filter.",
+    "location": [
+      "app/Console/Commands/BackfillOrderIndexCommand.php"
+    ],
+    "root_cause": "chunk() advances with an offset over the SAME query; when the loop body modifies the column that the WHERE clause filters on, subsequent batches re-run the query against changed data and skip the rows that shifted. The Laravel docs are explicit: use chunkById (or lazyById) when updating the filtered column.",
+    "why_it_looks_correct": "chunk() is the idiomatic bounded-memory pattern, the code is resumable by design (the WHERE picks up leftovers), and a quick smoke test on a small data set where the batch size exceeds the row count passes — the defect only appears when the data set spans multiple batches."
+  },
+  "non_obvious_invariant": "Every row matching the initial filter must be processed exactly once, regardless of how the loop body mutates the filtered column: pagination over a self-mutating filter must key by stable identifiers (chunkById/lazyById), never by offset over the changing WHERE.",
+  "expected_diagnosis": "The agent must connect the mutation of backfilled_at inside the loop to the chunk() offset semantics and switch to identifier-keyed pagination (chunkById), preserving bounded memory and resumability.",
+  "safe_fix_constraints": [
+    "Memory stays bounded — no ->get() of the full table.",
+    "The command remains resumable: re-running it processes only still-missing rows.",
+    "Rows must be processed exactly once per successful run."
+  ],
+  "failure_explanation": "The index silently drifts from the database: a large share of orders is never searchable (customer-visible: their orders are missing from the search results), and because the command exits successfully nobody notices until reconciliation. Every 'rerun to fix' attempt skips the same rows again, since the skip depends on the batch boundaries, not on chance.",
+  "public_surface": {
+    "routes": [],
+    "classes": [
+      "App\\Console\\Commands\\BackfillOrderIndexCommand",
+      "App\\Models\\Order"
+    ],
+    "tables": [
+      "orders"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-lazy-instead.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-15T19:16:01.835Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-15T19:16:01.835Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-15T19:16:01.835Z"
+      }
+    ]
+  }
+}

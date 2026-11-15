@@ -439,7 +439,7 @@ const PATCHES = {
           '            $table->unique(\'email\');',
           '        });',
           '    }',
-          '};',
+          '    };',
         ].join('\n') + '\n',
       }],
     },
@@ -1377,6 +1377,47 @@ const PATCHES = {
         file: 'routes/console.php',
         find: "Schedule::command('app:sync-marketplace')\n    ->hourly()\n    ->withoutOverlapping(10)\n    ->onOneServer();",
         replace: "Schedule::command('app:sync-marketplace')\n    ->hourly()\n    ->onOneServer();",
+      }],
+    },
+  ],
+
+  'backfill-pagination': [
+    {
+      name: 'solution.patch',
+      edits: [{
+        file: 'app/Console/Commands/BackfillOrderIndexCommand.php',
+        find: [
+          '            ->whereNull(\'backfilled_at\')',
+          '            ->chunk(100, function ($orders) use (&$processed) {',
+        ].join('\n'),
+        replace: [
+          '            ->whereNull(\'backfilled_at\')',
+          '            ->chunkById(100, function ($orders) use (&$processed) {',
+        ].join('\n'),
+      }],
+    },
+    {
+      // plausible-but-wrong: lazy() pages with the same offset semantics over
+      // the mutating WHERE — the skip persists.
+      name: 'distractor-lazy-instead.patch',
+      edits: [{
+        file: 'app/Console/Commands/BackfillOrderIndexCommand.php',
+        find: [
+          '            ->whereNull(\'backfilled_at\')',
+          '            ->chunk(100, function ($orders) use (&$processed) {',
+          '                foreach ($orders as $order) {',
+          '                    $order->forceFill([\'backfilled_at\' => now()])->save();',
+          '                    $processed++;',
+          '                }',
+          '            });',
+        ].join('\n'),
+        replace: [
+          '            ->whereNull(\'backfilled_at\')',
+          '            ->lazy(100)->each(function ($order) use (&$processed) {',
+          '                $order->forceFill([\'backfilled_at\' => now()])->save();',
+          '                $processed++;',
+          '            });',
+        ].join('\n'),
       }],
     },
   ],

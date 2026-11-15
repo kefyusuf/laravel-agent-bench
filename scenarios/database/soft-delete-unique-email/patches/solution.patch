@@ -13,7 +13,7 @@ index 7d234ec..deb7e7f 100644
  }
 diff --git a/database/migrations/2024_10_02_000000_scope_unique_email_to_active_contacts.php b/database/migrations/2024_10_02_000000_scope_unique_email_to_active_contacts.php
 new file mode 100644
-index 0000000..3dcc929
+index 0000000..90a837d
 --- /dev/null
 +++ b/database/migrations/2024_10_02_000000_scope_unique_email_to_active_contacts.php
 @@ -0,0 +1,30 @@
@@ -46,4 +46,4 @@ index 0000000..3dcc929
 +            $table->unique('email');
 +        });
 +    }
-+};
++    };
