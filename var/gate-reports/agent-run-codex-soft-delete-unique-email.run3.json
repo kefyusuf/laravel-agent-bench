@@ -1,0 +1,31 @@
+{
+  "scenario": "soft-delete-unique-email",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Implemented the fix.\n- Validation now ignores soft-deleted contacts via `withoutTrashed()`.\n- Added migration replacing unconditional email uniqueness with active-only uniqueness:\n  - SQLite partial unique index.\n  - MySQL generated nullable column with unique index.\n- Soft-deleted rows remain unchanged and preserved.\n- Duplicate active emails remain rejected.\nVerified with PHPUnit: 2 tests passed. Also manually confirmed delete → recreate succeeds and a second active duplicate fails.",
+    "stderr": "        });\n        if (DB::connection()->getDriverName() === 'sqlite') {\n            DB::statement(\n                'CREATE UNIQUE INDEX contacts_email_active_unique ON contacts (email) WHERE deleted_at IS NULL'\n            );\n            return;\n        }\n        Schema::table('contacts', function (Blueprint $table) {\n            $table->string('active_email')->nullable()->storedAs(\n                'IF(deleted_at IS NULL, email, NULL)'\n            );\n            $table->unique('active_email', 'contacts_active_email_unique');\n        });\n    }\n    public function down(): void\n    {\n        if (DB::connection()->getDriverName() === 'sqlite') {\n            DB::statement('DROP INDEX contacts_email_active_unique');\n        } else {\n            Schema::table('contacts', function (Blueprint $table) {\n                $table->dropUnique('contacts_active_email_unique');\n                $table->dropColumn('active_email');\n            });\n        }\n        Schema::table('contacts', function (Blueprint $table) {\n            $table->unique('email', 'contacts_email_unique');\n        });\n    }\n};\ncodex\nImplemented the fix.\n- Validation now ignores soft-deleted contacts via `withoutTrashed()`.\n- Added migration replacing unconditional email uniqueness with active-only uniqueness:\n  - SQLite partial unique index.\n  - MySQL generated nullable column with unique index.\n- Soft-deleted rows remain unchanged and preserved.\n- Duplicate active emails remain rejected.\nVerified with PHPUnit: 2 tests passed. Also manually confirmed delete → recreate succeeds and a second active duplicate fails.\ntokens used\n17,283",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 2,
+    "assertions": 7,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/soft-delete-unique-email--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.271, Memory: 48.50 MB\n\u001b[30;42mOK (2 tests, 7 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 5,
+    "assertions": 11,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/soft-delete-unique-email--laravel-13--1/phpunit.xml\n.....                                                               5 / 5 (100%)\nTime: 00:00.347, Memory: 48.50 MB\n\u001b[30;42mOK (5 tests, 11 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Http/Requests/CreateContactRequest.php b/app/Http/Requests/CreateContactRequest.php\nindex 7d234ec..e981f59 100755\n--- a/app/Http/Requests/CreateContactRequest.php\n+++ b/app/Http/Requests/CreateContactRequest.php\n@@ -16,7 +16,7 @@ class CreateContactRequest extends FormRequest\n     {\n         return [\n             'name' => ['required', 'string', 'max:255'],\n-            'email' => ['required', 'email', Rule::unique('contacts', 'email')],\n+            'email' => ['required', 'email', Rule::unique('contacts', 'email')->withoutTrashed()],\n         ];\n     }\n }\ndiff --git a/database/migrations/2026_11_15_000000_make_contact_email_unique_among_active_contacts.php b/database/migrations/2026_11_15_000000_make_contact_email_unique_among_active_contacts.php\nnew file mode 100644\nindex 0000000..2eae554\n--- /dev/null\n+++ b/database/migrations/2026_11_15_000000_make_contact_email_unique_among_active_contacts.php\n@@ -0,0 +1,47 @@\n+<?php\n+\n+use Illuminate\\Database\\Migrations\\Migration;\n+use Illuminate\\Database\\Schema\\Blueprint;\n+use Illuminate\\Support\\Facades\\DB;\n+use Illuminate\\Support\\Facades\\Schema;\n+\n+return new class extends Migration\n+{\n+    public function up(): void\n+    {\n+        Schema::table('contacts', function (Blueprint $table) {\n+            $table->dropUnique('contacts_email_unique');\n+        });\n+\n+        if (DB::connection()->getDriverName() === 'sqlite') {\n+            DB::statement(\n+                'CREATE UNIQUE INDEX contacts_email_active_unique ON contacts (email) WHERE deleted_at IS NULL'\n+            );\n+\n+            return;\n+        }\n+\n+        Schema::table('contacts', function (Blueprint $table) {\n+            $table->string('active_email')->nullable()->storedAs(\n+                'IF(deleted_at IS NULL, email, NULL)'\n+            );\n+            $table->unique('active_email', 'contacts_active_email_unique');\n+        });\n+    }\n+\n+    public function down(): void\n+    {\n+        if (DB::connection()->getDriverName() === 'sqlite') {\n+            DB::statement('DROP INDEX contacts_email_active_unique');\n+        } else {\n+            Schema::table('contacts', function (Blueprint $table) {\n+                $table->dropUnique('contacts_active_email_unique');\n+                $table->dropColumn('active_email');\n+            });\n+        }\n+\n+        Schema::table('contacts', function (Blueprint $table) {\n+            $table->unique('email', 'contacts_email_unique');\n+        });\n+    }\n+};\n",
+  "run": 3
+}

@@ -1,0 +1,31 @@
+{
+  "scenario": "idor-nested-resource",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Implemented the smallest fix in [CustomerInvoiceController.php](/app/var/workspaces/idor-nested-resource--laravel-13--1/app/Http/Controllers/CustomerInvoiceController.php).\nDiagnosis: route model binding loaded the customer and invoice independently without verifying ownership. The controller now requires both to belong to the authenticated user’s `customer_id`; otherwise it returns 403.\nVerified:\n- PHPUnit: 2 tests passed\n- Route unchanged\n- JSON response unchanged for legitimate requests\n- PHP syntax and diff checks passed",
+    "stderr": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/idor-nested-resource--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.552, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 3 assertions)\u001b[0m\n M app/Http/Controllers/CustomerInvoiceController.php\ndiff --git a/app/Http/Controllers/CustomerInvoiceController.php b/app/Http/Controllers/CustomerInvoiceController.php\nindex b4bdb71..663bdf9 100755\n--- a/app/Http/Controllers/CustomerInvoiceController.php\n+++ b/app/Http/Controllers/CustomerInvoiceController.php\n@@ -9,6 +9,12 @@ class CustomerInvoiceController extends Controller\n {\n     public function show(Customer $customer, Invoice $invoice)\n     {\n+        abort_unless(\n+            $customer->id === auth()->user()->customer_id\n+                && $invoice->customer_id === $customer->id,\n+            403\n+        );\n+\n         return response()->json([\n             'invoice' => [\n                 'id' => $invoice->id,\nexec\n/bin/bash -lc 'php -l app/Http/Controllers/CustomerInvoiceController.php && php artisan route:list --path=customers' in /app/var/workspaces/idor-nested-resource--laravel-13--1\n succeeded in 241ms:\nNo syntax errors detected in app/Http/Controllers/CustomerInvoiceController.php\n  GET|HEAD       customers/{customer}/invoices/{invoice} CustomerInvoiceContr…\n                                                            Showing [1] routes\ncodex\nImplemented the smallest fix in [CustomerInvoiceController.php](/app/var/workspaces/idor-nested-resource--laravel-13--1/app/Http/Controllers/CustomerInvoiceController.php).\nDiagnosis: route model binding loaded the customer and invoice independently without verifying ownership. The controller now requires both to belong to the authenticated user’s `customer_id`; otherwise it returns 403.\nVerified:\n- PHPUnit: 2 tests passed\n- Route unchanged\n- JSON response unchanged for legitimate requests\n- PHP syntax and diff checks passed\ntokens used\n11,070",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 2,
+    "assertions": 3,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/idor-nested-resource--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.241, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 3 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 4,
+    "assertions": 7,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/idor-nested-resource--laravel-13--1/phpunit.xml\n....                                                                4 / 4 (100%)\nTime: 00:00.285, Memory: 46.50 MB\n\u001b[30;42mOK (4 tests, 7 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Http/Controllers/CustomerInvoiceController.php b/app/Http/Controllers/CustomerInvoiceController.php\nindex b4bdb71..663bdf9 100755\n--- a/app/Http/Controllers/CustomerInvoiceController.php\n+++ b/app/Http/Controllers/CustomerInvoiceController.php\n@@ -9,6 +9,12 @@ class CustomerInvoiceController extends Controller\n {\n     public function show(Customer $customer, Invoice $invoice)\n     {\n+        abort_unless(\n+            $customer->id === auth()->user()->customer_id\n+                && $invoice->customer_id === $customer->id,\n+            403\n+        );\n+\n         return response()->json([\n             'invoice' => [\n                 'id' => $invoice->id,\n",
+  "run": 1
+}

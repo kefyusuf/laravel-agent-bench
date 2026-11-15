@@ -1,0 +1,31 @@
+{
+  "scenario": "morph-map-hardcoded-type",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Fixed the moderation filter in [AdminCommentController.php](/app/var/workspaces/morph-map-hardcoded-type--laravel-13--1/app/Http/Controllers/AdminCommentController.php).\nDiagnosis: `enforceMorphMap` stores `order` and `listing`, but the dashboard queried using model class names. The filter now uses the persisted aliases, requiring no data migration and preserving all routes and JSON contracts.\nVerification: all PHPUnit tests pass (`2 tests, 4 assertions`).",
+    "stderr": " succeeded in 0ms:\ndiff --git a/app/Http/Controllers/AdminCommentController.php b/app/Http/Controllers/AdminCommentController.php\nindex d376f4b..18902c4 100755\n--- a/app/Http/Controllers/AdminCommentController.php\n+++ b/app/Http/Controllers/AdminCommentController.php\n@@ -3,16 +3,14 @@\n namespace App\\Http\\Controllers;\n \n use App\\Models\\Comment;\n-use App\\Models\\Listing;\n-use App\\Models\\Order;\n use Illuminate\\Http\\JsonResponse;\n use Illuminate\\Http\\Request;\n \n class AdminCommentController extends Controller\n {\n     private const MODEL_TYPES = [\n-        'order' => Order::class,\n-        'listing' => Listing::class,\n+        'order' => 'order',\n+        'listing' => 'listing',\n     ];\n \n     public function index(Request $request): JsonResponse\n M app/Http/Controllers/AdminCommentController.php\nexec\n/bin/bash -lc ./vendor/bin/phpunit in /app/var/workspaces/morph-map-hardcoded-type--laravel-13--1\n succeeded in 291ms:\nPHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/morph-map-hardcoded-type--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.262, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 4 assertions)\u001b[0m\ncodex\nFixed the moderation filter in [AdminCommentController.php](/app/var/workspaces/morph-map-hardcoded-type--laravel-13--1/app/Http/Controllers/AdminCommentController.php).\nDiagnosis: `enforceMorphMap` stores `order` and `listing`, but the dashboard queried using model class names. The filter now uses the persisted aliases, requiring no data migration and preserving all routes and JSON contracts.\nVerification: all PHPUnit tests pass (`2 tests, 4 assertions`).\ntokens used\n9,478",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 2,
+    "assertions": 4,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/morph-map-hardcoded-type--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.240, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 4 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 4,
+    "assertions": 8,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/morph-map-hardcoded-type--laravel-13--1/phpunit.xml\n....                                                                4 / 4 (100%)\nTime: 00:00.240, Memory: 46.50 MB\n\u001b[30;42mOK (4 tests, 8 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Http/Controllers/AdminCommentController.php b/app/Http/Controllers/AdminCommentController.php\nindex d376f4b..18902c4 100755\n--- a/app/Http/Controllers/AdminCommentController.php\n+++ b/app/Http/Controllers/AdminCommentController.php\n@@ -3,16 +3,14 @@\n namespace App\\Http\\Controllers;\n \n use App\\Models\\Comment;\n-use App\\Models\\Listing;\n-use App\\Models\\Order;\n use Illuminate\\Http\\JsonResponse;\n use Illuminate\\Http\\Request;\n \n class AdminCommentController extends Controller\n {\n     private const MODEL_TYPES = [\n-        'order' => Order::class,\n-        'listing' => Listing::class,\n+        'order' => 'order',\n+        'listing' => 'listing',\n     ];\n \n     public function index(Request $request): JsonResponse\n",
+  "run": 1
+}

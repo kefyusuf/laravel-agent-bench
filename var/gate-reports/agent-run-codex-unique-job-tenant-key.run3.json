@@ -1,0 +1,31 @@
+{
+  "scenario": "unique-job-tenant-key",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Fixed [GenerateTenantReport.php](/app/var/workspaces/unique-job-tenant-key--laravel-13--1/app/Jobs/GenerateTenantReport.php):\n- Uniqueness now includes tenant ID and report type, so tenant 42 no longer blocks other tenants.\n- Removed the one-hour lock expiry, preventing duplicate overlapping runs if workers lag beyond an hour.\n- Laravel releases the lock after completion or failure.\nValidation: `vendor/bin/phpunit` passes — 2 tests, 2 assertions.",
+    "stderr": "/bin/bash -lc vendor/bin/phpunit in /app/var/workspaces/unique-job-tenant-key--laravel-13--1\n succeeded in 212ms:\nPHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/unique-job-tenant-key--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.197, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 2 assertions)\u001b[0m\ncodex\nThe code change is in place and the visible suite remains green. I’m doing a final diff review to ensure no unrelated files changed and to verify the resulting key preserves independent report types.\nexec\n/bin/bash -lc 'git diff --check && git diff -- app/Jobs/GenerateTenantReport.php && git status --short' in /app/var/workspaces/unique-job-tenant-key--laravel-13--1\n succeeded in 0ms:\ndiff --git a/app/Jobs/GenerateTenantReport.php b/app/Jobs/GenerateTenantReport.php\nindex e5928a4..adb4567 100755\n--- a/app/Jobs/GenerateTenantReport.php\n+++ b/app/Jobs/GenerateTenantReport.php\n@@ -19,12 +19,7 @@ class GenerateTenantReport implements ShouldQueue, ShouldBeUnique\n \n     public function uniqueId(): string\n     {\n-        return $this->report.'-report';\n-    }\n-\n-    public function uniqueFor(): int\n-    {\n-        return 3600;\n+        return $this->tenant->getKey().'-'.$this->report.'-report';\n     }\n \n     public function handle(): void\n M app/Jobs/GenerateTenantReport.php\ncodex\nFixed [GenerateTenantReport.php](/app/var/workspaces/unique-job-tenant-key--laravel-13--1/app/Jobs/GenerateTenantReport.php):\n- Uniqueness now includes tenant ID and report type, so tenant 42 no longer blocks other tenants.\n- Removed the one-hour lock expiry, preventing duplicate overlapping runs if workers lag beyond an hour.\n- Laravel releases the lock after completion or failure.\nValidation: `vendor/bin/phpunit` passes — 2 tests, 2 assertions.\ntokens used\n28,091",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 2,
+    "assertions": 2,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/unique-job-tenant-key--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.195, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 2 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 4,
+    "assertions": 4,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/unique-job-tenant-key--laravel-13--1/phpunit.xml\n....                                                                4 / 4 (100%)\nTime: 00:00.234, Memory: 46.50 MB\n\u001b[30;42mOK (4 tests, 4 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Jobs/GenerateTenantReport.php b/app/Jobs/GenerateTenantReport.php\nindex e5928a4..adb4567 100755\n--- a/app/Jobs/GenerateTenantReport.php\n+++ b/app/Jobs/GenerateTenantReport.php\n@@ -19,12 +19,7 @@ class GenerateTenantReport implements ShouldQueue, ShouldBeUnique\n \n     public function uniqueId(): string\n     {\n-        return $this->report.'-report';\n-    }\n-\n-    public function uniqueFor(): int\n-    {\n-        return 3600;\n+        return $this->tenant->getKey().'-'.$this->report.'-report';\n     }\n \n     public function handle(): void\n",
+  "run": 3
+}

@@ -1,0 +1,31 @@
+{
+  "scenario": "retry-after-vs-timeout",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Updated [config/queue.php](/app/var/workspaces/retry-after-vs-timeout--laravel-13--1/config/queue.php:18).\nDiagnosis: `TranscodeVideo` times out after 120 seconds, but the database queue retried jobs after 30 seconds, allowing another worker to claim an active transcode.\nFix: enforced a minimum `retry_after` of 180 seconds. Database queue settings and job behavior remain unchanged.\nValidation: PHPUnit passes — 2 tests, 3 assertions.",
+    "stderr": "total 68\ndrwxr-xr-x 12 root root 4096 Nov 15 16:47 .\ndrwxr-xr-x  3 root root 4096 Nov 15 16:47 ..\ndrwxr-xr-x  2 root root 4096 Nov 15 16:47 .bench\ndrwxr-xr-x  8 root root 4096 Nov 15 16:47 .git\n-rwxrwxrwx  1 root root  252 Nov 15 16:47 .gitignore\n-rw-r--r--  1 root root 1637 Nov 15 16:47 PROMPT.md\ndrwxrwxrwx  6 root root 4096 Nov 15 16:47 app\n-rwxrwxrwx  1 root root  425 Nov 15 16:47 artisan\ndrwxrwxrwx  3 root root 4096 Nov 15 16:47 bootstrap\n-rw-r--r--  1 root root 1120 Nov 15 16:47 composer.json\ndrwxrwxrwx  2 root root 4096 Nov 15 16:47 config\ndrwxrwxrwx  5 root root 4096 Nov 15 16:47 database\n-rwxrwxrwx  1 root root 1559 Nov 15 16:47 phpunit.xml\ndrwxrwxrwx  2 root root 4096 Nov 15 16:47 routes\ndrwxrwxrwx  5 root root 4096 Nov 15 16:47 storage\ndrwxrwxrwx  4 root root 4096 Nov 15 16:47 tests\ndrwxr-xr-x 36 root root 4096 Nov 15 16:47 vendor\n--- phpunit candidates ---\nphpunit.xml\n--- status ---\n M config/queue.php\n--- config syntax ---\nNo syntax errors detected in config/queue.php\nexec\n/bin/bash -lc ./vendor/bin/phpunit in /app/var/workspaces/retry-after-vs-timeout--laravel-13--1\n succeeded in 207ms:\nPHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/retry-after-vs-timeout--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.183, Memory: 44.50 MB\n\u001b[30;42mOK (2 tests, 3 assertions)\u001b[0m\ncodex\nUpdated [config/queue.php](/app/var/workspaces/retry-after-vs-timeout--laravel-13--1/config/queue.php:18).\nDiagnosis: `TranscodeVideo` times out after 120 seconds, but the database queue retried jobs after 30 seconds, allowing another worker to claim an active transcode.\nFix: enforced a minimum `retry_after` of 180 seconds. Database queue settings and job behavior remain unchanged.\nValidation: PHPUnit passes — 2 tests, 3 assertions.\ntokens used\n9,199",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 2,
+    "assertions": 3,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/retry-after-vs-timeout--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.184, Memory: 44.50 MB\n\u001b[30;42mOK (2 tests, 3 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 3,
+    "assertions": 6,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/retry-after-vs-timeout--laravel-13--1/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.188, Memory: 44.50 MB\n\u001b[30;42mOK (3 tests, 6 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/config/queue.php b/config/queue.php\nindex c120ab3..c3197ed 100755\n--- a/config/queue.php\n+++ b/config/queue.php\n@@ -15,7 +15,8 @@ return [\n             'connection' => env('DB_QUEUE_CONNECTION'),\n             'table' => env('DB_QUEUE_TABLE', 'jobs'),\n             'queue' => env('DB_QUEUE', 'default'),\n-            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 30),\n+            // Keep the job reserved longer than TranscodeVideo's 120-second timeout.\n+            'retry_after' => max(180, (int) env('DB_QUEUE_RETRY_AFTER', 180)),\n             'after_commit' => false,\n         ],\n \n",
+  "run": 3
+}

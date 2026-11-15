@@ -1,0 +1,31 @@
+{
+  "scenario": "reservation-race",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Fixed `App\\Services\\StockReservationService::reserve()`.\nDiagnosis: the previous `GET → DECR → SADD` sequence was non-atomic, allowing concurrent workers to approve the same remaining unit.\nThe fix uses a Redis Lua script to atomically:\n1. Check stock.\n2. Decrement stock.\n3. Record the reservation.\nAll visible tests pass: `3 tests, 13 assertions`.",
+    "stderr": "+            local stock = tonumber(redis.call('GET', KEYS[1]) or '0')\n \n-        if ($stock <= 0) {\n-            return false;\n-        }\n+            if stock <= 0 then\n+                return 0\n+            end\n \n-        $this->redis->decr(\"stock:{$sku}\");\n-        $this->redis->sadd(\"reserved:{$sku}\", uniqid('', true));\n+            redis.call('DECR', KEYS[1])\n+            redis.call('SADD', KEYS[2], ARGV[1])\n \n-        return true;\n+            return 1\n+            LUA,\n+            [\n+                \"stock:{$sku}\",\n+                \"reserved:{$sku}\",\n+                uniqid('', true),\n+            ],\n+            2,\n+        );\n+\n+        return (int) $result === 1;\n     }\n }\nNo syntax errors detected in app/Services/StockReservationService.php\n M app/Services/StockReservationService.php\ncodex\nFixed `App\\Services\\StockReservationService::reserve()`.\nDiagnosis: the previous `GET → DECR → SADD` sequence was non-atomic, allowing concurrent workers to approve the same remaining unit.\nThe fix uses a Redis Lua script to atomically:\n1. Check stock.\n2. Decrement stock.\n3. Record the reservation.\nAll visible tests pass: `3 tests, 13 assertions`.\ntokens used\n10,103",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 3,
+    "assertions": 13,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/reservation-race--laravel-13--1/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.186, Memory: 38.50 MB\n\u001b[30;42mOK (3 tests, 13 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 6,
+    "assertions": 17,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/reservation-race--laravel-13--1/phpunit.xml\n......                                                              6 / 6 (100%)\nTime: 00:00.201, Memory: 38.50 MB\n\u001b[30;42mOK (6 tests, 17 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Services/StockReservationService.php b/app/Services/StockReservationService.php\nindex c723224..6f72942 100755\n--- a/app/Services/StockReservationService.php\n+++ b/app/Services/StockReservationService.php\n@@ -38,15 +38,27 @@ class StockReservationService\n      */\n     public function reserve(string $sku): bool\n     {\n-        $stock = (int) $this->redis->get(\"stock:{$sku}\");\n+        $result = $this->redis->eval(\n+            <<<'LUA'\n+            local stock = tonumber(redis.call('GET', KEYS[1]) or '0')\n \n-        if ($stock <= 0) {\n-            return false;\n-        }\n+            if stock <= 0 then\n+                return 0\n+            end\n \n-        $this->redis->decr(\"stock:{$sku}\");\n-        $this->redis->sadd(\"reserved:{$sku}\", uniqid('', true));\n+            redis.call('DECR', KEYS[1])\n+            redis.call('SADD', KEYS[2], ARGV[1])\n \n-        return true;\n+            return 1\n+            LUA,\n+            [\n+                \"stock:{$sku}\",\n+                \"reserved:{$sku}\",\n+                uniqid('', true),\n+            ],\n+            2,\n+        );\n+\n+        return (int) $result === 1;\n     }\n }\n",
+  "run": 3
+}

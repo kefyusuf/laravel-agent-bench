@@ -1,0 +1,31 @@
+{
+  "scenario": "singleton-request-state",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Implemented the lifecycle fix in [AppServiceProvider.php](/app/var/workspaces/singleton-request-state--laravel-13--1/app/Providers/AppServiceProvider.php).\nDiagnosis: `TenantContext` was registered as a singleton, so long-lived workers reused the first request’s tenant. It is now request-scoped, causing each request to resolve its own `X-Tenant` header.\nVerification: PHPUnit passes — 2 tests, 4 assertions.",
+    "stderr": "exec\n/bin/bash -lc 'php artisan test' in /app/var/workspaces/singleton-request-state--laravel-13--1\n exited 1 in 104ms:\n   ERROR  Command \"test\" is not defined. Did you mean one of these?  \n  ⇂ make:test  \n  ⇂ schedule:test  \ncodex\nThe code change is in place. This project does not define Laravel’s `artisan test` command, so I’m switching to the installed PHPUnit runner to verify the suite.\nexec\n/bin/bash -lc \"if [ -x vendor/bin/phpunit ]; then vendor/bin/phpunit; else echo 'vendor/bin/phpunit not found'; fi\" in /app/var/workspaces/singleton-request-state--laravel-13--1\n succeeded in 316ms:\nPHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/singleton-request-state--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.283, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 4 assertions)\u001b[0m\nexec\n/bin/bash -lc 'git diff --check && git diff -- app/Providers/AppServiceProvider.php && git status --short' in /app/var/workspaces/singleton-request-state--laravel-13--1\n succeeded in 0ms:\ndiff --git a/app/Providers/AppServiceProvider.php b/app/Providers/AppServiceProvider.php\nindex 63a744a..5cd3bf5 100755\n--- a/app/Providers/AppServiceProvider.php\n+++ b/app/Providers/AppServiceProvider.php\n@@ -13,7 +13,7 @@ class AppServiceProvider extends ServiceProvider\n      */\n     public function register(): void\n     {\n-        $this->app->singleton(TenantContext::class, function () {\n+        $this->app->scoped(TenantContext::class, function () {\n             $slug = (string) request()->header('X-Tenant', '');\n \n             return new TenantContext(\n M app/Providers/AppServiceProvider.php\ncodex\nImplemented the lifecycle fix in [AppServiceProvider.php](/app/var/workspaces/singleton-request-state--laravel-13--1/app/Providers/AppServiceProvider.php).\nDiagnosis: `TenantContext` was registered as a singleton, so long-lived workers reused the first request’s tenant. It is now request-scoped, causing each request to resolve its own `X-Tenant` header.\nVerification: PHPUnit passes — 2 tests, 4 assertions.\ntokens used\n16,961",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 2,
+    "assertions": 4,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/singleton-request-state--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.230, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 4 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 3,
+    "assertions": 10,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/singleton-request-state--laravel-13--1/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.230, Memory: 46.50 MB\n\u001b[30;42mOK (3 tests, 10 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Providers/AppServiceProvider.php b/app/Providers/AppServiceProvider.php\nindex 63a744a..5cd3bf5 100755\n--- a/app/Providers/AppServiceProvider.php\n+++ b/app/Providers/AppServiceProvider.php\n@@ -13,7 +13,7 @@ class AppServiceProvider extends ServiceProvider\n      */\n     public function register(): void\n     {\n-        $this->app->singleton(TenantContext::class, function () {\n+        $this->app->scoped(TenantContext::class, function () {\n             $slug = (string) request()->header('X-Tenant', '');\n \n             return new TenantContext(\n",
+  "run": 1
+}

@@ -1,0 +1,31 @@
+{
+  "scenario": "lock-leak-on-exception",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Implemented the fix in [SyncSupplierInventory.php](/app/var/workspaces/lock-leak-on-exception--laravel-13--1/app/Jobs/SyncSupplierInventory.php).\nDiagnosis: supplier exceptions occurred before `$lock->release()`, leaving the lock held and causing future syncs to skip.\nThe sync work now runs inside `try/finally`, guaranteeing lock release while preserving exception propagation for queue retries.\nValidation: visible PHPUnit suite passes — 2 tests, 3 assertions.",
+    "stderr": "-        $response = Http::timeout(60)->get('https://supplier.example/api/stock');\n-        $response->throw();\n-\n-        $items = $response->json('items', []);\n-\n-        foreach ($items as $item) {\n-            StockItem::updateOrCreate(\n-                ['sku' => $item['sku']],\n-                ['quantity' => (int) $item['quantity']],\n-            );\n+        try {\n+            $response = Http::timeout(60)->get('https://supplier.example/api/stock');\n+            $response->throw();\n+\n+            $items = $response->json('items', []);\n+\n+            foreach ($items as $item) {\n+                StockItem::updateOrCreate(\n+                    ['sku' => $item['sku']],\n+                    ['quantity' => (int) $item['quantity']],\n+                );\n+            }\n+\n+            InventorySync::create(['item_count' => count($items)]);\n+        } finally {\n+            $lock->release();\n         }\n-\n-        InventorySync::create(['item_count' => count($items)]);\n-\n-        $lock->release();\n     }\n }\ncodex\nImplemented the fix in [SyncSupplierInventory.php](/app/var/workspaces/lock-leak-on-exception--laravel-13--1/app/Jobs/SyncSupplierInventory.php).\nDiagnosis: supplier exceptions occurred before `$lock->release()`, leaving the lock held and causing future syncs to skip.\nThe sync work now runs inside `try/finally`, guaranteeing lock release while preserving exception propagation for queue retries.\nValidation: visible PHPUnit suite passes — 2 tests, 3 assertions.\ntokens used\n8,800",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 2,
+    "assertions": 3,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/lock-leak-on-exception--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.225, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 3 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 4,
+    "assertions": 6,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/lock-leak-on-exception--laravel-13--1/phpunit.xml\n....                                                                4 / 4 (100%)\nTime: 00:00.223, Memory: 48.50 MB\n\u001b[30;42mOK (4 tests, 6 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Jobs/SyncSupplierInventory.php b/app/Jobs/SyncSupplierInventory.php\nindex 1b18baf..ec223cd 100755\n--- a/app/Jobs/SyncSupplierInventory.php\n+++ b/app/Jobs/SyncSupplierInventory.php\n@@ -33,20 +33,22 @@ class SyncSupplierInventory implements ShouldQueue\n             return;\n         }\n \n-        $response = Http::timeout(60)->get('https://supplier.example/api/stock');\n-        $response->throw();\n-\n-        $items = $response->json('items', []);\n-\n-        foreach ($items as $item) {\n-            StockItem::updateOrCreate(\n-                ['sku' => $item['sku']],\n-                ['quantity' => (int) $item['quantity']],\n-            );\n+        try {\n+            $response = Http::timeout(60)->get('https://supplier.example/api/stock');\n+            $response->throw();\n+\n+            $items = $response->json('items', []);\n+\n+            foreach ($items as $item) {\n+                StockItem::updateOrCreate(\n+                    ['sku' => $item['sku']],\n+                    ['quantity' => (int) $item['quantity']],\n+                );\n+            }\n+\n+            InventorySync::create(['item_count' => count($items)]);\n+        } finally {\n+            $lock->release();\n         }\n-\n-        InventorySync::create(['item_count' => count($items)]);\n-\n-        $lock->release();\n     }\n }\n",
+  "run": 1
+}

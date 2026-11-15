@@ -1,0 +1,31 @@
+{
+  "scenario": "rate-limiter-missing-key",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Implemented the smallest fix in [AppServiceProvider.php](/app/var/workspaces/rate-limiter-missing-key--laravel-13--1/app/Providers/AppServiceProvider.php:25).\nDiagnosis: the limiter had no `by(...)` key, so every request shared one global bucket. It now limits 3 requests per minute per server connection IP, using `REMOTE_ADDR` directly so forged forwarding headers cannot bypass the limit.\n`vendor/bin/phpunit` passes: 1 test, 4 assertions.",
+    "stderr": "+            return Limit::perMinute(3)->by(\n+                'otp:'.$request->server->get('REMOTE_ADDR')\n+            );\n         });\n     }\n }\nexec\n/bin/bash -lc vendor/bin/phpunit in /app/var/workspaces/rate-limiter-missing-key--laravel-13--1\n succeeded in 352ms:\nPHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/rate-limiter-missing-key--laravel-13--1/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.336, Memory: 46.50 MB\n\u001b[30;42mOK (1 test, 4 assertions)\u001b[0m\nexec\n/bin/bash -lc 'git diff --check && git diff -- app/Providers/AppServiceProvider.php && git status --short' in /app/var/workspaces/rate-limiter-missing-key--laravel-13--1\n succeeded in 0ms:\ndiff --git a/app/Providers/AppServiceProvider.php b/app/Providers/AppServiceProvider.php\nindex 2bc4cc0..3d6bbb6 100755\n--- a/app/Providers/AppServiceProvider.php\n+++ b/app/Providers/AppServiceProvider.php\n@@ -23,7 +23,9 @@ class AppServiceProvider extends ServiceProvider\n     public function boot(): void\n     {\n         RateLimiter::for('otp', function (Request $request) {\n-            return Limit::perMinute(3);\n+            return Limit::perMinute(3)->by(\n+                'otp:'.$request->server->get('REMOTE_ADDR')\n+            );\n         });\n     }\n }\n M app/Providers/AppServiceProvider.php\ncodex\nImplemented the smallest fix in [AppServiceProvider.php](/app/var/workspaces/rate-limiter-missing-key--laravel-13--1/app/Providers/AppServiceProvider.php:25).\nDiagnosis: the limiter had no `by(...)` key, so every request shared one global bucket. It now limits 3 requests per minute per server connection IP, using `REMOTE_ADDR` directly so forged forwarding headers cannot bypass the limit.\n`vendor/bin/phpunit` passes: 1 test, 4 assertions.\ntokens used\n16,564",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 1,
+    "assertions": 4,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/rate-limiter-missing-key--laravel-13--1/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.235, Memory: 46.50 MB\n\u001b[30;42mOK (1 test, 4 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 3,
+    "assertions": 12,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/rate-limiter-missing-key--laravel-13--1/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.328, Memory: 46.50 MB\n\u001b[30;42mOK (3 tests, 12 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Providers/AppServiceProvider.php b/app/Providers/AppServiceProvider.php\nindex 2bc4cc0..3d6bbb6 100755\n--- a/app/Providers/AppServiceProvider.php\n+++ b/app/Providers/AppServiceProvider.php\n@@ -23,7 +23,9 @@ class AppServiceProvider extends ServiceProvider\n     public function boot(): void\n     {\n         RateLimiter::for('otp', function (Request $request) {\n-            return Limit::perMinute(3);\n+            return Limit::perMinute(3)->by(\n+                'otp:'.$request->server->get('REMOTE_ADDR')\n+            );\n         });\n     }\n }\n",
+  "run": 2
+}

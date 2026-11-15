@@ -1,0 +1,31 @@
+{
+  "scenario": "provider-error-as-success",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Implemented the checkout fix in [CheckoutController.php](/app/var/workspaces/provider-error-as-success--laravel-13--1/app/Http/Controllers/CheckoutController.php).\nDiagnosis: the controller marked orders `paid` regardless of provider HTTP status or reference contents.\nNow orders remain `pending` unless:\n- Paylane returns a successful 2xx response.\n- `reference` is a non-empty string.\nProvider failures return HTTP 502 without updating the order.\nValidation: PHPUnit passes — 1 test, 3 assertions.",
+    "stderr": "  ⇂ schedule:test  \ncodex\nThe production fix is in place. This Laravel install does not expose `php artisan test`, so I’m switching to the repository’s PHPUnit binary and will verify the diff plus the full visible suite.\nexec\n/bin/bash -lc './vendor/bin/phpunit && git diff --check && git status --short && git diff -- app/Http/Controllers/CheckoutController.php' in /app/var/workspaces/provider-error-as-success--laravel-13--1\n succeeded in 358ms:\nPHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/provider-error-as-success--laravel-13--1/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.269, Memory: 48.50 MB\n\u001b[30;42mOK (1 test, 3 assertions)\u001b[0m\n M app/Http/Controllers/CheckoutController.php\ndiff --git a/app/Http/Controllers/CheckoutController.php b/app/Http/Controllers/CheckoutController.php\nindex 92edbe4..5952e49 100755\n--- a/app/Http/Controllers/CheckoutController.php\n+++ b/app/Http/Controllers/CheckoutController.php\n@@ -26,6 +26,12 @@ class CheckoutController extends Controller\n \n         $reference = $response->json('reference');\n \n+        if (! $response->successful() || ! is_string($reference) || trim($reference) === '') {\n+            return response()->json([\n+                'message' => 'Payment could not be completed.',\n+            ], 502);\n+        }\n+\n         $order->forceFill([\n             'status' => Order::STATUS_PAID,\n             'provider_reference' => $reference,\ncodex\nImplemented the checkout fix in [CheckoutController.php](/app/var/workspaces/provider-error-as-success--laravel-13--1/app/Http/Controllers/CheckoutController.php).\nDiagnosis: the controller marked orders `paid` regardless of provider HTTP status or reference contents.\nNow orders remain `pending` unless:\n- Paylane returns a successful 2xx response.\n- `reference` is a non-empty string.\nProvider failures return HTTP 502 without updating the order.\nValidation: PHPUnit passes — 1 test, 3 assertions.\ntokens used\n9,230",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 1,
+    "assertions": 3,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/provider-error-as-success--laravel-13--1/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.233, Memory: 48.50 MB\n\u001b[30;42mOK (1 test, 3 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 3,
+    "assertions": 5,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/provider-error-as-success--laravel-13--1/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.265, Memory: 48.50 MB\n\u001b[30;42mOK (3 tests, 5 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Http/Controllers/CheckoutController.php b/app/Http/Controllers/CheckoutController.php\nindex 92edbe4..5952e49 100755\n--- a/app/Http/Controllers/CheckoutController.php\n+++ b/app/Http/Controllers/CheckoutController.php\n@@ -26,6 +26,12 @@ class CheckoutController extends Controller\n \n         $reference = $response->json('reference');\n \n+        if (! $response->successful() || ! is_string($reference) || trim($reference) === '') {\n+            return response()->json([\n+                'message' => 'Payment could not be completed.',\n+            ], 502);\n+        }\n+\n         $order->forceFill([\n             'status' => Order::STATUS_PAID,\n             'provider_reference' => $reference,\n",
+  "run": 3
+}

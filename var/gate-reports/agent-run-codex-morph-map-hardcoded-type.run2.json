@@ -1,0 +1,31 @@
+{
+  "scenario": "morph-map-hardcoded-type",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Fixed `AdminCommentController` to filter using Laravel’s enforced morph aliases (`order`/`listing`) instead of class names.\n- Historic comment rows remain unchanged.\n- Morph map enforcement remains enabled.\n- Routes and JSON contract are unchanged.\n- `vendor/bin/phpunit` passes: 2 tests, 4 assertions.\n- `git diff --check` passes.",
+    "stderr": "..                                                                  2 / 2 (100%)\nTime: 00:00.250, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 4 assertions)\u001b[0m\nexec\n/bin/bash -lc 'git diff --check && git diff -- app/Http/Controllers/AdminCommentController.php && git status --short' in /app/var/workspaces/morph-map-hardcoded-type--laravel-13--1\n succeeded in 0ms:\ndiff --git a/app/Http/Controllers/AdminCommentController.php b/app/Http/Controllers/AdminCommentController.php\nindex d376f4b..b9b037f 100755\n--- a/app/Http/Controllers/AdminCommentController.php\n+++ b/app/Http/Controllers/AdminCommentController.php\n@@ -5,6 +5,7 @@ namespace App\\Http\\Controllers;\n use App\\Models\\Comment;\n use App\\Models\\Listing;\n use App\\Models\\Order;\n+use Illuminate\\Database\\Eloquent\\Relations\\Relation;\n use Illuminate\\Http\\JsonResponse;\n use Illuminate\\Http\\Request;\n \n@@ -18,9 +19,10 @@ class AdminCommentController extends Controller\n     public function index(Request $request): JsonResponse\n     {\n         $model = $request->query('model', 'order');\n+        $modelClass = self::MODEL_TYPES[$model] ?? null;\n \n         $comments = Comment::query()\n-            ->where('commentable_type', self::MODEL_TYPES[$model] ?? null)\n+            ->where('commentable_type', $modelClass ? Relation::getMorphAlias($modelClass) : null)\n             ->latest('id')\n             ->get()\n             ->map(fn (Comment $comment) => [\n M app/Http/Controllers/AdminCommentController.php\ncodex\nFixed `AdminCommentController` to filter using Laravel’s enforced morph aliases (`order`/`listing`) instead of class names.\n- Historic comment rows remain unchanged.\n- Morph map enforcement remains enabled.\n- Routes and JSON contract are unchanged.\n- `vendor/bin/phpunit` passes: 2 tests, 4 assertions.\n- `git diff --check` passes.\ntokens used\n10,509",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 2,
+    "assertions": 4,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/morph-map-hardcoded-type--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.231, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 4 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 4,
+    "assertions": 8,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/morph-map-hardcoded-type--laravel-13--1/phpunit.xml\n....                                                                4 / 4 (100%)\nTime: 00:00.238, Memory: 46.50 MB\n\u001b[30;42mOK (4 tests, 8 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Http/Controllers/AdminCommentController.php b/app/Http/Controllers/AdminCommentController.php\nindex d376f4b..b9b037f 100755\n--- a/app/Http/Controllers/AdminCommentController.php\n+++ b/app/Http/Controllers/AdminCommentController.php\n@@ -5,6 +5,7 @@ namespace App\\Http\\Controllers;\n use App\\Models\\Comment;\n use App\\Models\\Listing;\n use App\\Models\\Order;\n+use Illuminate\\Database\\Eloquent\\Relations\\Relation;\n use Illuminate\\Http\\JsonResponse;\n use Illuminate\\Http\\Request;\n \n@@ -18,9 +19,10 @@ class AdminCommentController extends Controller\n     public function index(Request $request): JsonResponse\n     {\n         $model = $request->query('model', 'order');\n+        $modelClass = self::MODEL_TYPES[$model] ?? null;\n \n         $comments = Comment::query()\n-            ->where('commentable_type', self::MODEL_TYPES[$model] ?? null)\n+            ->where('commentable_type', $modelClass ? Relation::getMorphAlias($modelClass) : null)\n             ->latest('id')\n             ->get()\n             ->map(fn (Comment $comment) => [\n",
+  "run": 2
+}

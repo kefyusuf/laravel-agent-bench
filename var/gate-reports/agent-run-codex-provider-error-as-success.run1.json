@@ -1,0 +1,31 @@
+{
+  "scenario": "provider-error-as-success",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Implemented the checkout fix in [CheckoutController.php](/app/var/workspaces/provider-error-as-success--laravel-13--1/app/Http/Controllers/CheckoutController.php:29).\nDiagnosis: the controller marked orders paid unconditionally after parsing `reference`, even for provider errors or empty references.\nNow it only marks an order paid when:\n- The provider response is successful (2xx)\n- `reference` is a non-empty string\nInvalid provider responses return HTTP 502 and leave the order pending.\nValidation: PHPUnit passes — 1 test, 3 assertions.",
+    "stderr": "/bin/bash -lc \"nl -ba app/Http/Controllers/CheckoutController.php | sed -n '18,48p'\" in /app/var/workspaces/provider-error-as-success--laravel-13--1\n succeeded in 0ms:\n    18\t        $order = Order::findOrFail($data['order_id']);\n    19\t\n    20\t        $response = Http::asJson()\n    21\t            ->withToken((string) config('services.paylane.key', 'test'))\n    22\t            ->post('https://api.paylane.example/v1/charges', [\n    23\t                'order_id' => $order->id,\n    24\t                'amount_cents' => $order->total_cents,\n    25\t            ]);\n    26\t\n    27\t        $reference = $response->json('reference');\n    28\t\n    29\t        if (! $response->successful() || ! is_string($reference) || trim($reference) === '') {\n    30\t            return response()->json([\n    31\t                'message' => 'Payment could not be completed.',\n    32\t            ], 502);\n    33\t        }\n    34\t\n    35\t        $order->forceFill([\n    36\t            'status' => Order::STATUS_PAID,\n    37\t            'provider_reference' => $reference,\n    38\t        ])->save();\n    39\t\n    40\t        return response()->json([\n    41\t            'order' => ['id' => $order->id, 'status' => $order->status],\n    42\t            'reference' => $reference,\n    43\t        ]);\n    44\t    }\n    45\t}\ncodex\nImplemented the checkout fix in [CheckoutController.php](/app/var/workspaces/provider-error-as-success--laravel-13--1/app/Http/Controllers/CheckoutController.php:29).\nDiagnosis: the controller marked orders paid unconditionally after parsing `reference`, even for provider errors or empty references.\nNow it only marks an order paid when:\n- The provider response is successful (2xx)\n- `reference` is a non-empty string\nInvalid provider responses return HTTP 502 and leave the order pending.\nValidation: PHPUnit passes — 1 test, 3 assertions.\ntokens used\n9,945",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 1,
+    "assertions": 3,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/provider-error-as-success--laravel-13--1/phpunit.xml\n.                                                                   1 / 1 (100%)\nTime: 00:00.266, Memory: 48.50 MB\n\u001b[30;42mOK (1 test, 3 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 3,
+    "assertions": 5,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/provider-error-as-success--laravel-13--1/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.275, Memory: 48.50 MB\n\u001b[30;42mOK (3 tests, 5 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Http/Controllers/CheckoutController.php b/app/Http/Controllers/CheckoutController.php\nindex 92edbe4..5952e49 100755\n--- a/app/Http/Controllers/CheckoutController.php\n+++ b/app/Http/Controllers/CheckoutController.php\n@@ -26,6 +26,12 @@ class CheckoutController extends Controller\n \n         $reference = $response->json('reference');\n \n+        if (! $response->successful() || ! is_string($reference) || trim($reference) === '') {\n+            return response()->json([\n+                'message' => 'Payment could not be completed.',\n+            ], 502);\n+        }\n+\n         $order->forceFill([\n             'status' => Order::STATUS_PAID,\n             'provider_reference' => $reference,\n",
+  "run": 1
+}

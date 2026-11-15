@@ -1,0 +1,31 @@
+{
+  "scenario": "digest-pipeline-defects",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Implemented the digest pipeline fixes:\n- `attach_pdfs` is now mass-assigned and persisted.\n- Digest settings (`locale`, `attach_pdfs`) are forwarded to LedgerMail.\n- Rate limiting is isolated per customer.\n- Billing API failures now throw before marking a digest sent.\nValidation: all 3 existing PHPUnit tests pass; no schema, dependency, endpoint contract, or protected files changed.",
+    "stderr": "         });\n     }\n }\n   ERROR  Command \"test\" is not defined. Did you mean one of these?  \n  ⇂ make:test  \n  ⇂ schedule:test  \ncodex\nThe code changes are in place and the diff is clean. This Laravel install doesn’t expose `artisan test`, so I’m switching to the repository’s PHPUnit binary and then I’ll add focused verification for the hidden-risk cases without modifying the protected test files.\nexec\n/bin/bash -lc 'vendor/bin/phpunit --testdox' in /app/var/workspaces/digest-pipeline-defects--laravel-13--1\n succeeded in 277ms:\nPHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/digest-pipeline-defects--laravel-13--1/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.262, Memory: 50.50 MB\n\u001b[4mDigest Pipeline (Tests\\Feature\\DigestPipeline)\u001b[0m\n\u001b[32m ✔ \u001b[0mDigest settings can be saved\n\u001b[32m ✔ \u001b[0mA send queues the digest and marks it sent\n\u001b[32m ✔ \u001b[0mThe send endpoint is rate limited\n\u001b[30;42mOK (3 tests, 7 assertions)\u001b[0m\nexec\n/bin/bash -lc 'git status --short && git diff --stat && git diff --check' in /app/var/workspaces/digest-pipeline-defects--laravel-13--1\n succeeded in 0ms:\n M app/Jobs/SendDigestJob.php\n M app/Models/DigestSetting.php\n M app/Providers/AppServiceProvider.php\n app/Jobs/SendDigestJob.php           | 6 ++++++\n app/Models/DigestSetting.php         | 1 +\n app/Providers/AppServiceProvider.php | 2 +-\n 3 files changed, 8 insertions(+), 1 deletion(-)\ncodex\nImplemented the digest pipeline fixes:\n- `attach_pdfs` is now mass-assigned and persisted.\n- Digest settings (`locale`, `attach_pdfs`) are forwarded to LedgerMail.\n- Rate limiting is isolated per customer.\n- Billing API failures now throw before marking a digest sent.\nValidation: all 3 existing PHPUnit tests pass; no schema, dependency, endpoint contract, or protected files changed.\ntokens used\n12,883",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 3,
+    "assertions": 7,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/digest-pipeline-defects--laravel-13--1/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.294, Memory: 52.50 MB\n\u001b[30;42mOK (3 tests, 7 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 6,
+    "assertions": 13,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/digest-pipeline-defects--laravel-13--1/phpunit.xml\n......                                                              6 / 6 (100%)\nTime: 00:00.315, Memory: 52.50 MB\n\u001b[30;42mOK (6 tests, 13 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Jobs/SendDigestJob.php b/app/Jobs/SendDigestJob.php\nindex 5f6d2bb..c045681 100755\n--- a/app/Jobs/SendDigestJob.php\n+++ b/app/Jobs/SendDigestJob.php\n@@ -3,6 +3,7 @@\n namespace App\\Jobs;\n \n use App\\Models\\Digest;\n+use App\\Models\\DigestSetting;\n use Illuminate\\Contracts\\Queue\\ShouldQueue;\n use Illuminate\\Foundation\\Queue\\Queueable;\n use Illuminate\\Support\\Facades\\Http;\n@@ -17,12 +18,17 @@ class SendDigestJob implements ShouldQueue\n \n     public function handle(): void\n     {\n+        $setting = DigestSetting::where('customer_id', $this->digest->customer_id)->first();\n+\n         $response = Http::asJson()\n             ->withToken((string) config('services.ledgermail.key', 'test'))\n             ->post('https://api.ledgermail.example/v1/digests', [\n                 'customer_id' => $this->digest->customer_id,\n                 'period' => now()->format('Y-m'),\n+                'locale' => $setting?->locale ?? 'en',\n+                'attach_pdfs' => $setting?->attach_pdfs ?? false,\n             ]);\n+        $response->throw();\n \n         $digestId = $response->json('digest_id');\n \ndiff --git a/app/Models/DigestSetting.php b/app/Models/DigestSetting.php\nindex 0bc5574..e7cc601 100755\n--- a/app/Models/DigestSetting.php\n+++ b/app/Models/DigestSetting.php\n@@ -9,6 +9,7 @@ class DigestSetting extends Model\n     protected $fillable = [\n         'customer_id',\n         'locale',\n+        'attach_pdfs',\n     ];\n \n     protected function casts(): array\ndiff --git a/app/Providers/AppServiceProvider.php b/app/Providers/AppServiceProvider.php\nindex 86afa3d..929803d 100755\n--- a/app/Providers/AppServiceProvider.php\n+++ b/app/Providers/AppServiceProvider.php\n@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider\n     public function boot(): void\n     {\n         RateLimiter::for('digest', function (Request $request) {\n-            return Limit::perMinute(2);\n+            return Limit::perMinute(2)->by('digest:'.$request->route('customer'));\n         });\n     }\n }\n",
+  "run": 1
+}

@@ -1,0 +1,31 @@
+{
+  "scenario": "signed-url-toggle-replay",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Implemented the fix in [UnsubscribeController.php](/app/var/workspaces/signed-url-toggle-replay--laravel-13--1/app/Http/Controllers/UnsubscribeController.php).\nDiagnosis: the endpoint toggled `marketing_opt_in`, so replaying the signed URL re-subscribed users and sent another email.\nFix:\n- Atomically sets `marketing_opt_in` to `false`.\n- Sends confirmation only when the unsubscribe state actually changes.\n- Replays remain idempotent and cannot re-subscribe users.\n- Routes, middleware, link generation, and mail class remain unchanged.\nValidation: `vendor/bin/phpunit` passes all 2 tests.",
+    "stderr": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/signed-url-toggle-replay--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.226, Memory: 48.50 MB\n\u001b[30;42mOK (2 tests, 5 assertions)\u001b[0m\ndiff --git a/app/Http/Controllers/UnsubscribeController.php b/app/Http/Controllers/UnsubscribeController.php\nindex 5cd2798..8f86072 100755\n--- a/app/Http/Controllers/UnsubscribeController.php\n+++ b/app/Http/Controllers/UnsubscribeController.php\n@@ -11,11 +11,14 @@ class UnsubscribeController extends Controller\n {\n     public function __invoke(Request $request, User $user)\n     {\n-        $user->update([\n-            'marketing_opt_in' => ! $user->marketing_opt_in,\n-        ]);\n+        $unsubscribed = User::query()\n+            ->whereKey($user->getKey())\n+            ->where('marketing_opt_in', true)\n+            ->update(['marketing_opt_in' => false]);\n \n-        Mail::to($user->email)->send(new UnsubscribeConfirmed);\n+        if ($unsubscribed === 1) {\n+            Mail::to($user->email)->send(new UnsubscribeConfirmed);\n+        }\n \n         return response()->view('unsubscribe-done', ['user' => $user]);\n     }\ncodex\nImplemented the fix in [UnsubscribeController.php](/app/var/workspaces/signed-url-toggle-replay--laravel-13--1/app/Http/Controllers/UnsubscribeController.php).\nDiagnosis: the endpoint toggled `marketing_opt_in`, so replaying the signed URL re-subscribed users and sent another email.\nFix:\n- Atomically sets `marketing_opt_in` to `false`.\n- Sends confirmation only when the unsubscribe state actually changes.\n- Replays remain idempotent and cannot re-subscribe users.\n- Routes, middleware, link generation, and mail class remain unchanged.\nValidation: `vendor/bin/phpunit` passes all 2 tests.\ntokens used\n10,621",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 2,
+    "assertions": 5,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/signed-url-toggle-replay--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.216, Memory: 48.50 MB\n\u001b[30;42mOK (2 tests, 5 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 3,
+    "assertions": 10,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/signed-url-toggle-replay--laravel-13--1/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.242, Memory: 48.50 MB\n\u001b[30;42mOK (3 tests, 10 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Http/Controllers/UnsubscribeController.php b/app/Http/Controllers/UnsubscribeController.php\nindex 5cd2798..8f86072 100755\n--- a/app/Http/Controllers/UnsubscribeController.php\n+++ b/app/Http/Controllers/UnsubscribeController.php\n@@ -11,11 +11,14 @@ class UnsubscribeController extends Controller\n {\n     public function __invoke(Request $request, User $user)\n     {\n-        $user->update([\n-            'marketing_opt_in' => ! $user->marketing_opt_in,\n-        ]);\n+        $unsubscribed = User::query()\n+            ->whereKey($user->getKey())\n+            ->where('marketing_opt_in', true)\n+            ->update(['marketing_opt_in' => false]);\n \n-        Mail::to($user->email)->send(new UnsubscribeConfirmed);\n+        if ($unsubscribed === 1) {\n+            Mail::to($user->email)->send(new UnsubscribeConfirmed);\n+        }\n \n         return response()->view('unsubscribe-done', ['user' => $user]);\n     }\n",
+  "run": 2
+}

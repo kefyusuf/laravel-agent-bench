@@ -1,0 +1,31 @@
+{
+  "scenario": "idor-nested-resource",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Patched [CustomerInvoiceController.php](/app/var/workspaces/idor-nested-resource--laravel-13--1/app/Http/Controllers/CustomerInvoiceController.php).\nDiagnosis: route model binding loaded the customer and invoice independently without verifying ownership. The controller now returns 404 unless:\n- The authenticated user belongs to the requested customer.\n- The invoice belongs to that customer.\nLegitimate JSON responses remain unchanged. PHPUnit passes: 2 tests, 3 assertions.",
+    "stderr": "        \"psr-4\": {\n            \"Tests\\\\\": \"tests/\"\n        }\n    },\n    \"scripts\": {\n        \"post-autoload-dump\": [\n            \"Illuminate\\\\Foundation\\\\ComposerScripts::postAutoloadDump\",\n            \"@php artisan package:discover --ansi\"\n        ]\n    },\n    \"config\": {\n        \"optimize-autoloader\": true,\n        \"preferred-install\": \"dist\",\n        \"sort-packages\": true\n    },\n    \"minimum-stability\": \"stable\",\n    \"prefer-stable\": true\n}\n--- available phpunit ---\n-rwxr-xr-x 1 root root 3689 Nov 15 15:50 vendor/bin/phpunit\n M app/Http/Controllers/CustomerInvoiceController.php\ncodex\nThe code change is in place and `git diff --check` passes. This Laravel project does not define an `artisan test` command, so I’m switching to the installed PHPUnit binary for verification.\nexec\n/bin/bash -lc vendor/bin/phpunit in /app/var/workspaces/idor-nested-resource--laravel-13--1\n succeeded in 769ms:\nPHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/idor-nested-resource--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.622, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 3 assertions)\u001b[0m\ncodex\nPatched [CustomerInvoiceController.php](/app/var/workspaces/idor-nested-resource--laravel-13--1/app/Http/Controllers/CustomerInvoiceController.php).\nDiagnosis: route model binding loaded the customer and invoice independently without verifying ownership. The controller now returns 404 unless:\n- The authenticated user belongs to the requested customer.\n- The invoice belongs to that customer.\nLegitimate JSON responses remain unchanged. PHPUnit passes: 2 tests, 3 assertions.\ntokens used\n33,298",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 2,
+    "assertions": 3,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/idor-nested-resource--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.246, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 3 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 4,
+    "assertions": 7,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/idor-nested-resource--laravel-13--1/phpunit.xml\n....                                                                4 / 4 (100%)\nTime: 00:00.292, Memory: 46.50 MB\n\u001b[30;42mOK (4 tests, 7 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Http/Controllers/CustomerInvoiceController.php b/app/Http/Controllers/CustomerInvoiceController.php\nindex b4bdb71..965d341 100755\n--- a/app/Http/Controllers/CustomerInvoiceController.php\n+++ b/app/Http/Controllers/CustomerInvoiceController.php\n@@ -9,6 +9,12 @@ class CustomerInvoiceController extends Controller\n {\n     public function show(Customer $customer, Invoice $invoice)\n     {\n+        abort_unless(\n+            auth()->user()->customer_id === $customer->id\n+                && $invoice->customer_id === $customer->id,\n+            404\n+        );\n+\n         return response()->json([\n             'invoice' => [\n                 'id' => $invoice->id,\n",
+  "run": 2
+}

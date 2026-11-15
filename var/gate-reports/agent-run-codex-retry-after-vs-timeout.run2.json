@@ -1,0 +1,31 @@
+{
+  "scenario": "retry-after-vs-timeout",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Updated [config/queue.php](/app/var/workspaces/retry-after-vs-timeout--laravel-13--1/config/queue.php:18): database queue `retry_after` is now 180 seconds, exceeding `TranscodeVideo`’s 120-second timeout. This prevents lease expiry and duplicate worker pickup.\nBusiness logic and queue infrastructure remain unchanged.\nVerified: `vendor/bin/phpunit` — 2 tests passed.",
+    "stderr": " \ncodex\nI’ve updated the database queue’s default lease to 180 seconds, which exceeds the job’s 120-second timeout and leaves a safety margin before another worker can reclaim it. No job logic or queue driver/table/queue names changed.\nexec\n/bin/bash -lc 'php artisan test --testsuite=Feature && git diff --check && git diff -- config/queue.php && git status --short' in /app/var/workspaces/retry-after-vs-timeout--laravel-13--1\n exited 1 in 43ms:\n   ERROR  Command \"test\" is not defined. Did you mean one of these?  \n  ⇂ make:test  \n  ⇂ schedule:test  \ncodex\nThe project does not expose Laravel’s `artisan test` command, so that verification path is unavailable; I’m switching to the repository’s installed PHPUnit binary and will still run the diff checks.\nexec\n/bin/bash -lc 'vendor/bin/phpunit && git diff --check && git diff -- config/queue.php && git status --short' in /app/var/workspaces/retry-after-vs-timeout--laravel-13--1\n succeeded in 225ms:\nPHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/retry-after-vs-timeout--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.194, Memory: 44.50 MB\n\u001b[30;42mOK (2 tests, 3 assertions)\u001b[0m\ndiff --git a/config/queue.php b/config/queue.php\nindex c120ab3..53c4727 100755\n--- a/config/queue.php\n+++ b/config/queue.php\n@@ -15,7 +15,7 @@ return [\n             'connection' => env('DB_QUEUE_CONNECTION'),\n             'table' => env('DB_QUEUE_TABLE', 'jobs'),\n             'queue' => env('DB_QUEUE', 'default'),\n-            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 30),\n+            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 180),\n             'after_commit' => false,\n         ],\n \n M config/queue.php\ncodex\nUpdated [config/queue.php](/app/var/workspaces/retry-after-vs-timeout--laravel-13--1/config/queue.php:18): database queue `retry_after` is now 180 seconds, exceeding `TranscodeVideo`’s 120-second timeout. This prevents lease expiry and duplicate worker pickup.\nBusiness logic and queue infrastructure remain unchanged.\nVerified: `vendor/bin/phpunit` — 2 tests passed.\ntokens used\n24,357",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 2,
+    "assertions": 3,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/retry-after-vs-timeout--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.179, Memory: 44.50 MB\n\u001b[30;42mOK (2 tests, 3 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 3,
+    "assertions": 6,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/retry-after-vs-timeout--laravel-13--1/phpunit.xml\n...                                                                 3 / 3 (100%)\nTime: 00:00.201, Memory: 44.50 MB\n\u001b[30;42mOK (3 tests, 6 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/config/queue.php b/config/queue.php\nindex c120ab3..53c4727 100755\n--- a/config/queue.php\n+++ b/config/queue.php\n@@ -15,7 +15,7 @@ return [\n             'connection' => env('DB_QUEUE_CONNECTION'),\n             'table' => env('DB_QUEUE_TABLE', 'jobs'),\n             'queue' => env('DB_QUEUE', 'default'),\n-            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 30),\n+            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 180),\n             'after_commit' => false,\n         ],\n \n",
+  "run": 2
+}

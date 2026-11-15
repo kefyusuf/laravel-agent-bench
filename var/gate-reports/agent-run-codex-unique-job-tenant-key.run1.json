@@ -1,0 +1,31 @@
+{
+  "scenario": "unique-job-tenant-key",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Implemented the minimal fix in [GenerateTenantReport.php](/app/var/workspaces/unique-job-tenant-key--laravel-13--1/app/Jobs/GenerateTenantReport.php).\nDiagnosis: `uniqueId()` used only the report name, creating one global `sales` lock across all tenants. Tenant 42’s job was therefore discarded when another tenant’s sales job already held the lock.\nFix:\n- Uniqueness is now scoped to `report + tenant ID`.\n- Removed the one-hour expiry so delayed jobs cannot lose their lock and overlap.\nValidation: PHPUnit passes: 2 tests, 2 assertions.",
+    "stderr": "     public function uniqueId(): string\n     {\n-        return $this->report.'-report';\n-    }\n-\n-    public function uniqueFor(): int\n-    {\n-        return 3600;\n+        return $this->report.'-tenant-'.$this->tenant->getKey();\n     }\n \n     public function handle(): void\n   ERROR  Command \"test\" is not defined. Did you mean one of these?  \n  ⇂ make:test  \n  ⇂ schedule:test  \nexec\n/bin/bash -lc vendor/bin/phpunit in /app/var/workspaces/unique-job-tenant-key--laravel-13--1\n succeeded in 200ms:\nPHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/unique-job-tenant-key--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.194, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 2 assertions)\u001b[0m\nexec\n/bin/bash -lc 'php -l app/Jobs/GenerateTenantReport.php && git status --short && git diff --stat' in /app/var/workspaces/unique-job-tenant-key--laravel-13--1\n succeeded in 0ms:\nNo syntax errors detected in app/Jobs/GenerateTenantReport.php\n M app/Jobs/GenerateTenantReport.php\n app/Jobs/GenerateTenantReport.php | 7 +------\n 1 file changed, 1 insertion(+), 6 deletions(-)\ncodex\nImplemented the minimal fix in [GenerateTenantReport.php](/app/var/workspaces/unique-job-tenant-key--laravel-13--1/app/Jobs/GenerateTenantReport.php).\nDiagnosis: `uniqueId()` used only the report name, creating one global `sales` lock across all tenants. Tenant 42’s job was therefore discarded when another tenant’s sales job already held the lock.\nFix:\n- Uniqueness is now scoped to `report + tenant ID`.\n- Removed the one-hour expiry so delayed jobs cannot lose their lock and overlap.\nValidation: PHPUnit passes: 2 tests, 2 assertions.\ntokens used\n15,762",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 2,
+    "assertions": 2,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/unique-job-tenant-key--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.189, Memory: 46.50 MB\n\u001b[30;42mOK (2 tests, 2 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 4,
+    "assertions": 4,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/unique-job-tenant-key--laravel-13--1/phpunit.xml\n....                                                                4 / 4 (100%)\nTime: 00:00.239, Memory: 46.50 MB\n\u001b[30;42mOK (4 tests, 4 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Jobs/GenerateTenantReport.php b/app/Jobs/GenerateTenantReport.php\nindex e5928a4..131bb6f 100755\n--- a/app/Jobs/GenerateTenantReport.php\n+++ b/app/Jobs/GenerateTenantReport.php\n@@ -19,12 +19,7 @@ class GenerateTenantReport implements ShouldQueue, ShouldBeUnique\n \n     public function uniqueId(): string\n     {\n-        return $this->report.'-report';\n-    }\n-\n-    public function uniqueFor(): int\n-    {\n-        return 3600;\n+        return $this->report.'-tenant-'.$this->tenant->getKey();\n     }\n \n     public function handle(): void\n",
+  "run": 1
+}

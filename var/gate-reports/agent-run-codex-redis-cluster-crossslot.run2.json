@@ -1,0 +1,31 @@
+{
+  "scenario": "redis-cluster-crossslot",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Implemented the minimal fix in [FeatureFlagService.php](/app/var/workspaces/redis-cluster-crossslot--laravel-13--1/app/Services/FeatureFlagService.php:43).\nDiagnosis: Redis Cluster rejected the Lua script because the untagged `uses` and `version` keys mapped to different hash slots, causing `CROSSSLOT`.\nFix: release now uses:\n- `flags:{<tenant>}:uses`\n- `flags:{<tenant>}:version`\nBoth remain separate keys and are updated atomically by the same Lua script.\nValidation:\n- Reproduced the untagged-key cluster failure.\n- Confirmed tagged keys execute successfully.\n- Full PHPUnit suite passes: 2 tests, 3 assertions.",
+    "stderr": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/redis-cluster-crossslot--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.137, Memory: 36.50 MB\n\u001b[30;42mOK (2 tests, 3 assertions)\u001b[0m\n M app/Services/FeatureFlagService.php\n app/Services/FeatureFlagService.php | 6 ++++--\n 1 file changed, 4 insertions(+), 2 deletions(-)\ndiff --git a/app/Services/FeatureFlagService.php b/app/Services/FeatureFlagService.php\nindex 5df11b3..5f854c1 100755\n--- a/app/Services/FeatureFlagService.php\n+++ b/app/Services/FeatureFlagService.php\n@@ -47,9 +47,11 @@ class FeatureFlagService\n             redis.call('SET', KEYS[2], ARGV[1])\n             LUA;\n \n+        $taggedTenant = \"{{$tenant}}\";\n+\n         $this->redis->eval($script, [\n-            \"flags:{$tenant}:uses\",\n-            \"flags:{$tenant}:version\",\n+            \"flags:{$taggedTenant}:uses\",\n+            \"flags:{$taggedTenant}:version\",\n             $version,\n         ], 2);\n     }\ncodex\nImplemented the minimal fix in [FeatureFlagService.php](/app/var/workspaces/redis-cluster-crossslot--laravel-13--1/app/Services/FeatureFlagService.php:43).\nDiagnosis: Redis Cluster rejected the Lua script because the untagged `uses` and `version` keys mapped to different hash slots, causing `CROSSSLOT`.\nFix: release now uses:\n- `flags:{<tenant>}:uses`\n- `flags:{<tenant>}:version`\nBoth remain separate keys and are updated atomically by the same Lua script.\nValidation:\n- Reproduced the untagged-key cluster failure.\n- Confirmed tagged keys execute successfully.\n- Full PHPUnit suite passes: 2 tests, 3 assertions.\ntokens used\n18,975",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 2,
+    "assertions": 3,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/redis-cluster-crossslot--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.128, Memory: 34.50 MB\n\u001b[30;42mOK (2 tests, 3 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 6,
+    "assertions": 13,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/redis-cluster-crossslot--laravel-13--1/phpunit.xml\n......                                                              6 / 6 (100%)\nTime: 00:00.220, Memory: 38.50 MB\n\u001b[30;42mOK (6 tests, 13 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Services/FeatureFlagService.php b/app/Services/FeatureFlagService.php\nindex 5df11b3..5f854c1 100755\n--- a/app/Services/FeatureFlagService.php\n+++ b/app/Services/FeatureFlagService.php\n@@ -47,9 +47,11 @@ class FeatureFlagService\n             redis.call('SET', KEYS[2], ARGV[1])\n             LUA;\n \n+        $taggedTenant = \"{{$tenant}}\";\n+\n         $this->redis->eval($script, [\n-            \"flags:{$tenant}:uses\",\n-            \"flags:{$tenant}:version\",\n+            \"flags:{$taggedTenant}:uses\",\n+            \"flags:{$taggedTenant}:version\",\n             $version,\n         ], 2);\n     }\n",
+  "run": 2
+}

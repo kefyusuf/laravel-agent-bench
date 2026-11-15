@@ -160,36 +160,43 @@ the benchmark measures invariant reasoning, not doc lookup.
 
 | Scenario | baseline | codex |
 | --- | --- | --- |
-| digest-pipeline-defects | ❌ fail-hidden | ✅ pass |
-| double-refund | · no-change | ❌ fail-hidden |
-| idempotent-checkout | · no-change | ❌ fail-hidden |
-| idor-nested-resource | · no-change | ✅ pass |
-| lazy-loading-in-accessor | · no-change | ✅ pass |
-| lock-leak-on-exception | · no-change | ✅ pass |
-| mass-assignment-silent-drop | · no-change | ✅ pass |
-| morph-map-hardcoded-type | · no-change | ✅ pass |
-| provider-error-as-success | ❌ fail-hidden | ✅ pass |
-| rate-limiter-missing-key | · no-change | ✅ pass |
-| redis-cluster-crossslot | · no-change | ✅ pass |
-| reservation-race | · no-change | ✅ pass |
-| retry-after-vs-timeout | · no-change | ✅ pass |
-| runtime-env-after-cache | · no-change | ✅ pass |
-| scheduler-overlap | · no-change | ✅ pass |
-| signed-url-toggle-replay | · no-change | ✅ pass |
-| singleton-request-state | · no-change | ✅ pass |
-| soft-delete-unique-email | · no-change | ✅ pass |
-| unique-job-tenant-key | · no-change | ✅ pass |
-| webhook-payout-idempotency | ✅ pass | ✅ pass |
-| **pass total** | 1/20 | 18/20 |
+| digest-pipeline-defects | ❌ fail-hidden | ✅ 3/3 |
+| double-refund | · no-change | ❌ 0/3 |
+| idempotent-checkout | · no-change | ❌ 0/3 |
+| idor-nested-resource | · no-change | ✅ 3/3 |
+| lazy-loading-in-accessor | · no-change | ✅ 3/3 |
+| lock-leak-on-exception | · no-change | ✅ 3/3 |
+| mass-assignment-silent-drop | · no-change | ✅ 3/3 |
+| morph-map-hardcoded-type | · no-change | ✅ 3/3 |
+| provider-error-as-success | ❌ fail-hidden | ✅ 3/3 |
+| rate-limiter-missing-key | · no-change | ✅ 3/3 |
+| redis-cluster-crossslot | · no-change | ⚠️ 2/3 |
+| reservation-race | · no-change | ✅ 3/3 |
+| retry-after-vs-timeout | · no-change | ✅ 3/3 |
+| runtime-env-after-cache | · no-change | ✅ 3/3 |
+| scheduler-overlap | · no-change | ✅ 3/3 |
+| signed-url-toggle-replay | · no-change | ✅ 3/3 |
+| singleton-request-state | · no-change | ✅ 3/3 |
+| soft-delete-unique-email | · no-change | ✅ 3/3 |
+| unique-job-tenant-key | · no-change | ✅ 3/3 |
+| webhook-payout-idempotency | ✅ pass | ✅ 3/3 |
+| **pass total** | 1/20 | 53/60 |
 
 Calibration (2026-11-06/07, evidence under var/gate-reports/): find-and-fix scenarios
 saturate for frontier agents with full tooling — even against real infrastructure and
 under real concurrency. The demonstrated discriminative axes are the low end
 (baseline 1/20; partial fixes caught by hidden tests) and, critically,
-**spec-adherent feature work and exactly-once money invariants across failure
-paths** — the same frontier agent scored fail-hidden on idempotent-checkout (409
-instead of a normal charge for a cross-customer key) and on double-refund (an
-over-engineered fix broke the compensation path it claimed to preserve).
+**spec-adherent feature work and exactly-once money invariants across failure paths**:
+- idempotent-checkout: consistent 0/3 — the agent 409-rejects a cross-customer key
+  collision where the spec requires a normal charge;
+- double-refund: consistent 0/3 — an over-engineered fix (row locks, real amounts)
+  broke the compensation path it claimed to preserve;
+- redis-cluster-crossslot: 2/3 — the difficulty-5 infrastructure scenario shows
+  genuine variance under repetition (the earlier single pass was partly luck).
+
+Statistical protocol: 3 runs per scenario, model pinned (gpt-5.6-luna, reasoning
+medium), 60 graded runs total. Evidence files carry per-run verdicts.
+
 
 ## Scenario index
 

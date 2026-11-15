@@ -1,0 +1,31 @@
+{
+  "scenario": "redis-cluster-crossslot",
+  "cell": "laravel-13",
+  "mode": "agent",
+  "verdict": "pass",
+  "tamper": [],
+  "agent": {
+    "code": 0,
+    "stdout": "Implemented the minimal fix in [FeatureFlagService.php](/app/var/workspaces/redis-cluster-crossslot--laravel-13--1/app/Services/FeatureFlagService.php).\n- Release Lua script now uses:\n  - `flags:{<tenant>}:uses`\n  - `flags:{<tenant>}:version`\n- Both keys share the tenant hash slot while remaining separate keys.\n- Atomic Lua update is preserved.\n- Existing usage behavior and endpoint contracts remain unchanged.\nDiagnosis: Redis Cluster rejected the original script because its two untagged keys mapped to different slots (`CROSSSLOT`).\nVerification: PHPUnit passes — 2 tests, 3 assertions.",
+    "stderr": "         ], 2);\n     }\nexec\n/bin/bash -lc 'vendor/bin/phpunit --colors=never && git diff --check && git diff --stat && git diff -- app/Services/FeatureFlagService.php' in /app/var/workspaces/redis-cluster-crossslot--laravel-13--1\n succeeded in 288ms:\nPHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/redis-cluster-crossslot--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.184, Memory: 36.50 MB\nOK (2 tests, 3 assertions)\n app/Services/FeatureFlagService.php | 4 ++--\n 1 file changed, 2 insertions(+), 2 deletions(-)\ndiff --git a/app/Services/FeatureFlagService.php b/app/Services/FeatureFlagService.php\nindex 5df11b3..aed9c5e 100755\n--- a/app/Services/FeatureFlagService.php\n+++ b/app/Services/FeatureFlagService.php\n@@ -48,8 +48,8 @@ class FeatureFlagService\n             LUA;\n \n         $this->redis->eval($script, [\n-            \"flags:{$tenant}:uses\",\n-            \"flags:{$tenant}:version\",\n+            \"flags:{{$tenant}}:uses\",\n+            \"flags:{{$tenant}}:version\",\n             $version,\n         ], 2);\n     }\ncodex\nImplemented the minimal fix in [FeatureFlagService.php](/app/var/workspaces/redis-cluster-crossslot--laravel-13--1/app/Services/FeatureFlagService.php).\n- Release Lua script now uses:\n  - `flags:{<tenant>}:uses`\n  - `flags:{<tenant>}:version`\n- Both keys share the tenant hash slot while remaining separate keys.\n- Atomic Lua update is preserved.\n- Existing usage behavior and endpoint contracts remain unchanged.\nDiagnosis: Redis Cluster rejected the original script because its two untagged keys mapped to different slots (`CROSSSLOT`).\nVerification: PHPUnit passes — 2 tests, 3 assertions.\ntokens used\n25,816",
+    "timedOut": false
+  },
+  "visible": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 2,
+    "assertions": 3,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/redis-cluster-crossslot--laravel-13--1/phpunit.xml\n..                                                                  2 / 2 (100%)\nTime: 00:00.252, Memory: 34.50 MB\n\u001b[30;42mOK (2 tests, 3 assertions)\u001b[0m"
+  },
+  "hidden": {
+    "code": 0,
+    "timedOut": false,
+    "pass": true,
+    "tests": 6,
+    "assertions": 13,
+    "output": "PHPUnit 12.5.43 by Sebastian Bergmann and contributors.\nRuntime:       PHP 8.3.36\nConfiguration: /app/var/workspaces/redis-cluster-crossslot--laravel-13--1/phpunit.xml\n......                                                              6 / 6 (100%)\nTime: 00:00.238, Memory: 38.50 MB\n\u001b[30;42mOK (6 tests, 13 assertions)\u001b[0m"
+  },
+  "patch": "diff --git a/app/Services/FeatureFlagService.php b/app/Services/FeatureFlagService.php\nindex 5df11b3..aed9c5e 100755\n--- a/app/Services/FeatureFlagService.php\n+++ b/app/Services/FeatureFlagService.php\n@@ -48,8 +48,8 @@ class FeatureFlagService\n             LUA;\n \n         $this->redis->eval($script, [\n-            \"flags:{$tenant}:uses\",\n-            \"flags:{$tenant}:version\",\n+            \"flags:{{$tenant}}:uses\",\n+            \"flags:{{$tenant}}:version\",\n             $version,\n         ], 2);\n     }\n",
+  "run": 3
+}

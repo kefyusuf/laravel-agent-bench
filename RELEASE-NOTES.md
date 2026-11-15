@@ -43,3 +43,16 @@ Every scenario passes its own mutation-style gate: broken snapshot → visible s
 + hidden suite red (for the invariant's reason); + reference solution → all green; + every
 distractor (plausible-but-wrong fix) → visible green, hidden red. CI runs the gate on
 every push across the PHP/Laravel matrix.
+
+# v0.1.2 — 2026-11-07
+
+- **Statistical protocol**: `bench run-all --runs N` — each scenario graded N times;
+  score tables render pass-rates per scenario (`3/3`, `1/3`, `0/3`) with totals over
+  all runs. Evidence files record the pinned model.
+- **First repeated-runs frontier sweep**: codex (gpt-5.6-luna, reasoning medium),
+  3 runs × 20 scenarios = 60 graded runs: **53/60 pass**. Consistent failures:
+  idempotent-checkout (0/3, spec adherence) and double-refund (0/3, compensation
+  broken by an over-engineered fix). Genuine variance surfaced on
+  redis-cluster-crossslot (2/3).
+- **Harness**: report command (+unit tests), `--model` pinning recorded in evidence,
+  multi-run report cells.
