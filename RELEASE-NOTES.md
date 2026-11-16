@@ -56,3 +56,15 @@ every push across the PHP/Laravel matrix.
   redis-cluster-crossslot (2/3).
 - **Harness**: report command (+unit tests), `--model` pinning recorded in evidence,
   multi-run report cells.
+# v0.1.3 — 2026-11-16
+
+- **Private cohorts (held-out mechanism)**: every scenario-consuming command accepts
+  `--scenarios-dir <path>` — operators evaluate against private scenario directories
+  never published. Release-based comparability, rotation policy and the honest limits
+  (no true held-out on a public repo) are documented in docs/EVALUATION-PROTOCOL.md.
+- **New scenario**: backfill-pagination (eloquent/chunking, difficulty 4) — chunk()
+  re-evaluates its WHERE while the loop stamps the filtered column; deterministically
+  skips rows at every batch boundary. Solution: chunkById. Distractor: lazy() (same
+  offset semantics). Validated 6/6 on both cells.
+- **Diagnosis mode rollout**: diagnosis_keywords on 19/20 scenarios (multi-defect
+  excluded by design); sample sweeps with judge recorded.
