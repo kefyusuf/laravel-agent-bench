@@ -236,7 +236,7 @@ try {
 
   if (cmd === 'report') {
     const dir = args.dir ? path.resolve(args.dir) : path.join(cfg._root, cfg.paths.var, 'gate-reports');
-    const { agents, markdown } = buildScoreTable(dir);
+    const { agents, markdown } = buildScoreTable(dir, cfgPath(cfg, 'scenarios'));
     if (args.out) {
       writeFileSync(path.resolve(args.out), markdown + '\n');
     }

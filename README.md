@@ -201,6 +201,11 @@ under real concurrency. The demonstrated discriminative axes are the low end
 Statistical protocol: 3 runs per scenario, model pinned (gpt-5.6-luna, reasoning
 medium), 60 graded runs total. Evidence files carry per-run verdicts.
 
+Calibration gap, kept visible on purpose: author-assigned difficulty does not
+predict measured performance for a frontier agent (a difficulty-4 scenario scored
+0/3 while a difficulty-5 scored 3/3) — measured pass-rates, not author intuition,
+are the real difficulty signal.
+
 
 ## Scenario index
 

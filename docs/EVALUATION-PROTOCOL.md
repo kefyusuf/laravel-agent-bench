@@ -41,6 +41,20 @@ then author successors into the private cohort as the public set saturates. The
 demonstrated saturation point for frontier agents is find-and-fix (17+ consecutive
 passes); private cohorts should weight build and exactly-once invariant classes.
 
+## Judge calibration (diagnosis mode)
+
+The diagnosis judge grades semantically against the known root cause; its calibration
+is measured the same way benchmark scores are — against ground truth:
+
+- Ground truth per scenario is `expected_diagnosis` (authored with the manifest).
+- Current sample (codex-as-judge, 3 runs): morph-map ✅ correct · double-refund ✅
+  correct · scheduler-overlap ⚠️ partial (the judged agent factually misread the
+  current code — claimed no overlap prevention existed; the code had a too-short
+  mutex). Judge-human agreement so far: 3/3, but the sample is too small for
+  conclusions — grow to ≥10 before trusting the judge over keyword scoring.
+- Known judge limitation: it shares model variance with the diagnosed agent when the
+  same CLI/model is used for both roles.
+
 ## What we do not do
 
 - No leaderboard. Public scores are self-reported runs; the gate evidence files make
