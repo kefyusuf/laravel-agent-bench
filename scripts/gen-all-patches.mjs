@@ -1421,6 +1421,34 @@ const PATCHES = {
       }],
     },
   ],
+
+  'download-link-target': [
+    {
+      name: 'solution.patch',
+      edits: [
+        {
+          file: 'app/Http/Controllers/ContractController.php',
+          find: 'use Illuminate\\Support\\Facades\\Storage;',
+          replace: 'use Illuminate\\Support\\Facades\\URL;\nuse Illuminate\\Support\\Facades\\Storage;',
+        },
+        {
+          file: 'app/Http/Controllers/ContractController.php',
+          find: "            'url' => Storage::disk('contracts')->url($contract->path),",
+          replace: "            'url' => URL::temporarySignedRoute('contracts.download', now()->addMinutes(15), ['contract' => $contract->id]),",
+        },
+      ],
+    },
+    {
+      // plausible-but-wrong: constructing the public path explicitly — same
+      // fabricated destination, more deliberate phrasing.
+      name: 'distractor-explicit-public-path.patch',
+      edits: [{
+        file: 'app/Http/Controllers/ContractController.php',
+        find: "            'url' => Storage::disk('contracts')->url($contract->path),",
+        replace: "            'url' => url('/storage/' . $contract->path),",
+      }],
+    },
+  ],
 };
 
 const cfg = loadConfig();

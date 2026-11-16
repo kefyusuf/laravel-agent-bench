@@ -230,6 +230,7 @@ are the real difficulty signal.
 | `scheduler-overlap` | console / scheduler overlap | 4 |
 | `double-refund` | queues / failed-jobs | 4 |
 | `backfill-pagination` | eloquent / chunking | 4 |
+| `download-link-target` | filesystem / link contract | 4 |
 
 
 ### Diagnosis mode

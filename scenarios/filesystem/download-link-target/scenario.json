@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "id": "download-link-target",
+  "family": "filesystem/link-contract",
+  "title": "Download links point at the wrong disk: customers get 404s for stored files",
+  "difficulty": 4,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "DealVault stores signed customer contracts on the private 'contracts' disk (a local root under storage/app/contracts in every environment — deliberately NOT the public disk; contracts must never be web-accessible). Customers download them through the customer portal. Three code paths exist: upload (POST /contracts) stores the file and records it; link (GET /contracts/{contract}/link) hands the customer a URL; download (GET /download/{contract}, signature-protected) streams the file from the private disk.",
+  "user_request": "Customers report that the 'download contract' button in the portal leads to a 404 page — but support verified the files exist on the storage disk. The link endpoint returns a URL successfully, so nothing errors in our logs. Fix the download flow so the link the customer receives actually serves the stored contract. The upload path and the private-disk storage layout must stay exactly as they are (contracts are confidential and must not become publicly served).",
+  "intentional_defect": {
+    "summary": "The link endpoint builds the URL with Storage::disk('contracts')->url($path) — url() only produces a meaningful web path for the public disk; for the private contracts disk it fabricates a /storage/... path that no route serves.",
+    "location": [
+      "app/Http/Controllers/ContractController.php"
+    ],
+    "root_cause": "url() is a static-URL helper, not a download endpoint: it assumes the file is web-accessible through the public storage mount. Files on the private contracts disk live outside that mount, so the fabricated URL 404s for customers. The correct contract is to hand out the app's signed streaming route (GET /download/{contract}), which authorizes and streams from the private disk.",
+    "why_it_looks_correct": "The link endpoint returns a plausible URL and every visible test asserts only that a URL is produced — the URL is never fetched, so the 404 is invisible to the suite. On the developer's machine the storage symlink even makes the fabricated path resolve, masking the bug."
+  },
+  "non_obvious_invariant": "A download link for a file on a private disk must be served by an authorized, streaming application route — never by a static url() of a non-public disk. The link must actually return the stored bytes when fetched.",
+  "expected_diagnosis": "The agent must fetch the produced URL (or trace what route would serve it), discover it 404s, and switch the link endpoint to the signed streaming route — without making the contracts disk public.",
+  "safe_fix_constraints": [
+    "The contracts disk stays private: no public mount, no symlink, no public-URL shortcut.",
+    "The upload endpoint and storage layout stay unchanged.",
+    "The link endpoint's JSON contract stays {url: ...}."
+  ],
+  "failure_explanation": "Every customer clicking 'download contract' lands on a 404: support tickets, and — because the fabricated /storage/... path is guessable — a repeated probing surface for private files. On developer machines the public-storage symlink accidentally resolves the path, which is why nothing was caught.",
+  "public_surface": {
+    "routes": [
+      "POST /contracts",
+      "GET /contracts/{contract}/link",
+      "GET /download/{contract}"
+    ],
+    "classes": [
+      "App\\Http\\Controllers\\ContractController",
+      "App\\Models\\Contract"
+    ],
+    "tables": [
+      "contracts"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-explicit-public-path.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-16T18:32:26.606Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-16T18:32:26.606Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-16T18:32:26.606Z"
+      }
+    ]
+  }
+}

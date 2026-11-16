@@ -1,0 +1,13 @@
+diff --git a/app/Http/Controllers/ContractController.php b/app/Http/Controllers/ContractController.php
+index 57fae9c..2ed1e9c 100644
+--- a/app/Http/Controllers/ContractController.php
++++ b/app/Http/Controllers/ContractController.php
+@@ -30,7 +30,7 @@ class ContractController extends Controller
+     public function link(Contract $contract): JsonResponse
+     {
+         return response()->json([
+-            'url' => Storage::disk('contracts')->url($contract->path),
++            'url' => url('/storage/' . $contract->path),
+         ]);
+     }
+ 
