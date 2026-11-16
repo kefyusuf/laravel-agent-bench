@@ -20,6 +20,12 @@ export function buildScoreTable(runsDir) {
 
   const agents = {};
 
+  // aggregate <scenario>.json files supersede per-run files for the same
+  // (agent, scenario) — parse aggregates first, defer per-run files, and only
+  // fall back to them when no aggregate covered the scenario.
+  const deferred = [];
+  const covered = new Set();
+
   for (const file of readdirSync(runsDir).sort()) {
     const match = file.match(/^agent-run-([a-z0-9-]+)\.json$/);
     if (!match) continue;
@@ -28,22 +34,37 @@ export function buildScoreTable(runsDir) {
     const parsed = JSON.parse(readFileSync(path.join(runsDir, file), 'utf8'));
 
     const runs = [];
+    let isPerRun = false;
     if (Array.isArray(parsed)) {
       runs.push(...parsed.map((r) => ({ scenario: r.scenario, verdict: r.verdict })));
     } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.summary)) {
       runs.push(...parsed.summary.map((r) => ({ scenario: r.scenario, verdict: r.verdict })));
     } else if (parsed && typeof parsed === 'object' && parsed.scenario && parsed.verdict) {
       runs.push({ scenario: parsed.scenario, verdict: parsed.verdict });
+      isPerRun = true;
     } else if (parsed && typeof parsed === 'object' && parsed.scenario && Array.isArray(parsed.verdicts)) {
       for (const v of parsed.verdicts) {
         runs.push({ scenario: parsed.scenario, verdict: v.verdict });
       }
     }
 
+    if (isPerRun) {
+      deferred.push({ agentLabel, scenario: parsed.scenario, verdict: parsed.verdict });
+      continue;
+    }
+
     agents[agentLabel] ??= {};
     for (const run of runs) {
       (agents[agentLabel][run.scenario] ??= []).push(run.verdict);
+      covered.add(agentLabel + ':' + run.scenario);
     }
+  }
+
+  // deferred per-run files only fill scenarios no aggregate covered
+  for (const { agentLabel, scenario, verdict } of deferred) {
+    if (covered.has(agentLabel + ':' + scenario)) continue;
+    agents[agentLabel] ??= {};
+    (agents[agentLabel][scenario] ??= []).push(verdict);
   }
 
   const labels = Object.keys(agents).sort();
