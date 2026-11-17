@@ -231,6 +231,7 @@ are the real difficulty signal.
 | `double-refund` | queues / failed-jobs | 4 |
 | `backfill-pagination` | eloquent / chunking | 4 |
 | `download-link-target` | filesystem / link contract | 4 |
+| `stale-envelope` | notifications / queued envelope | 3 |
 
 
 ### Diagnosis mode

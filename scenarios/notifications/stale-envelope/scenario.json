@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "id": "stale-envelope",
+  "family": "notifications/stale-envelope",
+  "title": "Queued notification captures the recipient email at dispatch — backlog sends to the old address",
+  "difficulty": 3,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "ClockworkPay queues invoice-paid notifications on the database queue (backlogs of minutes are normal). Customers can change their billing email at any time through the portal; finance requires that a notification reaches the address CURRENT at send time — not the address that was current when the invoice event fired. The recipient is stored on the customer record (customers.billing_email).",
+  "user_request": "A customer changed their billing email through the portal, got the confirmation, and still received the next invoice notification on the OLD address. Support traced it to a queued notification that was sent from a queue backlog. Fix the notification so the address used is the one current when the notification is actually sent. The notification class, the queue connection, and the endpoint contract stay as they are.",
+  "intentional_defect": {
+    "summary": "InvoicePaidNotification's constructor captures the recipient email as a plain string at dispatch time — a queue backlog means the envelope is built from data that is minutes old.",
+    "location": [
+      "app/Notifications/InvoicePaidNotification.php"
+    ],
+    "root_cause": "A string scalar is captured at dispatch and serialized with the job payload. Unlike an Eloquent model (which SerializesModels re-fetches by identifier when the queue processes), a scalar never refreshes — the envelope is built from dispatch-time data.",
+    "why_it_looks_correct": "The notification looks lean and testable: a scalar recipient is arguably MORE testable than a model, Mail::fake assertions on the dispatch-time address pass, and the visible tests never change an email between dispatch and processing."
+  },
+  "non_obvious_invariant": "The recipient address must be resolved when the notification is SENT, not when it is dispatched: anything scalar captured at dispatch is stale by the time a queue backlog drains. Model-typed dependencies re-fetched at processing time are the fix.",
+  "expected_diagnosis": "The agent must recognize that a scalar captured in the constructor is serialized into the queued payload and never refreshes — the fix resolves the recipient from a model at send time (SerializesModels re-fetch), not from dispatch-time data.",
+  "safe_fix_constraints": [
+    "The notification stays queued on the database queue.",
+    "Mail::from the notification must still address the correct customer record.",
+    "No new composer dependencies; the endpoint contract stays unchanged."
+  ],
+  "failure_explanation": "Every notification produced while a backlog drains goes to the address that was current minutes earlier: a customer who just changed their billing email keeps receiving sensitive invoice mail on the old address (potentially a shared or former-employee mailbox — a confidentiality incident), and the old address keeps receiving it until the backlog fully drains.",
+  "public_surface": {
+    "routes": [
+      "POST /invoices/{invoice}/paid"
+    ],
+    "classes": [
+      "App\\Notifications\\InvoicePaidNotification",
+      "App\\Models\\Customer"
+    ],
+    "tables": [
+      "customers",
+      "invoices"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-dispatch-sync.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-17T21:42:12.431Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-17T21:42:12.431Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-17T21:42:12.431Z"
+      }
+    ]
+  }
+}

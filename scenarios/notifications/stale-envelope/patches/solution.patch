@@ -1,0 +1,43 @@
+diff --git a/app/Http/Controllers/InvoiceController.php b/app/Http/Controllers/InvoiceController.php
+index 672654a..b1683eb 100644
+--- a/app/Http/Controllers/InvoiceController.php
++++ b/app/Http/Controllers/InvoiceController.php
+@@ -14,7 +14,7 @@ class InvoiceController extends Controller
+         $invoice->forceFill(['status' => 'paid'])->save();
+ 
+         $customer = Customer::findOrFail($invoice->customer_id);
+-        $customer->notify(new InvoicePaidNotification($invoice, $customer->billing_email));
++        $customer->notify(new InvoicePaidNotification($invoice, $customer));
+ 
+         return response()->json(['invoice' => ['number' => $invoice->number, 'status' => 'paid']]);
+     }
+diff --git a/app/Notifications/InvoicePaidNotification.php b/app/Notifications/InvoicePaidNotification.php
+index 7b7bfe4..b6d5fe7 100644
+--- a/app/Notifications/InvoicePaidNotification.php
++++ b/app/Notifications/InvoicePaidNotification.php
+@@ -2,6 +2,7 @@
+ 
+ namespace App\Notifications;
+ 
++use App\Models\Customer;
+ use App\Models\Invoice;
+ use Illuminate\Bus\Queueable;
+ use Illuminate\Contracts\Queue\ShouldQueue;
+@@ -12,7 +13,7 @@ class InvoicePaidNotification extends Notification implements ShouldQueue
+ {
+     use Queueable;
+ 
+-    public function __construct(public Invoice $invoice, public string $recipientEmail)
++    public function __construct(public Invoice $invoice, public Customer $customer)
+     {
+     }
+ 
+@@ -24,7 +25,7 @@ class InvoicePaidNotification extends Notification implements ShouldQueue
+     public function envelope(): \Illuminate\Notifications\Messages\Envelope
+     {
+         return new \Illuminate\Notifications\Messages\Envelope(
+-            to: [$this->recipientEmail],
++            to: [$this->customer->billing_email],
+             subject: 'Invoice ' . $this->invoice->number . ' has been paid',
+         );
+     }

@@ -1,0 +1,13 @@
+diff --git a/app/Http/Resources/InvoiceResource.php b/app/Http/Resources/InvoiceResource.php
+index 0105076..1322834 100644
+--- a/app/Http/Resources/InvoiceResource.php
++++ b/app/Http/Resources/InvoiceResource.php
+@@ -12,7 +12,7 @@ class InvoiceResource extends JsonResource
+         return [
+             'id' => $this->id,
+             'number' => $this->number,
+-            'customer' => $this->customer->name,
++            'customer' => $this->whenLoaded('customer'),
+         ];
+     }
+ }

@@ -1,0 +1,13 @@
+diff --git a/app/Http/Controllers/InvoiceController.php b/app/Http/Controllers/InvoiceController.php
+index 672654a..fa659fc 100644
+--- a/app/Http/Controllers/InvoiceController.php
++++ b/app/Http/Controllers/InvoiceController.php
+@@ -14,7 +14,7 @@ class InvoiceController extends Controller
+         $invoice->forceFill(['status' => 'paid'])->save();
+ 
+         $customer = Customer::findOrFail($invoice->customer_id);
+-        $customer->notify(new InvoicePaidNotification($invoice, $customer->billing_email));
++        $customer->notifyNow(new InvoicePaidNotification($invoice, $customer->billing_email));
+ 
+         return response()->json(['invoice' => ['number' => $invoice->number, 'status' => 'paid']]);
+     }

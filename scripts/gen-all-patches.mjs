@@ -1449,6 +1449,65 @@ const PATCHES = {
       }],
     },
   ],
+
+  'stale-envelope': [
+    {
+      name: 'solution.patch',
+      edits: [
+        {
+          file: 'app/Notifications/InvoicePaidNotification.php',
+          find: 'use App\\Models\\Invoice;\nuse Illuminate\\Bus\\Queueable;',
+          replace: 'use App\\Models\\Customer;\nuse App\\Models\\Invoice;\nuse Illuminate\\Bus\\Queueable;',
+        },
+        {
+          file: 'app/Notifications/InvoicePaidNotification.php',
+          find: '    public function __construct(public Invoice $invoice, public string $recipientEmail)',
+          replace: '    public function __construct(public Invoice $invoice, public Customer $customer)',
+        },
+        {
+          file: 'app/Notifications/InvoicePaidNotification.php',
+          find: '            to: [$this->recipientEmail],',
+          replace: '            to: [$this->customer->billing_email],',
+        },
+        {
+          file: 'app/Http/Controllers/InvoiceController.php',
+          find: '$customer->notify(new InvoicePaidNotification($invoice, $customer->billing_email));',
+          replace: '$customer->notify(new InvoicePaidNotification($invoice, $customer));',
+        },
+      ],
+    },
+    {
+      // plausible-but-wrong: send synchronously — fixes freshness by abandoning
+      // the queue entirely (visible stays green; backlog behavior lost).
+      name: 'distractor-dispatch-sync.patch',
+      edits: [{
+        file: 'app/Http/Controllers/InvoiceController.php',
+        find: '$customer->notify(new InvoicePaidNotification($invoice, $customer->billing_email));',
+        replace: '$customer->notifyNow(new InvoicePaidNotification($invoice, $customer->billing_email));',
+      }],
+    },
+  ],
+
+  'when-loaded-contract': [
+    {
+      name: 'solution.patch',
+      edits: [{
+        file: 'app/Http/Resources/InvoiceResource.php',
+        find: "            'customer' => $this->customer->name,",
+        replace: "            'customer' => $this->whenLoaded('customer'),",
+      }],
+    },
+    {
+      // plausible-but-wrong: key always present, null when not loaded —
+      // still violates the documented include-only contract.
+      name: 'distractor-null-when-not-loaded.patch',
+      edits: [{
+        file: 'app/Http/Resources/InvoiceResource.php',
+        find: "            'customer' => $this->customer->name,",
+        replace: "            'customer' => $this->whenLoaded('customer') ? $this->customer->name : null,",
+      }],
+    },
+  ],
 };
 
 const cfg = loadConfig();

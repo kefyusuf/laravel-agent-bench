@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "id": "when-loaded-contract",
+  "family": "serialization/key-presence",
+  "title": "API resource always includes the customer key, lazily loading it per response",
+  "difficulty": 3,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "LedgerFlow exposes invoices through a JSON API consumed by a mobile app and third-party integrations. The serialization contract is explicit and frozen: the 'customer' key is present in an invoice response ONLY when the controller eagerly loaded the customer (the ?include=customer query parameter), and responses never trigger queries of their own. The API was documented against this exact shape.",
+  "user_request": "While reviewing response payloads for the API changelog, one integrator noticed the invoice payload has grown: a 'customer' key now appears in every response even though the API documentation says it is include-only, and our APM shows an extra query per invoice response. Align the invoice resource with the documented serialization contract: the customer key must appear exactly when the controller included it and never trigger queries of their own.",
+  "intentional_defect": {
+    "summary": "InvoiceResource dereferences $this->customer unconditionally: the 'customer' key is always present and every response lazy-loads the relation — a per-response query and a contract violation.",
+    "location": [
+      "app/Http/Resources/InvoiceResource.php"
+    ],
+    "root_cause": "whenLoaded() is the only correct way to conditionally include a relation key; dereferencing the relation directly defeats the conditional and couples the resource to the controller's query plan.",
+    "why_it_looks_correct": "The output looks correct (the customer data IS accurate), the response is 200, and the visible test asserts the included case — where the key legitimately appears."
+  },
+  "non_obvious_invariant": "The serialization contract: the 'customer' key is present iff the controller eagerly loaded the customer, and resources never issue queries of their own (responses are projection-only).",
+  "expected_diagnosis": "The agent must recognize that dereferencing the relation inside the resource both always-includes the key and lazy-loads it per response, and switch to whenLoaded() — preserving the ?include=customer behavior.",
+  "safe_fix_constraints": [
+    "The ?include=customer behavior keeps working (key present with customer data).",
+    "Without the include parameter the customer key must be absent from the response.",
+    "Resources never trigger queries: no lazy loading inside serialization."
+  ],
+  "failure_explanation": "Every invoice response runs an extra customers SELECT (an N+1 amplifier on list endpoints), and the API drifts from its documentation: integrators that assert the documented shape (customer is include-only) break, and payloads leak the customer block where the docs promise it will not appear.",
+  "public_surface": {
+    "routes": [
+      "GET /invoices/{invoice}"
+    ],
+    "classes": [
+      "App\\Http\\Resources\\InvoiceResource",
+      "App\\Models\\Invoice",
+      "App\\Models\\Customer"
+    ],
+    "tables": [
+      "invoices",
+      "customers"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-null-when-not-loaded.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-16T19:30:49.002Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-16T19:30:49.002Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-16T19:30:49.002Z"
+      }
+    ]
+  }
+}
