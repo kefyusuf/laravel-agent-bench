@@ -85,6 +85,15 @@ Framework mechanics you must know before writing hidden tests (verified against
   request-dependent state out of controller *constructors* — `Route::getController()` caches
   the controller instance across requests in a long-lived process, which freezes
   constructor-injected dependencies even under a per-request binding.
+- **`Mail::fake()` does NOT intercept notification mails.** The mail channel
+  resolves the real `mailer` binding at construction — `Mail::fake()` only swaps
+  the `mail` root. For notifications use `Notification::fake()` +
+  `assertSentTo` (the documented pattern).
+- **`Notification::fake` records the DISPATCH-TIME object.** Freshness of queued
+  notification data (the envelope address, re-fetched relations) cannot be asserted
+  through the fake — the recorded object predates the queue:work run. Assert the
+  MECHANISM instead: the fixed notification carries the customer model
+  (`instanceof` check), the broken one carries a dispatch-time scalar string.
 - **Probabilistic concurrency tests are NOT gate-eligible.** A race test (N parallel
   workers overselling a counter) is scheduling-dependent: it passed 3× locally and
   failed in CI. Verify atomicity deterministically instead — `CONFIG RESETSTAT` +
