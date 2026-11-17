@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "id": "encrypted-cast-at-rest",
+  "family": "database/encryption-at-rest",
+  "title": "Sensitive tax IDs stored as plaintext: the encrypted cast was never added",
+  "difficulty": 3,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "VaultDocs stores each customer's government tax ID (sensitive PII) alongside their profile. Compliance mandates encryption at rest: the column must never contain the plaintext value — anyone with database access (a dump, a replica, a backup) must not be able to read tax IDs directly. The application transparently encrypts on write and decrypts on read.",
+  "user_request": "A security review found the customers.tax_id column contains the tax IDs in PLAINTEXT in the database. The application works perfectly — support reads and writes tax IDs through the app without issues — which is exactly why nobody noticed. Fix the storage so tax IDs are encrypted at rest while everything keeps working through the app exactly as before. The compliance audit re-checks the raw column.",
+  "intentional_defect": {
+    "summary": "The Customer model never declares an 'encrypted' cast for tax_id: Eloquent stores the plaintext value directly into the column.",
+    "location": [
+      "app/Models/Customer.php"
+    ],
+    "root_cause": "Without the 'encrypted' cast, Eloquent passes the attribute to the database as-is. The application-level round-trip works identically with or without the cast, which is why no test or user ever noticed.",
+    "why_it_looks_correct": "The model, controller and endpoints are all correct: values round-trip, nothing errors, and the visible tests exercise the round-trip — the plaintext is only visible in the raw column."
+  },
+  "non_obvious_invariant": "The raw column value must be ciphertext (decryptable with the app key back to the plaintext tax ID), while the application-level round-trip stays transparent.",
+  "expected_diagnosis": "The agent must recognize that the round-trip working says nothing about encryption at rest — the raw column must be inspected — and add Laravel's 'encrypted' cast to the model.",
+  "safe_fix_constraints": [
+    "The application-level behavior stays identical: support reads and writes tax IDs through the app exactly as before.",
+    "The raw column must contain ciphertext decryptable with the app key (not a homemade obfuscation such as base64).",
+    "No schema changes."
+  ],
+  "failure_explanation": "Any database dump, replica, backup or compromised credential exposes every customer's tax ID in plaintext — a direct PII compliance violation. The column reads as a normal string column, so the exposure is invisible until an audit inspects the raw data.",
+  "public_surface": {
+    "routes": [
+      "GET /customers/{customer}",
+      "PATCH /customers/{customer}"
+    ],
+    "classes": [
+      "App\\Models\\Customer"
+    ],
+    "tables": [
+      "customers"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-base64-obfuscation.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-17T22:18:01.971Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-17T22:18:01.971Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-17T22:18:01.971Z"
+      }
+    ]
+  }
+}

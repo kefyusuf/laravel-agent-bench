@@ -232,6 +232,8 @@ are the real difficulty signal.
 | `backfill-pagination` | eloquent / chunking | 4 |
 | `download-link-target` | filesystem / link contract | 4 |
 | `stale-envelope` | notifications / queued envelope | 3 |
+| `global-scope` | eloquent / global scope | 4 |
+| `encrypted-cast-at-rest` | database / encryption at rest | 3 |
 
 
 ### Diagnosis mode

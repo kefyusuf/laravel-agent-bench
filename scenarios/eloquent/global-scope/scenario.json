@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "id": "global-scope",
+  "family": "eloquent/global-scope",
+  "title": "Ops archive browser silently inherits the customer-facing global scope",
+  "difficulty": 4,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "RelateBack's orders support archiving: archived orders disappear from every customer-facing surface (a global scope on the Order model guarantees this everywhere — the point of a global scope is that no query can forget it). Ops staff have an internal archive browser (GET /ops/orders) built for audits: it must see EVERYTHING, archived or not.",
+  "user_request": "During a compliance audit, ops discovered that archived orders do not appear in their archive browser — they see only live orders, exactly like the customer-facing views. The archive browser must show all orders regardless of archive state. Keep the customer-facing surfaces archived-only, and do not change what archiving means.",
+  "intentional_defect": {
+    "summary": "The ops controller queries Order::latest()->get() — the model's global ArchivedScope silently applies to every query, so the ops browser inherits the customer-facing filter.",
+    "location": [
+      "app/Http/Controllers/OpsOrderController.php"
+    ],
+    "root_cause": "Global scopes apply to every query on the model unless explicitly removed with withoutGlobalScope(). The ops endpoint was written before the scope existed and never opted out.",
+    "why_it_looks_correct": "The controller is a plain, idiomatic query; nothing hints that a scope exists, and the visible tests cover the customer-facing surfaces where the scope is exactly right."
+  },
+  "non_obvious_invariant": "The customer-facing surfaces must keep excluding archived orders (the global scope stays), while the ops archive browser must opt out explicitly with withoutGlobalScope(ArchivedScope::class) — both behaviors hold simultaneously on the same model.",
+  "expected_diagnosis": "The agent must recognize that a global scope silently filters the ops endpoint and opt that specific query out with withoutGlobalScope(ArchivedScope::class) — without removing the scope from the model (which would leak archived orders into customer-facing surfaces).",
+  "safe_fix_constraints": [
+    "The ArchivedScope must stay registered on the Order model (customer-facing surfaces keep hiding archived orders).",
+    "The ops archive browser must show ALL orders, archived included.",
+    "No schema changes; the archive semantics (archived_at) stay unchanged."
+  ],
+  "failure_explanation": "Auditors cannot verify archived orders through the ops browser: compliance checks run against an incomplete data set, and any archive reconciliation silently misses exactly the rows the audit exists to verify. The fix is one method call — but removing the scope instead would leak archived orders into every customer-facing view.",
+  "public_surface": {
+    "routes": [
+      "GET /orders",
+      "GET /ops/orders"
+    ],
+    "classes": [
+      "App\\Http\\Controllers\\OpsOrderController",
+      "App\\Models\\Order",
+      "App\\Models\\Scopes\\ArchivedScope"
+    ],
+    "tables": [
+      "orders"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-optout-with-filter.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-17T22:18:01.971Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-17T22:18:01.971Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-17T22:18:01.971Z"
+      }
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+diff --git a/app/Models/Customer.php b/app/Models/Customer.php
+index 54fe9b8..d6cbf33 100644
+--- a/app/Models/Customer.php
++++ b/app/Models/Customer.php
+@@ -6,5 +6,15 @@ use Illuminate\Database\Eloquent\Model;
+ 
+ class Customer extends Model
+ {
+-    protected $fillable = ['name', 'tax_id'];
++    protected $fillable = [
++        'name',
++        'tax_id',
++    ];
++
++    protected function casts(): array
++    {
++        return [
++            'tax_id' => 'encrypted',
++        ];
++    }
+ }

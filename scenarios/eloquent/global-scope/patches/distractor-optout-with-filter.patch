@@ -1,0 +1,15 @@
+diff --git a/app/Http/Controllers/OpsOrderController.php b/app/Http/Controllers/OpsOrderController.php
+index ce60b0f..d81d53b 100644
+--- a/app/Http/Controllers/OpsOrderController.php
++++ b/app/Http/Controllers/OpsOrderController.php
+@@ -10,7 +10,9 @@ class OpsOrderController extends Controller
+     public function index(): JsonResponse
+     {
+         return response()->json([
+-            'orders' => Order::latest('id')->get(['id', 'reference', 'archived_at'])->map(fn ($o) => [
++            'orders' => Order::withoutGlobalScope(ArchivedScope::class)
++                ->whereNull('archived_at')
++                ->latest('id')->get(['id', 'reference', 'archived_at'])->map(fn ($o) => [
+                 'id' => $o->id,
+                 'reference' => $o->reference,
+                 'archived' => $o->archived_at !== null,

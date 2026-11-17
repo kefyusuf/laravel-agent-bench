@@ -1445,7 +1445,93 @@ const PATCHES = {
       edits: [{
         file: 'app/Http/Controllers/ContractController.php',
         find: "            'url' => Storage::disk('contracts')->url($contract->path),",
-        replace: "            'url' => url('/storage/' . $contract->path),",
+          replace: "            'url' => url('/storage/' . $contract->path),",
+      }],
+    },
+  ],
+
+  'global-scope': [
+    {
+      name: 'solution.patch',
+      edits: [{
+        file: 'app/Http/Controllers/OpsOrderController.php',
+        find: 'use App\\Models\\Order;\nuse Illuminate\\Http\\JsonResponse;',
+        replace: 'use App\\Models\\Order;\nuse App\\Models\\Scopes\\ArchivedScope;\nuse Illuminate\\Http\\JsonResponse;',
+      }, {
+        file: 'app/Http/Controllers/OpsOrderController.php',
+        find: "            'orders' => Order::latest('id')->get(['id', 'reference', 'archived_at'])->map(fn ($o) => [",
+        replace: "            'orders' => Order::withoutGlobalScope(ArchivedScope::class)->latest('id')->get(['id', 'reference', 'archived_at'])->map(fn ($o) => [",
+      }],
+    },
+    {
+      // plausible-but-wrong: removing the global scope from the model leaks
+      // archived orders into every customer-facing surface.
+      name: 'distractor-scope-removed.patch',
+      edits: [{
+        file: 'app/Models/Order.php',
+        find: '    protected static function booted(): void\n    {\n        static::addGlobalScope(new ArchivedScope);\n    }\n',
+        replace: '',
+      }],
+    },
+    {
+      // plausible-but-wrong: the agent opts out but keeps the archive filter
+      // "to be safe" — the opt-out is defeated and the browser stays filtered.
+      name: 'distractor-optout-with-filter.patch',
+      edits: [{
+        file: 'app/Http/Controllers/OpsOrderController.php',
+        find: "            'orders' => Order::latest('id')->get(['id', 'reference', 'archived_at'])->map(fn ($o) => [",
+        replace: [
+          "            'orders' => Order::withoutGlobalScope(ArchivedScope::class)",
+          "                ->whereNull('archived_at')",
+          "                ->latest('id')->get(['id', 'reference', 'archived_at'])->map(fn ($o) => [",
+        ].join('\n'),
+      }],
+    },
+  ],
+
+  'encrypted-cast-at-rest': [
+    {
+      name: 'solution.patch',
+      edits: [{
+        file: 'app/Models/Customer.php',
+        find: "    protected $fillable = ['name', 'tax_id'];",
+        replace: [
+          '    protected $fillable = [',
+          "        'name',",
+          "        'tax_id',",
+          '    ];',
+          '',
+          '    protected function casts(): array',
+          '    {',
+          '        return [',
+          "            'tax_id' => 'encrypted',",
+          '        ];',
+          '    }',
+        ].join('\n'),
+      }],
+    },
+    {
+      // plausible-but-wrong: base64 obfuscation — reversible without the app key.
+      name: 'distractor-base64-obfuscation.patch',
+      edits: [{
+        file: 'app/Models/Customer.php',
+        find: "    protected $fillable = ['name', 'tax_id'];",
+        replace: [
+          '    protected $fillable = [',
+          "        'name',",
+          "        'tax_id',",
+          '    ];',
+          '',
+          '    protected function setTaxIdAttribute($value): void',
+          '    {',
+          "        $this->attributes['tax_id'] = base64_encode($value);",
+          '    }',
+          '',
+          '    protected function getTaxIdAttribute($value): string',
+          '    {',
+          "        return base64_decode($this->attributes['tax_id']);",
+          '    }',
+        ].join('\n'),
       }],
     },
   ],
