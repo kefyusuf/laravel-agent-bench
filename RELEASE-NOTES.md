@@ -68,3 +68,25 @@ every push across the PHP/Laravel matrix.
   offset semantics). Validated 6/6 on both cells.
 - **Diagnosis mode rollout**: diagnosis_keywords on 19/20 scenarios (multi-defect
   excluded by design); sample sweeps with judge recorded.
+# v0.1.4 — 2026-11-18
+
+- **Scale: 21 -> 31 validated scenarios** (10 new, every one passing the full
+  RED/GREEN/DISTRACTOR gate 6/6 on both cells — Laravel 13 x PHP 8.3/8.4 and
+  Laravel 12 x PHP 8.2/8.3):
+  `download-link-target` (filesystem/link contract), `stale-envelope`
+  (notifications/queued envelope), `unique-rule-update` (validation/update-mode
+  uniqueness), `when-loaded-contract` (serialization/whenLoaded), `global-scope`
+  (eloquent/global scope), `encrypted-cast-at-rest` (database/encryption at rest),
+  `gate-before-bypass` (auth/policy bypass), `base-uri-config` (http/config-driven
+  base URI), `stale-ttl` (cache/TTL freshness — hidden suite time-travels past the
+  window via Carbon::setTestNow), `transaction-boundary` (database/transaction
+  boundary — remote side effects inside a transaction drift from the provider on
+  rollback; hidden suite encodes both drift directions).
+- **Empirical difficulty calibration kept visible**: score tables carry the
+  author-assigned difficulty next to measured pass-rates; the README documents the
+  calibration gap (author difficulty does not predict measured frontier-agent
+  performance) as a deliberate, visible limitation.
+- **Report fix**: aggregate evidence files now supersede per-run files when both
+  shapes are present (double-counting fix).
+- **AUTHORING**: documented Notification::fake lessons (Mail::fake does not
+  intercept notification mail; Notification::fake records the dispatch-time object).
