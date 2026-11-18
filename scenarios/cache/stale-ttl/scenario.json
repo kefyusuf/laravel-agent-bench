@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "id": "stale-ttl",
+  "family": "cache/stale-ttl",
+  "title": "Exchange rates cached forever: pricing uses rates that never expire",
+  "difficulty": 3,
+  "status": "validated",
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-18T16:05:00.000Z",
+    "cells": [
+      { "cell": "laravel-13", "result": true, "run_at": "2026-11-18T16:05:00.000Z" },
+      { "cell": "laravel-12", "result": true, "run_at": "2026-11-18T16:05:00.000Z" }
+    ]
+  },
+  "laravel": ["^12.0", "^13.0"],
+  "requires": [],
+  "business_context": "BureauX charges international customers in local currency using exchange rates pulled from a rates provider. The provider updates rates several times a day; the finance contract is that a rate older than 10 minutes must never be used for pricing — otherwise the margin between the quoted rate and the settlement rate is lost.",
+  "user_request": "Finance noticed that when the rates provider updates mid-day, our quoted prices keep using the morning rates until the next deploy. The rates service caches its responses — someone made them permanent. Pricing must refresh from the provider at most 10 minutes after the last fetch, while still shielding the provider from a request-per-quote. The rates service interface stays the same.",
+  "intentional_defect": {
+    "summary": "The rates service uses Cache::rememberForever('rates:USD:EUR', ...): the cached rate never expires, so pricing uses the first-fetched rate until the cache is manually flushed.",
+    "location": ["app/Services/ExchangeRateService.php"],
+    "root_cause": "rememberForever stores without a TTL. The provider contract says rates older than 10 minutes are unquotable, but nothing in the cache layer enforces that window.",
+    "why_it_looks_correct": "rememberForever is a documented Cache method, the fallback closure is correct, and every test sees a working rate — the staleness only appears across TIME, which no test travels through."
+  },
+  "non_obvious_invariant": "A cached rate older than 10 minutes must be re-fetched from the provider; a rate fetched within the last 10 minutes must be served from the cache without hitting the provider again.",
+  "expected_diagnosis": "The agent must recognize that rememberForever violates the 10-minute freshness window and switch to a TTL'd cache entry (Cache::remember with a 10-minute expiry).",
+  "safe_fix_constraints": [
+    "The rates service interface stays unchanged.",
+    "The cache key stays 'rates:USD:EUR'.",
+    "The freshness window is 10 minutes: older rates must be re-fetched, fresher ones served from cache."
+  ],
+  "failure_explanation": "Pricing is computed from morning rates all day long: every international sale between the provider's updates and the next deploy loses the margin between the quoted and the settled rate — on high-volume days that is a direct, compounding revenue leak that no test or log surfaces because the cache is working 'as written'.",
+  "public_surface": {
+    "routes": ["GET /rates"],
+    "classes": ["App\\Services\\ExchangeRateService"],
+    "tables": []
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": ["patches/distractor-hourly-ttl.patch"]
+  }
+}

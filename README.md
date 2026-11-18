@@ -235,6 +235,8 @@ are the real difficulty signal.
 | `global-scope` | eloquent / global scope | 4 |
 | `encrypted-cast-at-rest` | database / encryption at rest | 3 |
 | `base-uri-config` | http / base uri config | 3 |
+| `stale-ttl` | cache / ttl freshness | 3 |
+| `transaction-boundary` | database / transaction boundary | 4 |
 
 
 ### Diagnosis mode

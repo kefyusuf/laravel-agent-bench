@@ -1,0 +1,32 @@
+diff --git a/app/Services/OrderService.php b/app/Services/OrderService.php
+index 72ca20f..8ce2596 100644
+--- a/app/Services/OrderService.php
++++ b/app/Services/OrderService.php
+@@ -17,15 +17,19 @@ class OrderService
+                 'status' => 'reserved',
+             ]);
+ 
+-            $reservation = Http::asJson()
+-                ->withToken((string) config('services.dockreserve.key', 'test'))
+-                ->post('https://api.dockreserve.example/v1/reservations', [
+-                    'reference' => $reference,
+-                    'destination' => $destination,
+-                ]);
++            try {
++                $reservation = Http::asJson()
++                    ->withToken((string) config('services.dockreserve.key', 'test'))
++                    ->post('https://api.dockreserve.example/v1/reservations', [
++                        'reference' => $reference,
++                        'destination' => $destination,
++                    ]);
+ 
+-            if (! $reservation->json('slot_id')) {
+-                throw new \RuntimeException('dock reservation failed');
++                if (! $reservation->json('slot_id')) {
++                    throw new \RuntimeException('dock reservation failed');
++                }
++            } catch (\Throwable $e) {
++                report($e);
+             }
+ 
+             return $order;

@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "id": "transaction-boundary",
+  "family": "database/transaction-boundary",
+  "title": "Provider reservation made inside the transaction: rollback drifts from the provider",
+  "difficulty": 4,
+  "status": "validated",
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-18T16:05:00.000Z",
+    "cells": [
+      { "cell": "laravel-13", "result": true, "run_at": "2026-11-18T16:05:00.000Z" },
+      { "cell": "laravel-12", "result": true, "run_at": "2026-11-18T16:05:00.000Z" }
+    ]
+  },
+  "laravel": ["^12.0", "^13.0"],
+  "requires": [],
+  "business_context": "ShipNow creates orders and immediately reserves a loading slot with the DockReserve provider. The order row and the provider reservation are two systems that must agree: if the provider reserved a slot, the corresponding order must exist locally; if the provider call fails, no local order may remain (the customer hasn't committed to anything).",
+  "user_request": "Ops found orphaned reservations at DockReserve: the provider shows a reserved slot for an order that does not exist in our database. The order-creation flow wraps everything in a database transaction, so we assumed the two systems could never drift. Find where the drift comes from and fix it so the provider and our database always agree — without changing the endpoint contract or the provider API calls.",
+  "intentional_defect": {
+    "summary": "The provider reservation API is called INSIDE the database transaction: a later failure rolls back the local order, but the provider reservation survives — the two systems drift.",
+    "location": ["app/Services/OrderService.php"],
+    "root_cause": "Remote side effects performed inside a database transaction do not roll back with it: the transaction protects local rows only. When validation after the provider call throws, the provider's reservation stays while the local order is rolled back.",
+    "why_it_looks_correct": "Wrapping multi-step flows in a transaction reads as defensive best practice, the happy path is consistent, and the visible tests pass — the drift only appears when a step AFTER the provider call fails."
+  },
+  "non_obvious_invariant": "Remote side effects must be performed only after the local transaction commits (or compensated on rollback): the provider and the database must agree — a provider reservation may never exist without a corresponding local order, and vice versa for the same flow.",
+  "expected_diagnosis": "The agent must recognize that HTTP calls inside a transaction are not covered by the rollback and reorder the flow: commit the local order first, then reserve with the provider (handling provider failure explicitly).",
+  "safe_fix_constraints": [
+    "The provider API calls (URLs and payloads) stay unchanged.",
+    "The endpoint contract stays unchanged.",
+    "No new database tables; no queue-based restructuring required."
+  ],
+  "failure_explanation": "Every time the post-reservation validation fails, the provider keeps a reserved slot that the local system never records: dock capacity is silently consumed by ghost reservations, and ops cannot reconcile the two systems because the drift is only visible on the provider's side. On repeated runs the provider's dock fills with reservations for orders that were never created.",
+  "public_surface": {
+    "routes": ["POST /orders"],
+    "classes": ["App\\Services\\OrderService"],
+    "tables": ["orders"]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": ["patches/distractor-swallowed-validation.patch"]
+  }
+}

@@ -1,0 +1,15 @@
+diff --git a/app/Services/ExchangeRateService.php b/app/Services/ExchangeRateService.php
+index 5396afe..8260481 100644
+--- a/app/Services/ExchangeRateService.php
++++ b/app/Services/ExchangeRateService.php
+@@ -9,8 +9,9 @@ class ExchangeRateService
+ {
+     public function get(string $from, string $to): float
+     {
+-        return (float) Cache::rememberForever(
++        return (float) Cache::remember(
+             "rates:{$from}:{$to}",
++            now()->addMinutes(10),
+             fn () => $this->fetchFromProvider($from, $to),
+         );
+     }

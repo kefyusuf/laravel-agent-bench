@@ -1,0 +1,45 @@
+diff --git a/app/Services/OrderService.php b/app/Services/OrderService.php
+index 72ca20f..badacc4 100644
+--- a/app/Services/OrderService.php
++++ b/app/Services/OrderService.php
+@@ -10,25 +10,26 @@ class OrderService
+ {
+     public function createWithReservation(string $reference, string $destination): Order
+     {
+-        return DB::transaction(function () use ($reference, $destination) {
+-            $order = Order::create([
++        // Commit the local order FIRST: remote side effects do not roll back
++        // with the transaction, so the provider must only be asked after the
++        // order is durably recorded.
++        $order = DB::transaction(fn () => Order::create([
++            'reference' => $reference,
++            'destination' => $destination,
++            'status' => 'pending',
++        ]));
++
++        $reservation = Http::asJson()
++            ->withToken((string) config('services.dockreserve.key', 'test'))
++            ->post('https://api.dockreserve.example/v1/reservations', [
+                 'reference' => $reference,
+                 'destination' => $destination,
+-                'status' => 'reserved',
+             ]);
+ 
+-            $reservation = Http::asJson()
+-                ->withToken((string) config('services.dockreserve.key', 'test'))
+-                ->post('https://api.dockreserve.example/v1/reservations', [
+-                    'reference' => $reference,
+-                    'destination' => $destination,
+-                ]);
++        $reservation->throw();
+ 
+-            if (! $reservation->json('slot_id')) {
+-                throw new \RuntimeException('dock reservation failed');
+-            }
++        $order->forceFill(['status' => 'reserved'])->save();
+ 
+-            return $order;
+-        });
++        return $order;
+     }
+ }
