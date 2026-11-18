@@ -40,5 +40,13 @@
   "artifacts": {
     "solution": "patches/solution.patch",
     "distractors": ["patches/distractor-hourly-ttl.patch"]
-  }
+  },
+  "diagnosis_keywords": [
+    "rememberForever",
+    "never expires",
+    "no ttl",
+    "freshness window",
+    "10 minutes",
+    "Cache::remember"
+  ]
 }

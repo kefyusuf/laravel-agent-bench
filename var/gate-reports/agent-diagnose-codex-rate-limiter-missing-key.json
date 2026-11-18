@@ -1,0 +1,35 @@
+[
+  {
+    "scenario": "rate-limiter-missing-key",
+    "cell": "laravel-13",
+    "mode": "diagnosis",
+    "verdict": "diagnosis-pass",
+    "agent": {
+      "code": 0,
+      "stdout": "The named limiter is missing a key:\n```php\nreturn Limit::perMinute(3)->by($request->ip());\n```\nWithout `by(...)`, every `/request-otp` request shares one global bucket, so three requests from any visitor exhaust the limit for everyone.\nUse Laravel’s `$request->ip()` rather than reading `X-Forwarded-For` directly. Configure trusted proxies only for the actual production proxy/load balancer; otherwise client-supplied forwarding headers must not influence the IP used for throttling. Add tests proving separate clients have separate buckets and spoofed headers cannot bypass the limit.\n<diagnosis>\nThe `otp` limiter defines only `perMinute(3)` and no request-specific key, causing Laravel to use one shared rate-limit bucket for all visitors. A single visitor’s three requests therefore throttle the entire endpoint. Fix it with `Limit::perMinute(3)->by($request->ip())`, and ensure proxy trust is restricted to known infrastructure so arbitrary `X-Forwarded-For` headers cannot change the throttling identity or bypass the limit.\n</diagnosis>",
+      "stderr": "        \"psr-4\": {\n            \"App\\\\\": \"app/\",\n            \"Database\\\\Factories\\\\\": \"database/factories/\",\n            \"Database\\\\Seeders\\\\\": \"database/seeders/\"\n        }\n    },\n    \"autoload-dev\": {\n        \"psr-4\": {\n            \"Tests\\\\\": \"tests/\"\n        }\n    },\n    \"scripts\": {\n        \"post-autoload-dump\": [\n            \"Illuminate\\\\Foundation\\\\ComposerScripts::postAutoloadDump\",\n            \"@php artisan package:discover --ansi\"\n        ]\n    },\n    \"config\": {\n        \"optimize-autoloader\": true,\n        \"preferred-install\": \"dist\",\n        \"sort-packages\": true\n    },\n    \"minimum-stability\": \"stable\",\n    \"prefer-stable\": true\n}\n./phpunit.xml:23:        <env name=\"APP_ENV\" value=\"testing\"/>\n./phpunit.xml:29:        <env name=\"CACHE_STORE\" value=\"array\"/>\n6dd793c baseline\ncodex\nThe named limiter is missing a key:\n```php\nreturn Limit::perMinute(3)->by($request->ip());\n```\nWithout `by(...)`, every `/request-otp` request shares one global bucket, so three requests from any visitor exhaust the limit for everyone.\nUse Laravel’s `$request->ip()` rather than reading `X-Forwarded-For` directly. Configure trusted proxies only for the actual production proxy/load balancer; otherwise client-supplied forwarding headers must not influence the IP used for throttling. Add tests proving separate clients have separate buckets and spoofed headers cannot bypass the limit.\n<diagnosis>\nThe `otp` limiter defines only `perMinute(3)` and no request-specific key, causing Laravel to use one shared rate-limit bucket for all visitors. A single visitor’s three requests therefore throttle the entire endpoint. Fix it with `Limit::perMinute(3)->by($request->ip())`, and ensure proxy trust is restricted to known infrastructure so arbitrary `X-Forwarded-For` headers cannot change the throttling identity or bypass the limit.\n</diagnosis>\ntokens used\n15,664",
+      "timedOut": false
+    },
+    "matched": [
+      "->by(",
+      "bucket"
+    ],
+    "missing": [
+      "keyed",
+      "per customer",
+      "per user",
+      "per ip",
+      "per visitor",
+      "per caller"
+    ],
+    "judge": {
+      "code": 0,
+      "stdout": "{\"verdict\":\"correct\",\"reasons\":\"The diagnosis correctly identifies that Laravel's unkeyed Limit creates one global shared bucket and explains why one visitor can throttle everyone. It proposes the appropriate server-controlled IP key and appropriately warns that proxy trust must be restricted so client-supplied forwarding headers cannot manipulate the identity.\"}",
+      "stderr": "WARNING: failed to clean up stale arg0 temp dirs: Permission denied (os error 13)\nReading additional input from stdin...\nOpenAI Codex v0.167.0\n--------\nworkdir: /app/var/workspaces/diagnosis-rate-limiter-missing-key--laravel-13--8\nmodel: gpt-5.6-luna\nprovider: openai\napproval: never\nsandbox: danger-full-access\nreasoning effort: medium\nreasoning summaries: none\nsession id: 01a1f07d-4da0-7052-9be7-7ff51744028b\n--------\nuser\n# Diagnosis grading\nYou are grading a diagnosis produced by another engineer against the known root cause.\n## Known root cause (ground truth)\nThe agent must know that Laravel's Limit is global unless keyed with ->by(), and choose a server-controlled identity (request IP, or the validated destination email) — not a client-supplied header.\n## Diagnosis to grade\n<diagnosis>\nThe `otp` limiter defines only `perMinute(3)` and no request-specific key, causing Laravel to use one shared rate-limit bucket for all visitors. A single visitor’s three requests therefore throttle the entire endpoint. Fix it with `Limit::perMinute(3)->by($request->ip())`, and ensure proxy trust is restricted to known infrastructure so arbitrary `X-Forwarded-For` headers cannot change the throttling identity or bypass the limit.\n</diagnosis>\n## Rubric\n- \"correct\": identifies the same root cause and mechanism, and proposes a fix that would resolve it.\n- \"partial\": identifies a real problem but misses the core mechanism, or proposes a fix that would not resolve it.\n- \"incorrect\": wrong root cause, or no meaningful identification.\nRespond with ONLY a JSON object, nothing else:\n{\"verdict\": \"correct\" | \"partial\" | \"incorrect\", \"reasons\": \"<one paragraph>\"}\ncodex\n{\"verdict\":\"correct\",\"reasons\":\"The diagnosis correctly identifies that Laravel's unkeyed Limit creates one global shared bucket and explains why one visitor can throttle everyone. It proposes the appropriate server-controlled IP key and appropriately warns that proxy trust must be restricted so client-supplied forwarding headers cannot manipulate the identity.\"}\ntokens used\n11,688",
+      "timedOut": false,
+      "verdict": "correct",
+      "reasons": "The diagnosis correctly identifies that Laravel's unkeyed Limit creates one global shared bucket and explains why one visitor can throttle everyone. It proposes the appropriate server-controlled IP key and appropriately warns that proxy trust must be restricted so client-supplied forwarding headers cannot manipulate the identity."
+    },
+    "hadTags": true
+  }
+]

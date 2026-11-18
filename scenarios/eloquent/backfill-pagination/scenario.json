@@ -60,5 +60,13 @@
         "run_at": "2026-11-15T19:16:01.835Z"
       }
     ]
-  }
+  },
+  "diagnosis_keywords": [
+    "chunk()",
+    "chunkById",
+    "re-evaluat",
+    "skips rows",
+    "skipped",
+    "where clause"
+  ]
 }

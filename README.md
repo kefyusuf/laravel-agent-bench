@@ -241,20 +241,23 @@ are the real difficulty signal.
 
 ### Diagnosis mode
 
-Every scenario (except the multi-defect one, by design) can be run as a diagnosis:
-. The deterministic keyword
+Every scenario (except the multi-defect one, by design) can be run as a diagnosis
+(`bench diagnose --scenario <id> --agent '<cmd with {{workspace}} {{prompt}}>' [--judge '<cmd with {{prompt}}>']`).
+The deterministic keyword
 score gates; an optional judge agent grades the diagnosis semantically against the
-known root cause and its verdict is authoritative when present. Sample sweep
-(codex read-only, laravel-13): morph-map ✅ / double-refund ✅ / scheduler-overlap
-⚠️ partial — the judge caught a shallow diagnosis the literal keywords passed.
-Evidence: var/gate-reports/agent-diagnose-codex-*.json.
-**Case study — judge vs keywords:** on scheduler-overlap, the diagnosed agent claimed
-the schedule had *no* overlap prevention and recommended adding it; the code actually
-already had `withoutOverlapping(10)` with an expiry shorter than the documented
-45-minute runtime. The literal keywords matched (the agent used the right vocabulary),
-but the judge graded it **partial**: factually wrong about the current state, even
-though its proposed fix would coincidentally resolve the issue. Exactly the class of
-shallow-correct answer keyword scoring alone cannot separate.
+known root cause and its verdict is authoritative when present.
+**Judge-agreement study (11 scenarios, codex read-only + codex-as-judge, laravel-13):**
+judge vs human author 11/11; keywords vs human 9/11 — both keyword misses are
+over-credits a human graded partial:
+- scheduler-overlap: the agent claimed the schedule had *no* overlap prevention; the
+  code actually had `withoutOverlapping(10)` with an expiry shorter than the documented
+  45-minute runtime. Right vocabulary, wrong facts.
+- transaction-boundary: correct root cause (provider side effect inside the transaction
+  survives rollback), but the proposed saga/outbox remedy violated the scenario's
+  `safe_fix_constraints` ("no new database tables; no queue-based restructuring").
+  Keywords cannot grade fix direction; the judge did.
+Full study: var/gate-reports/judge-agreement-study.json; per-case evidence:
+var/gate-reports/agent-diagnose-codex-*.json.
 Areas with planned scenarios (recipes in docs/AUTHORING.md): notifications +
 transactions, filesystem visibility, API-resource serialization.
 

@@ -47,13 +47,43 @@ The diagnosis judge grades semantically against the known root cause; its calibr
 is measured the same way benchmark scores are — against ground truth:
 
 - Ground truth per scenario is `expected_diagnosis` (authored with the manifest).
-- Current sample (codex-as-judge, 3 runs): morph-map ✅ correct · double-refund ✅
-  correct · scheduler-overlap ⚠️ partial (the judged agent factually misread the
-  current code — claimed no overlap prevention existed; the code had a too-short
-  mutex). Judge-human agreement so far: 3/3, but the sample is too small for
-  conclusions — grow to ≥10 before trusting the judge over keyword scoring.
+- Current sample (codex-as-judge, 11 scenarios, pre-registered threshold met):
+  judge-human agreement **11/11**, keyword-human agreement **9/11**. Both keyword
+  misses are over-credits — a keyword passed a diagnosis a human graded partial:
+  `scheduler-overlap` (the agent used the right vocabulary but factually misread
+  the current code) and `transaction-boundary` (correct root cause, but the
+  proposed saga/outbox remedy violated the scenario's `safe_fix_constraints`).
+  Keywords never under-credited a correct diagnosis in this sample. Full study:
+  `var/gate-reports/judge-agreement-study.json` with per-case evidence files.
 - Known judge limitation: it shares model variance with the diagnosed agent when the
-  same CLI/model is used for both roles.
+  same CLI/model is used for both roles, and diagnose mode does not yet pin a model
+  (`run-all` does).
+
+## Model diversity (adding a second agent)
+
+All published sweeps so far use one CLI (codex). Cross-model results are the
+strongest antidote to both model-specific leakage and single-vendor saturation
+claims, and adding an agent requires no harness changes — an agent is just a
+command that receives a workspace and a prompt file:
+
+1. Install the second CLI into the bench image (`docker/Dockerfile`, next to
+   `@openai/codex`) and rebuild, or mount it at run time.
+2. Mount that agent's auth the same way codex's is mounted
+   (`-v "$HOME/.<agent>:/root/.<agent>"`).
+3. Run with the same template, e.g. for Claude Code:
+
+   ```bash
+   docker compose run --rm -v "$HOME/.claude:/root/.claude" bench \
+     node bin/bench.mjs run-all --runs 3 --model claude-code \
+     --agent 'claude -p --dangerously-skip-permissions \
+              --cwd {{workspace}} "$(cat {{prompt}})"'
+   ```
+
+4. Record the agent identity in evidence via `--model` (pinned and written into
+   every run file) so score tables are attributable.
+
+The gating rule is unchanged: evidence files are the audit trail; a sweep without
+a committed `--out` report does not count.
 
 ## What we do not do
 

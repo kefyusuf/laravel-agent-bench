@@ -40,5 +40,14 @@
   "artifacts": {
     "solution": "patches/solution.patch",
     "distractors": ["patches/distractor-swallowed-validation.patch"]
-  }
+  },
+  "diagnosis_keywords": [
+    "inside the transaction",
+    "within the transaction",
+    "not rolled back",
+    "does not roll back",
+    "remote side effect",
+    "orphan",
+    "after the transaction commits"
+  ]
 }

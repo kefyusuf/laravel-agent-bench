@@ -1,0 +1,109 @@
+{
+  "study": "judge-agreement",
+  "date": "2026-11-19",
+  "design": "Three labels per diagnosis: (1) deterministic keyword scan (the harness gate), (2) codex-as-judge semantic grade against expected_diagnosis, (3) human label by the scenario author (ground truth). Agreement measured label-vs-human.",
+  "agents": {
+    "diagnosed": "codex exec (CLI default model; diagnose mode has no --model pin — recorded as a limitation)",
+    "judge": "codex exec, same CLI, judge prompt built from expected_diagnosis (shares model variance with the diagnosed agent — known limitation)"
+  },
+  "cell": "laravel-13",
+  "sample": [
+    {
+      "scenario": "morph-map-hardcoded-type",
+      "date": "2026-11-15",
+      "keyword": "pass",
+      "judge": "correct",
+      "human": "correct",
+      "evidence": "agent-diagnose-codex-morph-map-hardcoded-type.json"
+    },
+    {
+      "scenario": "double-refund",
+      "date": "2026-11-15",
+      "keyword": "pass",
+      "judge": "correct",
+      "human": "correct",
+      "evidence": "agent-diagnose-codex-double-refund.json"
+    },
+    {
+      "scenario": "scheduler-overlap",
+      "date": "2026-11-15",
+      "keyword": "pass",
+      "judge": "partial",
+      "human": "partial",
+      "note": "Agent claimed NO overlap prevention existed; the code had withoutOverlapping(10) with an expiry shorter than the documented 45-minute runtime. Keyword vocabulary matched, facts were wrong. First documented over-credit flavor: factual misread.",
+      "evidence": "agent-diagnose-codex-scheduler-overlap.json"
+    },
+    {
+      "scenario": "lock-leak-on-exception",
+      "date": "2026-11-19",
+      "keyword": "pass",
+      "judge": "correct",
+      "human": "correct",
+      "evidence": "agent-diagnose-codex-lock-leak-on-exception.json"
+    },
+    {
+      "scenario": "rate-limiter-missing-key",
+      "date": "2026-11-19",
+      "keyword": "pass",
+      "judge": "correct",
+      "human": "correct",
+      "evidence": "agent-diagnose-codex-rate-limiter-missing-key.json"
+    },
+    {
+      "scenario": "soft-delete-unique-email",
+      "date": "2026-11-19",
+      "keyword": "pass",
+      "judge": "correct",
+      "human": "correct",
+      "evidence": "agent-diagnose-codex-soft-delete-unique-email.json"
+    },
+    {
+      "scenario": "singleton-request-state",
+      "date": "2026-11-19",
+      "keyword": "pass",
+      "judge": "correct",
+      "human": "correct",
+      "evidence": "agent-diagnose-codex-singleton-request-state.json"
+    },
+    {
+      "scenario": "signed-url-toggle-replay",
+      "date": "2026-11-19",
+      "keyword": "pass",
+      "judge": "correct",
+      "human": "correct",
+      "evidence": "agent-diagnose-codex-signed-url-toggle-replay.json"
+    },
+    {
+      "scenario": "backfill-pagination",
+      "date": "2026-11-19",
+      "keyword": "pass",
+      "judge": "correct",
+      "human": "correct",
+      "evidence": "agent-diagnose-codex-backfill-pagination.json"
+    },
+    {
+      "scenario": "stale-ttl",
+      "date": "2026-11-19",
+      "keyword": "pass",
+      "judge": "correct",
+      "human": "correct",
+      "evidence": "agent-diagnose-codex-stale-ttl.json"
+    },
+    {
+      "scenario": "transaction-boundary",
+      "date": "2026-11-19",
+      "keyword": "pass",
+      "judge": "partial",
+      "human": "partial",
+      "note": "Agent identified the true root cause (provider side effect inside the transaction survives rollback, orphaning the reservation) but proposed distributed-saga/outbox/compensation machinery as the remedy — violating the scenario's safe_fix_constraints ('no new database tables; no queue-based restructuring'). Expected remedy: commit the local order first, then reserve. Second documented over-credit flavor: remedy misalignment. Judge caught it; keywords cannot grade fix direction.",
+      "evidence": "agent-diagnose-codex-transaction-boundary.json"
+    }
+  ],
+  "summary": {
+    "n": 11,
+    "judge_human_agreement": "11/11",
+    "keyword_human_agreement": "9/11",
+    "keyword_misses": "Both misses are over-credits (keyword passed a diagnosis a human graded partial): scheduler-overlap (factual misread) and transaction-boundary (remedy misalignment). Keywords never under-credit a correct diagnosis in this sample.",
+    "conclusion": "At the pre-registered >=10 sample size, the judge agrees with the human author on every case, including both partials the keywords passed. Keyword scoring stays as the deterministic floor; the judge is trusted as the semantic layer."
+  }
+}
