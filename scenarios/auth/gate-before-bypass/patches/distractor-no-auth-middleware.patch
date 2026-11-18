@@ -1,0 +1,14 @@
+diff --git a/routes/web.php b/routes/web.php
+index 6809b7c..447501b 100644
+--- a/routes/web.php
++++ b/routes/web.php
+@@ -5,7 +5,5 @@ use Illuminate\Support\Facades\Route;
+ 
+ Route::get('/', fn () => response()->noContent());
+ 
+-Route::middleware('auth')->group(function () {
+-    Route::get('/admin/audit-reports/{report}', [AuditReportController::class, 'show']);
+-    Route::patch('/admin/audit-reports/{report}/approve', [AuditReportController::class, 'approve']);
+-});
++Route::get('/admin/audit-reports/{report}', [AuditReportController::class, 'show']);
++Route::patch('/admin/audit-reports/{report}/approve', [AuditReportController::class, 'approve']);

@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "id": "unique-rule-update",
+  "family": "validation/unique-ignore",
+  "title": "Update endpoint always fails validation: unique rule counts the record being updated",
+  "difficulty": 3,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "MerchLine's product catalog is edited through PATCH /products/{product}: name, SKU and price are editable. SKUs are unique across the catalog — two products may never share one. Editing a product's other fields while keeping its own SKU must succeed: the SKU belongs to that product.",
+  "user_request": "Merchants report they can no longer edit their products: any change to a product (even just the price) fails with 'SKU has already been taken' — even when they changed nothing about the SKU itself. The create flow works fine. Fix the edit flow so merchants can update their products while the SKU uniqueness rule keeps protecting the catalog against genuine duplicates.",
+  "intentional_defect": {
+    "summary": "The update FormRequest's SKU uniqueness rule counts the record being updated: Rule::unique('products', 'sku') without ->ignore($product->id) matches the product's own row.",
+    "location": [
+      "app/Http/Requests/UpdateProductRequest.php"
+    ],
+    "root_cause": "unique() without ignore() checks the whole table; on update, the row being edited holds the SKU itself, so the rule always fires whenever the SKU is present in the payload — even unchanged.",
+    "why_it_looks_correct": "The rule is the documented pattern for a unique column and mirrors the create request. The visible test covers the create flow (correct) — the update path was never tested."
+  },
+  "non_obvious_invariant": "On update, the uniqueness check must exclude the record being updated (->ignore($product->id)) while still excluding every other row: a merchant keeps their own SKU but cannot take another product's.",
+  "expected_diagnosis": "The agent must recognize that the update path re-validates the record's own SKU against itself and scope the rule with ->ignore($product) — while keeping the rule present so other products' SKUs still conflict.",
+  "safe_fix_constraints": [
+    "The SKU uniqueness rule must stay present (genuine duplicates keep failing validation).",
+    "PATCH /products/{product} keeps its request/response contract.",
+    "No schema changes."
+  ],
+  "failure_explanation": "Every product edit fails with 'SKU has already been taken' even when the merchant changes only the price: merchants cannot manage their catalog at all. Conversely, an agent 'fixing' it by dropping the rule entirely would let two products share a SKU — breaking the fulfillment system that keys on SKUs.",
+  "public_surface": {
+    "routes": [
+      "POST /products",
+      "PATCH /products/{product}"
+    ],
+    "classes": [
+      "App\\Http\\Requests\\UpdateProductRequest",
+      "App\\Models\\Product"
+    ],
+    "tables": [
+      "products"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-rule-dropped.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-18T15:12:10.959Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-18T15:12:10.959Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-18T15:12:10.959Z"
+      }
+    ]
+  }
+}

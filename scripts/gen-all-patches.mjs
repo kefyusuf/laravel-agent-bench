@@ -1594,6 +1594,54 @@ const PATCHES = {
       }],
     },
   ],
+
+  'unique-rule-update': [
+    {
+      name: 'solution.patch',
+      edits: [{
+        file: 'app/Http/Requests/UpdateProductRequest.php',
+        find: "            'sku' => ['required', 'string', 'max:32', Rule::unique('products', 'sku')],",
+        replace: "            'sku' => ['required', 'string', 'max:32', Rule::unique('products', 'sku')->ignore($this->route('product'))],",
+      }],
+    },
+    {
+      // plausible-but-wrong: dropping the rule entirely — genuine duplicates pass.
+      name: 'distractor-rule-dropped.patch',
+      edits: [{
+        file: 'app/Http/Requests/UpdateProductRequest.php',
+        find: "            'sku' => ['required', 'string', 'max:32', Rule::unique('products', 'sku')],",
+        replace: "            'sku' => ['required', 'string', 'max:32'],",
+      }],
+    },
+  ],
+
+  'gate-before-bypass': [
+    {
+      name: 'solution.patch',
+      edits: [{
+        file: 'app/Providers/AppServiceProvider.php',
+        find: '        Gate::before(function (User $user) {\n            return true;\n        });',
+        replace: [
+          '        Gate::before(function (User $user) {',
+          '            return $user->is_admin ? true : null;',
+          '        });',
+        ].join('\n'),
+      }],
+    },
+    {
+      // plausible-but-wrong: dropping auth middleware because the policies
+      // now handle authorization — guests get policy 403s instead of 401.
+      name: 'distractor-no-auth-middleware.patch',
+      edits: [{
+        file: 'routes/web.php',
+        find: "Route::middleware('auth')->group(function () {\n    Route::get('/admin/audit-reports/{report}', [AuditReportController::class, 'show']);\n    Route::patch('/admin/audit-reports/{report}/approve', [AuditReportController::class, 'approve']);\n});",
+        replace: [
+          "Route::get('/admin/audit-reports/{report}', [AuditReportController::class, 'show']);",
+          "Route::patch('/admin/audit-reports/{report}/approve', [AuditReportController::class, 'approve']);",
+        ].join('\n'),
+      }],
+    },
+  ],
 };
 
 const cfg = loadConfig();

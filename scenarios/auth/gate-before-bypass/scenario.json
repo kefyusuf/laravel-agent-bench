@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "id": "gate-before-bypass",
+  "family": "auth/gate-before",
+  "title": "Gate::before returns true for everyone: every policy check silently passes",
+  "difficulty": 4,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "AuditPro's admin panel is protected by policies: only users with the 'admin' role may manage audit reports (view, approve, delete). The role check is implemented once, globally, through Gate::before in the AppServiceProvider — the documented pattern for role-based super-access. Everything else is authorized through per-action policies registered for the models.",
+  "user_request": "A security review found that a regular staff account could open the admin panel's audit management screens — the audit report endpoints respond successfully instead of denying access. The role model is simple: users either have the admin role or they do not, and admin users must bypass every policy check. Staff without the role must be evaluated by the normal policies (which deny them). Fix the authorization so the role boundary actually holds.",
+  "intentional_defect": {
+    "summary": "Gate::before returns true for EVERY user instead of only admins: every subsequent policy check is short-circuited and passes for all authenticated users.",
+    "location": [
+      "app/Providers/AppServiceProvider.php"
+    ],
+    "root_cause": "Gate::before callbacks short-circuit authorization when they return a non-null value. Returning true unconditionally grants every authenticated user blanket access before any policy runs; the callback was meant to return true only for admin users but the role check was lost (or never written) inside the closure.",
+    "why_it_looks_correct": "Gate::before IS the documented place for role-based super-access, the callback is compact, admin users work perfectly (they are the ones who tested it), and staff accounts that DON'T use admin features never trigger a denial that looks wrong."
+  },
+  "non_obvious_invariant": "Gate::before must return true ONLY for users with the admin role; every other user must fall through to the normal policies (returning null from the callback), so per-action policies still apply to staff.",
+  "expected_diagnosis": "The agent must recognize that the blanket Gate::before short-circuits every policy and scope it to admin users — guarding the callback with the role check instead of returning true unconditionally.",
+  "safe_fix_constraints": [
+    "Admin users must continue to bypass all policy checks (their super-access is a product requirement).",
+    "Non-admin users must be evaluated by the normal per-action policies.",
+    "The Gate::before hook stays in the AppServiceProvider — no restructuring."
+  ],
+  "failure_explanation": "Every authenticated staff user passes every authorization check in the admin panel: audit reports (confidential compliance documents) are viewable, editable and deletable by anyone with an account. The blanket bypass also silently disables every future policy added to the panel — the vulnerability compounds as the product grows.",
+  "public_surface": {
+    "routes": [
+      "GET /admin/audit-reports/{report}",
+      "PATCH /admin/audit-reports/{report}"
+    ],
+    "classes": [
+      "App\\Providers\\AppServiceProvider",
+      "App\\Models\\AuditReport",
+      "App\\Models\\User"
+    ],
+    "tables": [
+      "users",
+      "audit_reports"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-no-auth-middleware.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-18T15:29:35.280Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-18T15:29:35.280Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-18T15:29:35.280Z"
+      }
+    ]
+  }
+}

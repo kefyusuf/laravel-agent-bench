@@ -1,0 +1,13 @@
+diff --git a/app/Providers/AppServiceProvider.php b/app/Providers/AppServiceProvider.php
+index 573399b..661c9e2 100644
+--- a/app/Providers/AppServiceProvider.php
++++ b/app/Providers/AppServiceProvider.php
+@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
+     public function boot(): void
+     {
+         Gate::before(function (User $user) {
+-            return true;
++            return $user->is_admin ? true : null;
+         });
+     }
+ }
