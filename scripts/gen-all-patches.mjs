@@ -1642,6 +1642,27 @@ const PATCHES = {
       }],
     },
   ],
+
+  'base-uri-config': [
+    {
+      name: 'solution.patch',
+      edits: [{
+        file: 'app/Services/ShipmentService.php',
+        find: "            ->post('https://api.shipfast.example/v1/shipments', [",
+        replace: "            ->post(rtrim((string) config('services.shipfast.base_uri'), '/') . '/v1/shipments', [",
+      }],
+    },
+    {
+      // plausible-but-wrong: hardcoding the sandbox host fixes the reported
+      // host when the config value is missing in an environment.
+      name: 'distractor-config-fallback.patch',
+      edits: [{
+        file: 'app/Services/ShipmentService.php',
+        find: "            ->post('https://api.shipfast.example/v1/shipments', [",
+        replace: "            ->post('https://sandbox.shipfast.example/v1/shipments', [",
+      }],
+    },
+  ],
 };
 
 const cfg = loadConfig();

@@ -1,0 +1,13 @@
+diff --git a/app/Services/ShipmentService.php b/app/Services/ShipmentService.php
+index 4ff59aa..1bf8fab 100644
+--- a/app/Services/ShipmentService.php
++++ b/app/Services/ShipmentService.php
+@@ -14,7 +14,7 @@ class ShipmentService
+     {
+         $response = Http::asJson()
+             ->withToken((string) config('services.shipfast.key', 'test'))
+-            ->post('https://api.shipfast.example/v1/shipments', [
++            ->post(rtrim((string) config('services.shipfast.base_uri'), '/') . '/v1/shipments', [
+                 'order_id' => $orderId,
+                 'destination' => $destination,
+             ]);

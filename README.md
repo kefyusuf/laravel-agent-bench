@@ -234,6 +234,7 @@ are the real difficulty signal.
 | `stale-envelope` | notifications / queued envelope | 3 |
 | `global-scope` | eloquent / global scope | 4 |
 | `encrypted-cast-at-rest` | database / encryption at rest | 3 |
+| `base-uri-config` | http / base uri config | 3 |
 
 
 ### Diagnosis mode

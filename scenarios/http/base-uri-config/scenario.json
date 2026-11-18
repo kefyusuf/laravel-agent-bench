@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "id": "base-uri-config",
+  "family": "http/base-uri",
+  "title": "Provider base URI hardcoded in the service ignores the configured environment",
+  "difficulty": 3,
+  "status": "validated",
+  "laravel": [
+    "^12.0",
+    "^13.0"
+  ],
+  "requires": [],
+  "business_context": "FleetAPI's shipment service talks to the ShipFast provider. The provider base URI lives in config/services.php (services.shipfast.base_uri): staging points at the sandbox (https://sandbox.shipfast.example), production at https://api.shipfast.example. Deployments set it per environment; tests may point it wherever. The shipment service must resolve the base URI from configuration at call time so environments never cross-talk.",
+  "user_request": "During a staging deployment review, ops noticed the shipment service was calling the PRODUCTION ShipFast API from staging — test shipments polluting real production orders. The base URI is supposed to come from the environment configuration. Fix the shipment service so its requests follow the configured environment, and make sure no environment can cross-talk again. The service's method signature and response handling stay the same.",
+  "intentional_defect": {
+    "summary": "ShipmentService::createShipment builds the request URL by string-interpolating a hardcoded 'https://api.shipfast.example' constant instead of resolving the base URI from config('services.shipfast.base_uri').",
+    "location": [
+      "app/Services/ShipmentService.php"
+    ],
+    "root_cause": "The base URI was inlined during prototyping and never moved to configuration. config('services.shipfast.base_uri') exists and is populated per environment, but the service ignores it entirely — so every environment calls production.",
+    "why_it_looks_correct": "The service is clean and testable, Http::fake in tests intercepts by hostname (so tests pass regardless of which host is called), and the constant reads like a sensible default."
+  },
+  "non_obvious_invariant": "The provider base URI must be resolved from configuration at call time: config('services.shipfast.base_uri') drives every request, so changing the config changes the destination — with no code change.",
+  "expected_diagnosis": "The agent must recognize that the hardcoded host bypasses the environment configuration and move the base URI to config-driven resolution, preserving the method signature and response handling.",
+  "safe_fix_constraints": [
+    "The service's method signature and response handling stay unchanged.",
+    "The base URI must come from config('services.shipfast.base_uri') — no hardcoded hosts anywhere in the service.",
+    "config/services.php keeps its per-environment structure (the config file may be edited, not deleted)."
+  ],
+  "failure_explanation": "Every environment — staging, QA, developer machines — calls the production provider API: test shipments pollute real production orders (irreversible), production credentials leak into non-production logs, and staging cannot exercise the sandbox without a code change and deploy.",
+  "public_surface": {
+    "routes": [
+      "POST /shipments"
+    ],
+    "classes": [
+      "App\\Services\\ShipmentService"
+    ],
+    "tables": [
+      "shipments"
+    ]
+  },
+  "artifacts": {
+    "solution": "patches/solution.patch",
+    "distractors": [
+      "patches/distractor-config-fallback.patch"
+    ]
+  },
+  "validation": {
+    "structural": true,
+    "dynamic": true,
+    "checked_at": "2026-11-18T15:38:28.304Z",
+    "cells": [
+      {
+        "cell": "laravel-13",
+        "result": true,
+        "run_at": "2026-11-18T15:38:28.304Z"
+      },
+      {
+        "cell": "laravel-12",
+        "result": true,
+        "run_at": "2026-11-18T15:38:28.304Z"
+      }
+    ]
+  }
+}
